@@ -1,0 +1,404 @@
+# ApiClient Class - Unit Test Cases
+
+## Overview
+Tests for `py_web_automation.clients.api_client.ApiClient` class - HTTP API client for web automation testing.
+
+## Test Categories
+
+### 1. Initialization Tests
+
+#### TC-API-001: Initialize ApiClient with URL and config
+- **Purpose**: Verify ApiClient can be initialized with URL and Config
+- **Preconditions**: Valid URL and Config object
+- **Test Steps**:
+  1. Create ApiClient(url, config)
+  2. Verify url, config, and client are initialized
+  3. Verify AsyncClient is created with correct timeout
+- **Expected Result**: ApiClient created with httpx.AsyncClient initialized
+- **Coverage**: `__init__` method
+
+#### TC-API-002: Initialize ApiClient with config=None uses default config
+- **Purpose**: Verify ApiClient uses default Config when config=None
+- **Preconditions**: Valid URL, config=None
+- **Test Steps**:
+  1. Create ApiClient(url, config=None)
+  2. Verify default Config is created
+  3. Verify client is initialized correctly
+- **Expected Result**: ApiClient created with default Config
+- **Coverage**: `__init__` default config handling
+
+#### TC-API-003: Verify AsyncClient is initialized with correct timeout
+- **Purpose**: Verify client uses config.timeout
+- **Preconditions**: Config with custom timeout
+- **Test Steps**:
+  1. Create Config with timeout=60
+  2. Create ApiClient with this config
+  3. Verify client timeout matches config
+- **Expected Result**: AsyncClient timeout equals config.timeout
+- **Coverage**: Client initialization with timeout
+
+#### TC-API-004: Verify AsyncClient limits are set correctly
+- **Purpose**: Verify client has correct connection limits
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Create ApiClient
+  2. Verify client limits: max_keepalive_connections=5, max_connections=10
+- **Expected Result**: Connection limits set correctly
+- **Coverage**: Client limits configuration
+
+### 2. Close Method Tests
+
+#### TC-API-005: Close ApiClient client
+- **Purpose**: Verify close() closes AsyncClient
+- **Preconditions**: ApiClient instance with active client
+- **Test Steps**:
+  1. Create ApiClient
+  2. Call await api.close()
+  3. Verify client.aclose() was called
+- **Expected Result**: AsyncClient closed successfully
+- **Coverage**: `close()` method
+
+#### TC-API-006: Close ApiClient multiple times
+- **Purpose**: Verify close() can be called multiple times safely
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Create ApiClient
+  2. Call close() multiple times
+- **Expected Result**: No errors, idempotent behavior
+- **Coverage**: `close()` idempotency
+
+### 3. make_request() Tests
+
+#### TC-API-007: Make GET request to relative endpoint
+- **Purpose**: Verify make_request() constructs URL correctly for relative paths
+- **Preconditions**: ApiClient with base URL, relative endpoint
+- **Test Steps**:
+  1. Create ApiClient with base URL
+  2. Call make_request("/api/status")
+  3. Verify URL is constructed: base_url + "/api/status"
+- **Expected Result**: Request made to correct URL
+- **Coverage**: `make_request()` URL construction (relative)
+
+#### TC-API-008: Make GET request to absolute URL
+- **Purpose**: Verify make_request() uses absolute URL as-is
+- **Preconditions**: Absolute URL endpoint
+- **Test Steps**:
+  1. Call make_request("https://example.com/api")
+  2. Verify absolute URL is used directly
+- **Expected Result**: Request made to absolute URL
+- **Coverage**: `make_request()` URL construction (absolute)
+
+#### TC-API-009: Make GET request with relative URL starting with slash
+- **Purpose**: Verify URL construction handles leading slash
+- **Preconditions**: Endpoint starting with "/"
+- **Test Steps**:
+  1. Call make_request("/api/status")
+  2. Verify URL doesn't have double slashes
+- **Expected Result**: URL constructed correctly without double slashes
+- **Coverage**: `make_request()` URL construction (slash handling)
+
+#### TC-API-010: Make GET request with relative URL without slash
+- **Purpose**: Verify URL construction handles missing leading slash
+- **Preconditions**: Endpoint without leading "/"
+- **Test Steps**:
+  1. Call make_request("api/status")
+  2. Verify URL has single slash between base and endpoint
+- **Expected Result**: URL constructed correctly with single slash
+- **Coverage**: `make_request()` URL construction (no leading slash)
+
+#### TC-API-011: Make GET request and verify response
+- **Purpose**: Verify make_request() returns ApiResult with correct data
+- **Preconditions**: Mock HTTP response with status 200
+- **Test Steps**:
+  1. Mock client.request to return 200 response
+  2. Call make_request("/api/status")
+  3. Verify ApiResult has correct status_code, success=True
+- **Expected Result**: ApiResult with status_code=200, success=True
+- **Coverage**: `make_request()` response handling (GET)
+
+#### TC-API-012: Make POST request with data
+- **Purpose**: Verify make_request() sends POST with JSON data
+- **Preconditions**: POST method and data dict
+- **Test Steps**:
+  1. Mock client.request
+  2. Call make_request("/api/data", method="POST", data={"key": "value"})
+  3. Verify request made with POST and JSON data
+- **Expected Result**: POST request with JSON body
+- **Coverage**: `make_request()` POST with data
+
+#### TC-API-013: Make request with custom headers
+- **Purpose**: Verify make_request() sends custom headers
+- **Preconditions**: Headers dict
+- **Test Steps**:
+  1. Mock client.request
+  2. Call make_request("/api", headers={"Authorization": "Bearer token"})
+  3. Verify headers are sent
+- **Expected Result**: Request includes custom headers
+- **Coverage**: `make_request()` headers
+
+#### TC-API-014: Make request and verify response_time is recorded
+- **Purpose**: Verify ApiResult includes response_time
+- **Preconditions**: Mock response with elapsed time
+- **Test Steps**:
+  1. Mock response.elapsed.total_seconds() = 0.5
+  2. Call make_request()
+  3. Verify ApiResult.response_time = 0.5
+- **Expected Result**: response_time recorded correctly
+- **Coverage**: `make_request()` response_time
+
+#### TC-API-015: Handle response_time when elapsed is unavailable
+- **Purpose**: Verify make_request() handles case when response.elapsed is not available
+- **Preconditions**: Response where elapsed raises AttributeError or RuntimeError
+- **Test Steps**:
+  1. Mock response.elapsed to raise AttributeError or RuntimeError
+  2. Call make_request()
+  3. Verify ApiResult.response_time = 0.0
+  4. Verify no exception is raised
+- **Expected Result**: ApiResult with response_time=0.0, no exception
+- **Coverage**: `make_request()` response_time exception handling
+
+#### TC-API-016: Make request and verify response data is extracted to immutable fields
+- **Purpose**: Verify response data is extracted into immutable fields of ApiResult
+- **Preconditions**: Mock response
+- **Test Steps**:
+  1. Mock response object
+  2. Call make_request()
+  3. Verify ApiResult has headers and body as immutable fields (not response object)
+  4. Verify response object is not stored in ApiResult
+- **Expected Result**: Response data extracted to immutable fields (headers, body), response object not stored
+- **Coverage**: `make_request()` response data extraction
+
+#### TC-API-017: Handle request exception
+- **Purpose**: Verify make_request() handles exceptions gracefully
+- **Preconditions**: client.request raises exception
+- **Test Steps**:
+  1. Mock client.request to raise exception
+  2. Call make_request()
+  3. Verify returns ApiResult with success=False, error_message set
+- **Expected Result**: ApiResult with success=False, error_message, status_code=0
+- **Coverage**: `make_request()` exception handling
+
+#### TC-API-018: Verify make_request logs request
+- **Purpose**: Verify request is logged
+- **Preconditions**: Logger capture
+- **Test Steps**:
+  1. Call make_request("/api/status")
+  2. Verify "Making request: GET {url}" is logged
+- **Expected Result**: Request logged at INFO level
+- **Coverage**: `make_request()` logging (request)
+
+#### TC-API-019: Verify make_request logs response
+- **Purpose**: Verify response is logged
+- **Preconditions**: Logger capture, mock response
+- **Test Steps**:
+  1. Mock response
+  2. Call make_request()
+  3. Verify response details are logged
+- **Expected Result**: Response logged with status_code, elapsed, content
+- **Coverage**: `make_request()` logging (response)
+
+#### TC-API-020: Verify make_request logs error on exception
+- **Purpose**: Verify errors are logged
+- **Preconditions**: Exception during request
+- **Test Steps**:
+  1. Mock exception
+  2. Call make_request()
+  3. Verify error is logged
+- **Expected Result**: Error logged: "Request failed: {method} {endpoint} - {error}"
+- **Coverage**: `make_request()` logging (error)
+
+#### TC-API-021: Make request with different HTTP methods
+- **Purpose**: Verify all HTTP methods work
+- **Preconditions**: Different methods
+- **Test Steps**:
+  1. Call make_request with method="GET"
+  2. Call make_request with method="POST"
+  3. Call make_request with method="PUT"
+  4. Call make_request with method="DELETE"
+- **Expected Result**: All methods work correctly
+- **Coverage**: `make_request()` HTTP methods
+
+#### TC-API-022: Make request and verify status code flags
+- **Purpose**: Verify ApiResult flags are set based on status code
+- **Preconditions**: Different status codes
+- **Test Steps**:
+  1. Mock response with status_code=200, verify success=True
+  2. Mock response with status_code=301, verify redirect=True
+  3. Mock response with status_code=404, verify client_error=True
+  4. Mock response with status_code=500, verify server_error=True
+  5. Mock response with status_code=101, verify informational=True
+- **Expected Result**: Correct flags set for each status code
+- **Coverage**: `make_request()` status code flags
+
+#### TC-API-023: Make request with base URL containing query params
+- **Purpose**: Verify query params are removed from base URL
+- **Preconditions**: Base URL with query params
+- **Test Steps**:
+  1. Create ApiClient with URL="https://example.com/app?start=123"
+  2. Call make_request("/api/status")
+  3. Verify base URL query params are removed
+- **Expected Result**: URL constructed without base query params
+- **Coverage**: `make_request()` URL construction (query params removal)
+
+### 4. Edge Cases
+
+#### TC-API-024: Make request with very long endpoint
+- **Purpose**: Verify make_request handles long endpoints
+- **Preconditions**: Very long endpoint string
+- **Test Steps**:
+  1. Call make_request with very long endpoint
+- **Expected Result**: Request works correctly
+- **Coverage**: Large data handling
+
+#### TC-API-025: Make request with unicode in endpoint
+- **Purpose**: Verify make_request handles unicode
+- **Preconditions**: Endpoint with unicode characters
+- **Test Steps**:
+  1. Call make_request with unicode endpoint
+- **Expected Result**: Request works correctly
+- **Coverage**: Unicode handling
+
+### 5. Authentication Token Management Tests
+
+#### TC-API-026: Initialize ApiClient with default auth token values
+- **Purpose**: Verify ApiClient initializes with default auth token values
+- **Preconditions**: Valid URL and Config object
+- **Test Steps**:
+  1. Create ApiClient(url, config)
+  2. Verify _auth_token is None
+  3. Verify _auth_token_type is "Bearer"
+- **Expected Result**: Default values: _auth_token=None, _auth_token_type="Bearer"
+- **Coverage**: `__init__` auth token initialization
+
+#### TC-API-027: Set authentication token with default type
+- **Purpose**: Verify set_auth_token sets token with default Bearer type
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Call set_auth_token("test_token_123")
+  2. Verify _auth_token equals "test_token_123"
+  3. Verify _auth_token_type equals "Bearer"
+- **Expected Result**: Token and type are set correctly
+- **Coverage**: `set_auth_token()` method
+
+#### TC-API-028: Set authentication token with custom type
+- **Purpose**: Verify set_auth_token accepts custom token type
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Call set_auth_token("api_key_456", "ApiKey")
+  2. Verify _auth_token equals "api_key_456"
+  3. Verify _auth_token_type equals "ApiKey"
+- **Expected Result**: Token and custom type are set correctly
+- **Coverage**: `set_auth_token()` with custom type
+
+#### TC-API-029: Clear authentication token
+- **Purpose**: Verify clear_auth_token resets token to None
+- **Preconditions**: ApiClient instance with token set
+- **Test Steps**:
+  1. Call set_auth_token("test_token")
+  2. Verify _auth_token is set
+  3. Call clear_auth_token()
+  4. Verify _auth_token is None
+  5. Verify _auth_token_type is reset to "Bearer"
+- **Expected Result**: Token cleared, type reset to default
+- **Coverage**: `clear_auth_token()` method
+
+#### TC-API-030: Make request automatically adds auth token to headers
+- **Purpose**: Verify make_request automatically adds Authorization header when token is set
+- **Preconditions**: ApiClient instance with token set
+- **Test Steps**:
+  1. Call set_auth_token("test_token_123")
+  2. Call make_request("/api/data")
+  3. Verify Authorization header is present in request
+  4. Verify Authorization header value is "Bearer test_token_123"
+- **Expected Result**: Authorization header automatically added to request
+- **Coverage**: `make_request()` automatic token injection
+
+#### TC-API-031: Make request without token does not add Authorization header
+- **Purpose**: Verify make_request does not add Authorization header when token is not set
+- **Preconditions**: ApiClient instance without token
+- **Test Steps**:
+  1. Call make_request("/api/data") without setting token
+  2. Verify Authorization header is not present in request headers
+- **Expected Result**: No Authorization header in request
+- **Coverage**: `make_request()` without token
+
+#### TC-API-032: Make request uses custom token type
+- **Purpose**: Verify make_request uses custom token type in Authorization header
+- **Preconditions**: ApiClient instance with custom token type
+- **Test Steps**:
+  1. Call set_auth_token("api_key_456", "ApiKey")
+  2. Call make_request("/api/data")
+  3. Verify Authorization header value is "ApiKey api_key_456"
+- **Expected Result**: Authorization header uses custom token type
+- **Coverage**: `make_request()` with custom token type
+
+#### TC-API-033: Make request allows overriding Authorization header
+- **Purpose**: Verify make_request allows overriding Authorization header in headers parameter
+- **Preconditions**: ApiClient instance with token set
+- **Test Steps**:
+  1. Call set_auth_token("default_token")
+  2. Call make_request("/api/data", headers={"Authorization": "Bearer custom_token"})
+  3. Verify Authorization header in request is "Bearer custom_token" (not default)
+- **Expected Result**: Custom Authorization header overrides automatic token
+- **Coverage**: `make_request()` header override
+
+#### TC-API-034: Make request merges custom headers with auth token
+- **Purpose**: Verify make_request merges custom headers with automatically added token
+- **Preconditions**: ApiClient instance with token set
+- **Test Steps**:
+  1. Call set_auth_token("test_token")
+  2. Call make_request("/api/data", headers={"X-Custom-Header": "custom_value"})
+  3. Verify Authorization header is present
+  4. Verify X-Custom-Header is present
+- **Expected Result**: Both Authorization and custom headers are present
+- **Coverage**: `make_request()` header merging
+
+#### TC-API-035: Make request sets Content-Type for requests with data
+- **Purpose**: Verify make_request automatically sets Content-Type when data is provided
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Call make_request("/api/data", method="POST", data={"key": "value"})
+  2. Verify Content-Type header is "application/json"
+- **Expected Result**: Content-Type automatically set to application/json
+- **Coverage**: `make_request()` Content-Type handling
+
+#### TC-API-036: Make request preserves custom Content-Type header
+- **Purpose**: Verify make_request preserves custom Content-Type if provided
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Call make_request("/api/data", method="POST", data={"key": "value"}, headers={"Content-Type": "application/xml"})
+  2. Verify Content-Type header is "application/xml" (not overridden)
+- **Expected Result**: Custom Content-Type is preserved
+- **Coverage**: `make_request()` Content-Type override
+
+### 6. Query Parameters Tests
+
+#### TC-API-037: Make request with query parameters
+- **Purpose**: Verify make_request adds query params to URL
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Call make_request("/api/data", params={"page": 1, "limit": 10})
+  2. Verify URL contains query parameters: "?page=1&limit=10" or "?limit=10&page=1"
+- **Expected Result**: Query parameters are added to URL
+- **Coverage**: `make_request()` query params handling
+
+#### TC-API-038: Make request with query params and existing query string
+- **Purpose**: Verify make_request appends query params to URL with existing query string
+- **Preconditions**: ApiClient instance, endpoint with existing query params
+- **Test Steps**:
+  1. Call make_request("https://example.com/api/data?existing=param", params={"filter": "active"})
+  2. Verify URL contains both existing and new query params
+  3. Verify separator is "&" (not "?")
+- **Expected Result**: Query params are appended with "&" separator
+- **Coverage**: `make_request()` query params appending
+
+#### TC-API-039: Make request with empty params dict
+- **Purpose**: Verify make_request handles empty params dict gracefully
+- **Preconditions**: ApiClient instance
+- **Test Steps**:
+  1. Call make_request("/api/data", params={})
+  2. Verify URL does not contain "?" or query params
+- **Expected Result**: Empty params dict does not add query string to URL
+- **Coverage**: `make_request()` empty params handling
+
+

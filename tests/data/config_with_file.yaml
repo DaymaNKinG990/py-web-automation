@@ -1,0 +1,8 @@
+# Test configuration
+base_url: https://example.com
+timeout: 30
+retry_count: 3
+retry_delay: 1.0
+log_level: DEBUG
+browser_headless: true
+browser_timeout: 30000

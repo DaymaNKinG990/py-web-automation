@@ -1,0 +1,8 @@
+# Test configuration
+base_url: https://example.com/app
+timeout: 60
+retry_count: 5
+retry_delay: 2.0
+log_level: WARNING
+browser_headless: false
+browser_timeout: 60000

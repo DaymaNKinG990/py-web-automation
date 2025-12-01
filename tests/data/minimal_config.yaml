@@ -1,0 +1,5 @@
+# Minimal test configuration
+base_url: https://example.com
+timeout: 1
+retry_count: 0
+retry_delay: 0.1
