@@ -1,6 +1,6 @@
 [project]
 name = "py-web-automation"
-version = "3.2.0"
+version = "1.0.0"
 description = "Comprehensive Python framework for automated testing of web applications"
 authors = [{ name = "Ravil Shakerov", email = "xellaopromaster@yandex.ru" }]
 requires-python = ">=3.12"
