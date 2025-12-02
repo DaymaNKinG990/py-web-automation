@@ -16,8 +16,13 @@ dependencies = [
     "websockets>=13.1", # WebSocket client support
     "aiosqlite>=0.20.0", # SQLite database adapter (async)
     "pillow>=12.0.0",
+    "aiokafka>=0.12.0",
+    "aio-pika>=9.5.8",
+    "grpclib>=0.4.7",
+    "zeep>=4.2.1",
+    "graphql-core>=3.2.3",
+    "gql>=3.5.0",
 ]
-
 keywords = [
     "web automation",
     "api testing",
@@ -29,33 +34,30 @@ keywords = [
     "grpc",
     "soap",
     "websocket",
+    "kafka",
+    "rabbitmq",
+    "message broker",
     "database testing",
     "playwright",
     "httpx",
     "async",
 ]
-
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Testing",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
 ]
-
-
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
-
 [tool.setuptools]
 packages = ["py_web_automation"]
-
 [tool.pytest.ini_options]
 # Test discovery
 testpaths = ["tests"]
@@ -64,12 +66,11 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 # Add project root to Python path for imports
 pythonpath = ["."]
-
 # Output and reporting
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--verbose",
+    "-vv",
     "--tb=short",
     "--cov=py_web_automation",
     "--cov-report=html:report/coverage",
@@ -79,7 +80,6 @@ addopts = [
     "--maxfail=5",
     "-n", "8",
 ]
-
 # Markers
 markers = [
     "unit: Unit tests",
@@ -93,25 +93,25 @@ markers = [
     "grpc: gRPC testing tests",
     "soap: SOAP testing tests",
     "graphql: GraphQL testing tests",
+    "kafka: Kafka message broker testing tests",
+    "rabbitmq: RabbitMQ message broker testing tests",
     "smoke: Smoke tests",
     "regression: Regression tests",
 ]
-
 # Test execution
 minversion = "8.0"
 asyncio_mode = "auto"
-
 [tool.coverage.run]
 source = ["py_web_automation"]
 omit = [
     "*/tests/*",
     "*/test_*",
     "*/__pycache__/*",
+    "*_cache*",
     "*/venv/*",
     "*/.venv/*",
     "*/site-packages/*",
 ]
-
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
@@ -120,15 +120,13 @@ exclude_lines = [
     "if settings.DEBUG",
     "raise AssertionError",
     "raise NotImplementedError",
-    "if 0:",
+    "if DEBUG_MODE:",
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
 ]
-
 [tool.coverage.html]
 directory = "report/coverage"
-
 [dependency-groups]
 # Testing dependencies
 test = [
@@ -139,8 +137,9 @@ test = [
     "pytest-xdist>=3.8.0",
     "pytest-playwright>=0.4.4",
     "allure-pytest>=2.13.2",
+    "gql>=3.5.0",
+    "graphql-core>=3.2.3",
 ]
-
 # Development dependencies (linting, type checking, code quality)
 dev = [
     "ruff>=0.8.0",
@@ -154,10 +153,7 @@ dev = [
     "solid-checker>=1.0.4",
     "mypy>=1.19.0",
 ]
-
 # All development tools (test + dev)
-# Note: Use 'uv sync --all-groups' to install all dependency groups
-# Or use: 'uv sync --group test --group dev'
 all = [
     # Testing dependencies
     "pytest>=8.5.0",
@@ -185,11 +181,9 @@ all = [
     "zeep>=4.2.1",
     "graphql-core>=3.2.3",
 ]
-
 [tool.ruff]
-line-length = 120
+line-length = 100
 target-version = "py312"
-
 [tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
@@ -199,19 +193,19 @@ select = [
     "B",  # flake8-bugbear
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
+    "B008",  # do not perform function calls in argument defaults
+    "B006",  # do not use mutable data structures for argument defaults
+    "B019",  # do not use function calls in class variable definitions
+    "S101",  # use of assert detected (security: assert statements can be disabled)
+    "S105",  # possible hardcoded password (security: potential password in string)
+    "S602",  # shell injection via subprocess (security: shell=True in subprocess) 
 ]
 ignore = [
-    "E501",  # line too long (handled by formatter)
-    "B008",  # do not perform function calls in argument defaults
     "B027",  # Empty method in abstract base class (optional hooks in Plugin)
-    "B024",  # Abstract base class without abstract methods (Component is a marker class)
-    "B017",  # Do not assert blind exception (database-specific errors vary by backend)
 ]
-
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = false  # Disable for dynamic JSON parsing
@@ -227,23 +221,13 @@ strict_equality = true
 explicit_package_bases = true
 ignore_missing_imports = false
 show_error_codes = true
-
 [[tool.mypy.overrides]]
 module = [
-    "playwright.*",
-    "websockets.*",
-    "zeep.*",
-    "grpclib.*",
-    "graphql.*",
-    "asyncpg.*",
-    "aiomysql.*",
-    "aiosqlite.*",
+    "aiokafka.*",  # Has stubs but no py.typed marker
 ]
 ignore_missing_imports = true
-
 [[tool.mypy.overrides]]
 module = [
-    "tests.*",
     "examples.*",
 ]
 # Relax type checking for tests and examples
