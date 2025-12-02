@@ -5,14 +5,13 @@ This module provides the BaseClient abstract base class that implements
 common functionality for all client types, following the Template Method pattern.
 """
 
-from typing import TYPE_CHECKING, Any
+# Python imports
+from types import TracebackType
 
-from loguru import logger
+from loguru import Logger, logger
 
+# Local imports
 from ..config import Config
-
-if TYPE_CHECKING:
-    from loguru import Logger
 
 
 class BaseClient:
@@ -46,13 +45,13 @@ class BaseClient:
         ...     pass
     """
 
-    def __init__(self, url: str, config: Config | None = None) -> None:
+    def __init__(self, url: str, config: Config) -> None:
         """
         Initialize base client.
 
         Args:
             url: Base URL for the application (must be a non-empty string)
-            config: Configuration object (optional, defaults to Config() with default values)
+            config: Configuration object
 
         Raises:
             TypeError: If url is not a string
@@ -64,17 +63,8 @@ class BaseClient:
             >>> # Or use default config
             >>> client = BaseClient("https://example.com")
         """
-        if not isinstance(url, str):
-            raise TypeError(f"url must be a string, got {type(url).__name__}")
         if not url.strip():
             raise ValueError("url cannot be empty")
-
-        # Create default config if not provided
-        if config is None:
-            from ..config import Config
-
-            config = Config()
-
         self.url: str = url
         self.config: Config = config
         self.logger: Logger = logger.bind(name=self.__class__.__name__)
@@ -97,7 +87,7 @@ class BaseClient:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: Any | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         """
         Async context manager exit.
@@ -122,4 +112,3 @@ class BaseClient:
         The base implementation only logs the cleanup action.
         """
         self.logger.debug("Closing resources")
-        # Override in subclasses for specific cleanup
