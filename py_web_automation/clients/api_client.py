@@ -6,21 +6,23 @@ including request handling, authentication, and response validation.
 """
 
 # Python imports
+import time
+from http import HTTPMethod
 from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import urlencode
 
-from httpx import AsyncClient, Limits
-
-from ..config import Config
+from httpx import AsyncClient, Limits, Response
 
 # Local imports
+from ..config import Config
 from .base_client import BaseClient
 from .models import ApiResult
 
 if TYPE_CHECKING:
     from ..cache import ResponseCache
-    from ..middleware import MiddlewareChain
+    from ..middleware import MiddlewareChain, RequestContext, ResponseContext
     from ..rate_limit import RateLimiter
+    from ..retry import retry_on_connection_error
     from .request_builder import RequestBuilder
 
 
@@ -54,7 +56,7 @@ class ApiClient(BaseClient):
     def __init__(
         self,
         url: str,
-        config: Config | None = None,
+        config: Config,
         middleware: Optional["MiddlewareChain"] = None,
         cache: Optional["ResponseCache"] = None,
         rate_limiter: Optional["RateLimiter"] = None,
@@ -76,7 +78,8 @@ class ApiClient(BaseClient):
             enable_auto_retry: Enable automatic retry using config.retry_count (default: True)
 
         Raises:
-            ValueError: If config is None (inherited from BaseClient)
+            ValueError: If url is not a string
+            ValueError: If url is empty
 
         Example:
             >>> config = Config(timeout=30)
@@ -93,11 +96,19 @@ class ApiClient(BaseClient):
             limits=Limits(max_keepalive_connections=5, max_connections=10),
         )
         self._auth_token: str | None = None
-        self._auth_token_type: str = "Bearer"
+        self._auth_token_type: str = "Bearer"  # noqa: S105
         self._middleware: MiddlewareChain | None = middleware
         self._cache: ResponseCache | None = cache
         self._rate_limiter: RateLimiter | None = rate_limiter
         self._enable_auto_retry = enable_auto_retry
+
+    async def __aenter__(self) -> "ApiClient":
+        """Enter async context manager."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Exit async context manager and close client."""
+        await self.close()
 
     async def close(self) -> None:
         """
@@ -113,9 +124,12 @@ class ApiClient(BaseClient):
             ...     pass
             # Client is automatically closed here
         """
+        self.logger.debug("Closing API client")
         await self.client.aclose()
+        self.logger.debug("HTTP client closed")
         self._auth_token = None
-        self._auth_token_type = "Bearer"
+        self._auth_token_type = "Bearer"  # noqa: S105
+        self.logger.debug("Authentication tokens cleared")
 
     def set_auth_token(self, token: str, token_type: str = "Bearer") -> None:
         """
@@ -140,10 +154,10 @@ class ApiClient(BaseClient):
     def clear_auth_token(self) -> None:
         """Clear authentication token."""
         self._auth_token = None
-        self._auth_token_type = "Bearer"
+        self._auth_token_type = "Bearer"  # noqa: S105
         self.logger.debug("Authentication token cleared")
 
-    def build_request(self) -> "RequestBuilder":
+    def build_request(self) -> RequestBuilder:
         """
         Create a RequestBuilder for constructing complex requests.
 
@@ -154,15 +168,352 @@ class ApiClient(BaseClient):
             >>> builder = api.build_request()
             >>> result = await builder.get("/users").params(page=1).execute()
         """
-        from .request_builder import RequestBuilder
-
+        self.logger.debug("Building request builder")
         return RequestBuilder(self)
+
+    async def _check_cache(
+        self,
+        method: HTTPMethod,
+        endpoint: str,
+        headers: dict[str, str] | None,
+        params: dict[str, Any] | None,
+        data: dict[str, Any] | bytes | str | None,
+    ) -> ApiResult | None:
+        """
+        Check cache for GET requests.
+
+        Args:
+            method: HTTP method
+            endpoint: API endpoint path
+            headers: Request headers
+            params: Query parameters
+            data: Request body data
+
+        Returns:
+            Cached ApiResult if found and not expired, None otherwise
+        """
+        if not (self._cache and method == HTTPMethod.GET):
+            return None
+        cache_url = endpoint
+        if not endpoint.startswith("http"):
+            base_url = self.url.split("?")[0]
+            cache_url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
+            self.logger.debug(f"Cache URL: {cache_url}")
+        cached_result = self._cache.get(method, cache_url, headers, params, data)
+        if cached_result is not None:
+            self.logger.debug(f"Cache hit for {method} {endpoint}")
+            return cached_result
+        return None
+
+    async def _prepare_request_context(
+        self,
+        method: HTTPMethod | str,
+        endpoint: str,
+        headers: dict[str, str] | None,
+        data: dict[str, Any] | bytes | str | None,
+        params: dict[str, Any] | None,
+        skip_rate_limit: bool,
+    ) -> RequestContext:
+        """
+        Prepare request context with middleware and rate limiting.
+
+        Args:
+            method: HTTP method (HTTPMethod enum or string)
+            endpoint: API endpoint path
+            headers: Request headers
+            data: Request body data (dict, bytes, str, or None)
+            params: Query parameters
+            skip_rate_limit: Whether to skip rate limiting
+
+        Returns:
+            RequestContext with middleware and rate limiting applied
+        """
+        request_context = RequestContext(
+            method=method,
+            url=endpoint,
+            headers=headers.copy() if headers else {},
+            data=data,
+            params=params,
+        )
+        if self._middleware:
+            self.logger.debug(
+                f"Processing request through middleware: {request_context.method} "
+                f"{request_context.url}"
+            )
+            await self._middleware.process_request(request_context)
+        if self._rate_limiter and not skip_rate_limit:
+            self.logger.debug(
+                f"Acquiring rate limit: {request_context.method} {request_context.url}"
+            )
+            await self._rate_limiter.acquire()
+        return request_context
+
+    def _build_request_url(self, endpoint: str, params: dict[str, Any] | None) -> str:
+        """
+        Build full URL with query parameters.
+
+        Args:
+            endpoint: API endpoint path
+            params: Query parameters
+
+        Returns:
+            Full URL with query parameters
+        """
+        url = endpoint
+        if not url.startswith("http"):
+            base_url = self.url.split("?")[0]
+            url = f"{base_url.rstrip('/')}/{url.lstrip('/')}"
+        if params:
+            query_string = urlencode(params)
+            if query_string:
+                separator = "&" if "?" in url else "?"
+                url = f"{url}{separator}{query_string}"
+        self.logger.debug(f"Built request URL: {url}")
+        return url
+
+    def _prepare_request_headers(
+        self,
+        request_context: RequestContext,
+        data: dict[str, Any] | bytes | str | None,
+    ) -> tuple[dict[str, str], dict[str, Any] | bytes | str | None, bool]:
+        """
+        Prepare request headers and data with auth token and content type.
+
+        Args:
+            request_context: Request context
+            data: Request body data
+
+        Returns:
+            Tuple of (request headers, request data, use_json_param)
+            use_json_param: True if data should be sent via json= parameter (for dict),
+                          False if via content= or data= parameter
+        """
+        request_headers = request_context.headers.copy()
+        if self._auth_token and "Authorization" not in request_headers:
+            auth_header = f"{self._auth_token_type} {self._auth_token}"
+            request_headers["Authorization"] = auth_header
+            self.logger.debug(f"Authorization header set: {auth_header}")
+        self.logger.debug(f"Request headers: {request_headers}")
+        request_data = request_context.data or data
+        use_json_param = False
+        if request_data is not None:
+            data_repr = (
+                request_data.decode("utf-8", errors="replace")
+                if isinstance(request_data, bytes)
+                else str(request_data)
+            )
+            self.logger.debug(f"Request data: {data_repr}")
+            if "Content-Type" not in request_headers:
+                if isinstance(request_data, dict):
+                    use_json_param = True
+                    self.logger.debug(
+                        "Using json= parameter for dict data "
+                        "(Content-Type will be set automatically)"
+                    )
+                else:
+                    self.logger.debug(
+                        f"Data type is {type(request_data).__name__}, "
+                        f"Content-Type not set automatically"
+                    )
+        self.logger.debug(f"Use JSON parameter: {use_json_param}")
+        return request_headers, request_data, use_json_param
+
+    async def _execute_http_request(
+        self,
+        method: HTTPMethod | str,
+        url: str,
+        request_data: dict[str, Any] | bytes | str | None,
+        request_headers: dict[str, str],
+        use_json_param: bool,
+    ) -> Response:
+        """
+        Execute HTTP request with optional retry.
+
+        Args:
+            method: HTTP method
+            url: URL to request
+            request_data: Request body data (dict, bytes, str, or None)
+            request_headers: Request headers
+            use_json_param: If True, use json= parameter (for dict), \
+                else use content= (for bytes/str)
+
+        Returns:
+            Response from HTTP request
+        """
+        request_kwargs: dict[str, Any] = {"method": method, "url": url, "headers": request_headers}
+        if request_data is not None:
+            if use_json_param:
+                request_kwargs["json"] = request_data
+            else:
+                request_kwargs["content"] = request_data
+        self.logger.debug(f"Request kwargs: {request_kwargs}")
+        if self._enable_auto_retry and self.config.retry_count > 0:
+
+            @retry_on_connection_error(
+                max_attempts=self.config.retry_count,
+                delay=self.config.retry_delay,
+                backoff=2.0,
+            )
+            async def _make_request_with_retry():
+                return await self.client.request(**request_kwargs)
+
+            self.logger.debug(f"Making request with retry: {method} {url}")
+            return await _make_request_with_retry()
+        else:
+            self.logger.debug(f"Making request without retry: {method} {url}")
+            return await self.client.request(**request_kwargs)
+
+    def _parse_http_response(
+        self,
+        response: Response,
+        endpoint: str,
+        method: HTTPMethod,
+        request_context: RequestContext,
+    ) -> ApiResult:
+        """
+        Parse HTTP response into ApiResult.
+
+        Args:
+            response: HTTP response
+            endpoint: API endpoint path
+            method: HTTP method
+            request_context: Request context
+
+        Returns:
+            ApiResult with parsed response data
+        """
+        response_body = response.content
+        response_headers = dict(response.headers)
+        sensitive_headers = {
+            "authorization",
+            "cookie",
+            "set-cookie",
+            "x-api-key",
+            "x-auth-token",
+        }
+        redacted_headers = {
+            k.lower(): ("[REDACTED]" if k.lower() in sensitive_headers else v)
+            for k, v in response_headers.items()
+        }
+        content_type = None
+        for key, value in response_headers.items():
+            if key.lower() == "content-type":
+                content_type = value
+                break
+        reason = getattr(response, "reason_phrase", None)
+        try:
+            response_time = response.elapsed.total_seconds()
+        except (AttributeError, RuntimeError):
+            response_time = 0.0
+        self.logger.info(
+            f"Response got: status_code={response.status_code}, "
+            f"elapsed={response_time:.3f}s, "
+            f"content_length={len(response_body)}"
+        )
+        return ApiResult(
+            endpoint=endpoint,
+            method=method,
+            informational=response.is_informational,
+            success=response.is_success,
+            redirect=response.is_redirect,
+            client_error=response.is_client_error,
+            server_error=response.is_server_error,
+            status_code=response.status_code,
+            response_time=response_time,
+            headers=redacted_headers,
+            body=response_body,
+            content_type=content_type,
+            reason=reason,
+            error_message=None,
+            metadata=request_context.metadata.copy(),
+        )
+
+    async def _process_response(
+        self,
+        result: ApiResult,
+        method: HTTPMethod,
+        url: str,
+        request_headers: dict[str, str],
+        request_context: RequestContext,
+        use_cache: bool,
+    ) -> ApiResult:
+        """
+        Process response through middleware and cache if needed.
+
+        Args:
+            result: ApiResult to process
+            method: HTTP method
+            url: URL to request
+            request_headers: Request headers
+            request_context: Request context
+            use_cache: Whether to use cache if available
+
+        Returns:
+            ApiResult with processed response data
+        """
+        if self._middleware:
+            response_context = ResponseContext(result)
+            response_context.metadata.update(result.metadata)
+            self.logger.debug(f"Processing response through middleware: {response_context}")
+            await self._middleware.process_response(response_context)
+            result = response_context.result
+            self.logger.debug(f"Processed response: {result}")
+        if use_cache and self._cache and method == HTTPMethod.GET and result.success:
+            self.logger.debug(f"Caching response: {result}")
+            self._cache.set(
+                method, url, result, headers=request_headers, params=request_context.params
+            )
+        return result
+
+    async def _handle_request_error(
+        self,
+        error: Exception,
+        endpoint: str,
+        method: HTTPMethod | str,
+        request_context: RequestContext,
+    ) -> ApiResult:
+        """
+        Handle request errors and return error ApiResult.
+
+        Args:
+            error: Exception that occurred
+            endpoint: API endpoint path
+            method: HTTP method
+            request_context: Request context
+
+        Returns:
+            ApiResult with error message and request context metadata
+        """
+        error_msg = str(error)
+        self.logger.error(f"Request failed: {method} {endpoint} - {error_msg}")
+        if self._middleware:
+            error_result = await self._middleware.process_error(request_context, error)
+            if error_result is not None:
+                self.logger.error(f"Error result: {error_result}")
+                return error_result
+        return ApiResult(
+            endpoint=endpoint,
+            method=method,
+            status_code=0,
+            response_time=0,
+            success=False,
+            redirect=False,
+            client_error=False,
+            server_error=False,
+            informational=False,
+            headers={},
+            body=b"",
+            content_type=None,
+            reason=None,
+            error_message=error_msg,
+            metadata=request_context.metadata.copy(),
+        )
 
     async def make_request(
         self,
         endpoint: str,
-        method: str = "GET",
-        data: dict[str, Any] | None = None,
+        method: HTTPMethod = HTTPMethod.GET,
+        data: dict[str, Any] | bytes | str | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         use_cache: bool = True,
@@ -175,10 +526,15 @@ class ApiClient(BaseClient):
 
         Args:
             endpoint: API endpoint path (relative to base URL) or full URL
-            method: HTTP method (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
-            data: Request body data (for POST, PUT, PATCH) - will be JSON encoded
+            method: HTTP method
+            data: Request body data:
+                - dict: Will be sent as JSON (Content-Type: application/json)
+                - bytes/str: Will be sent as raw content (set Content-Type in headers if needed)
+                - None: No request body
             params: Query parameters (for GET requests and others)
-            headers: Custom request headers (will be merged with auth token if set)
+            headers: Custom request headers (will be merged with auth token if set). \
+                Set Content-Type explicitly for non-JSON data \
+                (e.g., "multipart/form-data", "text/xml")
             use_cache: Whether to use cache if available (default: True)
             skip_rate_limit: Skip rate limiting for this request (default: False)
 
@@ -186,195 +542,54 @@ class ApiClient(BaseClient):
             ApiResult with request result including status, headers, body, and timing
 
         Example:
-            >>> result = await api.make_request("users/", method="GET")
-            >>> if result.success:
-            ...     users = result.json()
-            >>> result = await api.make_request("users/", method="POST", data={"name": "John"})
+            >>> # JSON request (automatic Content-Type)
+            >>> result = await api.make_request(
+            ...     "users/", method=HTTPMethod.POST, data={"name": "John"}
+            ... )
+
+            >>> # XML request (explicit Content-Type)
+            >>> xml_data = "<user><name>John</name></user>"
+            >>> result = await api.make_request(
+            ...     "users/",
+            ...     method=HTTPMethod.POST,
+            ...     data=xml_data,
+            ...     headers={"Content-Type": "text/xml"}
+            ... )
+
+            >>> # Raw bytes request
+            >>> result = await api.make_request(
+            ...     "upload/",
+            ...     method=HTTPMethod.PUT,
+            ...     data=b"binary data",
+            ...     headers={"Content-Type": "application/octet-stream"}
+            ... )
         """
-        # Check cache first (only for GET requests)
-        # Build URL early to ensure consistent cache keys
-        if use_cache and self._cache and method.upper() == "GET":
-            # Build URL for cache key consistency
-            cache_url = endpoint
-            if not endpoint.startswith("http"):
-                base_url = self.url.split("?")[0]
-                cache_url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
-
-            cached_result = self._cache.get(method, cache_url, headers, params, data)
+        if use_cache:
+            cached_result = await self._check_cache(method, endpoint, headers, params, data)
+            self.logger.debug(f"Cached result: {cached_result}")
             if cached_result is not None:
-                self.logger.debug(f"Cache hit for {method} {endpoint}")
+                self.logger.debug(f"Returning cached result: {cached_result}")
                 return cached_result
-
-        # Create request context
-        from ..middleware import RequestContext
-
-        request_context = RequestContext(
-            method=method,
-            url=endpoint,
-            headers=headers.copy() if headers else {},
-            data=data,
-            params=params,
+        request_context = await self._prepare_request_context(
+            method, endpoint, headers, data, params, skip_rate_limit
         )
-
-        # Process request through middleware
-        if self._middleware:
-            await self._middleware.process_request(request_context)
-
-        # Apply rate limiting
-        if self._rate_limiter and not skip_rate_limit:
-            await self._rate_limiter.acquire()
-
-        # Build final URL from context (may have been modified by middleware)
         try:
-            url = request_context.url
-            if not url.startswith("http"):
-                # Assume endpoint is relative to base URL
-                base_url = self.url.split("?")[0]  # Remove query params
-                url = f"{base_url.rstrip('/')}/{url.lstrip('/')}"
-
-            # Add query params to URL (from context, may have been modified)
-            if request_context.params:
-                query_string = urlencode(request_context.params)
-                if query_string:
-                    separator = "&" if "?" in url else "?"
-                    url = f"{url}{separator}{query_string}"
-
-            # Use headers from context (may have been modified by middleware)
-            request_headers = request_context.headers.copy()
-
-            # Automatically add token if set (unless Authorization header is already provided)
-            if self._auth_token and "Authorization" not in request_headers:
-                auth_header = f"{self._auth_token_type} {self._auth_token}"
-                request_headers["Authorization"] = auth_header
-
-            # Set default Content-Type if not specified and data is provided
-            request_data = request_context.data or data
-            if request_data is not None and "Content-Type" not in request_headers:
-                request_headers["Content-Type"] = "application/json"
-
+            url = self._build_request_url(request_context.url, request_context.params)
+            request_headers, request_data, use_json_param = self._prepare_request_headers(
+                request_context, data
+            )
             self.logger.info(f"Making request: {method} {url}")
-
-            # Store start time for metrics
-            import time
-
-            start_time = time.time()
-            request_context.metadata["start_time"] = start_time
-
-            # Make request with retry if enabled
-            if self._enable_auto_retry and self.config.retry_count > 0:
-                from ..retry import retry_on_connection_error
-
-                @retry_on_connection_error(
-                    max_attempts=self.config.retry_count,
-                    delay=self.config.retry_delay,
-                    backoff=2.0,
-                )
-                async def _make_request_with_retry():
-                    return await self.client.request(method=method, url=url, json=request_data, headers=request_headers)
-
-                response = await _make_request_with_retry()
-            else:
-                response = await self.client.request(method=method, url=url, json=request_data, headers=request_headers)
-            # Extract response data before closing
-            # response.content automatically reads the response body
-            # This must be done before accessing response.elapsed
-            response_body = response.content
-            response_headers = dict(response.headers)
-
-            # Redact sensitive headers and normalize to lowercase keys
-            sensitive_headers = {
-                "authorization",
-                "cookie",
-                "set-cookie",
-                "x-api-key",
-                "x-auth-token",
-            }
-            redacted_headers = {
-                k.lower(): ("[REDACTED]" if k.lower() in sensitive_headers else v) for k, v in response_headers.items()
-            }
-
-            # Get content type (normalize header name)
-            content_type = None
-            for key, value in response_headers.items():
-                if key.lower() == "content-type":
-                    content_type = value
-                    break
-
-            # Get reason phrase
-            reason = getattr(response, "reason_phrase", None)
-
-            # Get response time - elapsed is only available after response is read
-            try:
-                response_time = response.elapsed.total_seconds()
-            except (AttributeError, RuntimeError):
-                # If elapsed is not available (e.g., timeout or response not fully read), use 0
-                response_time = 0.0
-
-            self.logger.info(
-                f"Response got: status_code={response.status_code}, "
-                f"elapsed={response_time:.3f}s, "
-                f"content_length={len(response_body)}"
+            request_context.metadata["start_time"] = time.time()
+            response = await self._execute_http_request(
+                method, url, request_data, request_headers, use_json_param
             )
-
-            result = ApiResult(
-                endpoint=endpoint,
-                method=method,
-                informational=response.is_informational,
-                success=response.is_success,
-                redirect=response.is_redirect,
-                client_error=response.is_client_error,
-                server_error=response.is_server_error,
-                status_code=response.status_code,
-                response_time=response_time,
-                headers=redacted_headers,
-                body=response_body,
-                content_type=content_type,
-                reason=reason,
-                error_message=None,
-                metadata=request_context.metadata.copy(),
+            result = self._parse_http_response(response, endpoint, method, request_context)
+            result = await self._process_response(
+                result, method, url, request_headers, request_context, use_cache
             )
-
-            # Process response through middleware
-            if self._middleware:
-                from ..middleware import ResponseContext
-
-                response_context = ResponseContext(result)
-                # Copy metadata from result to response context
-                response_context.metadata.update(result.metadata)
-                await self._middleware.process_response(response_context)
-                result = response_context.result
-
-            # Cache successful GET responses
-            if use_cache and self._cache and method.upper() == "GET" and result.success:
-                # Use the same URL format as in cache.get() for consistency
-                cache_url = url  # Use the final built URL
-                self._cache.set(method, cache_url, result, headers=request_headers, params=request_context.params)
-
+            self.logger.debug(f"Processed response: {result}")
             return result
         except Exception as e:
-            error_msg = str(e)
-            self.logger.error(f"Request failed: {method} {endpoint} - {error_msg}")
-
-            # Process error through middleware
-            if self._middleware:
-                error_result = await self._middleware.process_error(request_context, e)
-                if error_result is not None:
-                    return error_result
-
-            return ApiResult(
-                endpoint=endpoint,
-                method=method,
-                status_code=0,
-                response_time=0,
-                success=False,
-                redirect=False,
-                client_error=False,
-                server_error=False,
-                informational=False,
-                headers={},
-                body=b"",
-                content_type=None,
-                reason=None,
-                error_message=error_msg,
-                metadata=request_context.metadata.copy(),
-            )
+            error_result = await self._handle_request_error(e, endpoint, method, request_context)
+            self.logger.error(f"Request error: {error_result}")
+            return error_result
