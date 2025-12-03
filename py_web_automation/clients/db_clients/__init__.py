@@ -1,3 +1,3 @@
 """
-Database adapters for different database backends.
+Database clients for different database backends.
 """
