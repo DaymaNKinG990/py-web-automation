@@ -1,3 +1,11 @@
+"""
+Custom exception hierarchy for HTTP client.
+
+This module provides a structured exception hierarchy following
+best practices for error handling and debugging.
+"""
+
+# Local imports
 from ...exceptions import WebAutomationError
 
 

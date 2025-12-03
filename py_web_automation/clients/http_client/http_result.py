@@ -2,6 +2,7 @@
 Data models for web automation testing framework.
 """
 
+# Python imports
 from http import HTTPStatus
 from json import loads
 from json.decoder import JSONDecodeError

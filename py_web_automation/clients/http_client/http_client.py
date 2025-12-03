@@ -9,24 +9,21 @@ including request handling, authentication, and response validation.
 import time
 from http import HTTPMethod
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlencode
 
 from httpx import AsyncClient, Limits, Response
 from loguru import logger
 
-from ...config import Config
-
 # Local imports
+from ...config import Config
 from .http_result import HttpResult
 
 if TYPE_CHECKING:
     from loguru._logger import Logger
 
-    from ...cache import ResponseCache
-    from ...middleware import MiddlewareChain, RequestContext, ResponseContext
-    from ...rate_limit import RateLimiter
-    from ...retry import retry_on_connection_error
+    from .middleware.context import _RequestContext, _ResponseContext
+    from .middleware.middleware import MiddlewareChain
     from .request_builder import RequestBuilder
 
 
@@ -46,8 +43,6 @@ class HttpClient:
 
     Attributes:
         client: HTTP client instance for making requests
-        _auth_token: Current authentication token (private)
-        _auth_token_type: Type of authentication token (default: "Bearer")
 
     Example:
         >>> from py_web_automation import Config, HttpClient
@@ -61,25 +56,19 @@ class HttpClient:
         self,
         url: str,
         config: Config,
-        middleware: Optional["MiddlewareChain"] = None,
-        cache: Optional["ResponseCache"] = None,
-        rate_limiter: Optional["RateLimiter"] = None,
-        enable_auto_retry: bool = True,
+        middleware: MiddlewareChain | None = None,
     ) -> None:
         """
         Initialize HTTP client.
 
         Creates an HTTP client with connection pooling and timeout configuration
-        based on the provided config. Optionally supports middleware, caching,
-        and rate limiting.
+        based on the provided config. Optionally supports middleware and rate limiting.
 
         Args:
             url: Base URL for API endpoints
             config: Configuration object with timeout and retry settings
             middleware: Optional middleware chain for request/response processing
-            cache: Optional response cache for caching responses
             rate_limiter: Optional rate limiter for controlling request rate
-            enable_auto_retry: Enable automatic retry using config.retry_count (default: True)
 
         Raises:
             ValueError: If url is not a string
@@ -88,11 +77,10 @@ class HttpClient:
         Example:
             >>> config = Config(timeout=30)
             >>> client = HttpClient("https://api.example.com", config)
-            >>> # With middleware and cache
-            >>> from py_web_automation import MiddlewareChain, ResponseCache
+            >>> # With middleware
+            >>> from py_web_automation import MiddlewareChain
             >>> chain = MiddlewareChain().add(LoggingMiddleware())
-            >>> cache = ResponseCache(default_ttl=300)
-            >>> api = HttpClient("https://api.example.com", config, middleware=chain, cache=cache)
+            >>> api = HttpClient("https://api.example.com", config, middleware=chain)
         """
         if not url.strip():
             raise ValueError("url cannot be empty")
@@ -105,12 +93,7 @@ class HttpClient:
             timeout=self.config.timeout,
             limits=Limits(max_keepalive_connections=5, max_connections=10),
         )
-        self._auth_token: str | None = None
-        self._auth_token_type: str = "Bearer"  # noqa: S105
-        self._middleware: MiddlewareChain | None = middleware
-        self._cache: ResponseCache | None = cache
-        self._rate_limiter: RateLimiter | None = rate_limiter
-        self._enable_auto_retry = enable_auto_retry
+        self._middleware = middleware
 
     async def __aenter__(self) -> "HttpClient":
         """
@@ -156,35 +139,6 @@ class HttpClient:
         self.__logger.debug("Closing API client")
         await self.client.aclose()
         self.__logger.debug("HTTP client closed")
-        self._auth_token = None
-        self._auth_token_type = "Bearer"  # noqa: S105
-        self.__logger.debug("Authentication tokens cleared")
-
-    def set_auth_token(self, token: str, token_type: str = "Bearer") -> None:
-        """
-        Set authentication token for all subsequent requests.
-
-        Args:
-            token: Authentication token (JWT, API key, etc.)
-            token_type: Token type (default: "Bearer")
-
-        Example:
-            >>> client = ApiClient("http://api.example.com", config)
-            >>> result = await client.make_request("v1/login/", method="POST", data=credentials)
-            >>> token_data = json.loads(result.body)
-            >>> client.set_auth_token(token_data["access"])
-            >>> # All subsequent requests will automatically include the token
-            >>> result = await client.make_request("v1/users/", method="GET")
-        """
-        self._auth_token = token
-        self._auth_token_type = token_type
-        self.__logger.debug(f"Authentication token set (type: {token_type})")
-
-    def clear_auth_token(self) -> None:
-        """Clear authentication token."""
-        self._auth_token = None
-        self._auth_token_type = "Bearer"  # noqa: S105
-        self.__logger.debug("Authentication token cleared")
 
     def build_request(self) -> "RequestBuilder":
         """
@@ -200,46 +154,6 @@ class HttpClient:
         self.__logger.debug("Building request with RequestBuilder")
         return RequestBuilder(self)
 
-    async def _check_cache(
-        self,
-        method: HTTPMethod,
-        endpoint: str,
-        headers: dict[str, str] | None,
-        params: dict[str, Any] | None,
-        data: dict[str, Any] | bytes | str | None,
-    ) -> HttpResult | None:
-        """
-        Check cache for GET requests.
-
-        Args:
-            method: HTTP method
-            endpoint: API endpoint path
-            headers: Request headers
-            params: Query parameters
-            data: Request body data
-
-        Returns:
-            Cached ApiResult if found and not expired, None otherwise
-        """
-        if not (self._cache and method == HTTPMethod.GET):
-            return None
-        cache_url = endpoint
-        if not endpoint.startswith("http"):
-            base_url = self.url.split("?")[0]
-            cache_url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
-            self.__logger.debug(f"Cache URL: {cache_url}")
-        cached_result = self._cache.get(
-            method=method,
-            url=cache_url,
-            headers=headers,
-            params=params,
-            data=data,
-        )
-        if cached_result is not None:
-            self.__logger.debug(f"Cache hit for {method} {endpoint}")
-            return cached_result
-        return None
-
     async def _prepare_request_context(
         self,
         method: HTTPMethod,
@@ -247,10 +161,9 @@ class HttpClient:
         headers: dict[str, str] | None,
         data: dict[str, Any] | bytes | str | None,
         params: dict[str, Any] | None,
-        skip_rate_limit: bool,
-    ) -> "RequestContext":
+    ) -> "_RequestContext":
         """
-        Prepare request context with middleware and rate limiting.
+        Prepare request context with middleware.
 
         Args:
             method: HTTP method (HTTPMethod enum or string)
@@ -258,12 +171,11 @@ class HttpClient:
             headers: Request headers
             data: Request body data (dict, bytes, str, or None)
             params: Query parameters
-            skip_rate_limit: Whether to skip rate limiting
 
         Returns:
-            RequestContext with middleware and rate limiting applied
+            _RequestContext with middleware applied
         """
-        request_context = RequestContext(
+        request_context = _RequestContext(
             method=method,
             url=endpoint,
             headers=headers.copy() if headers else {},
@@ -277,11 +189,6 @@ class HttpClient:
                 f"{request_context.url}"
             )
             await self._middleware.process_request(request_context)
-        if self._rate_limiter and not skip_rate_limit:
-            self.__logger.debug(
-                f"Acquiring rate limit: {request_context.method} {request_context.url}"
-            )
-            await self._rate_limiter.acquire()
         return request_context
 
     def _build_request_url(self, endpoint: str, params: dict[str, Any] | None) -> str:
@@ -309,7 +216,7 @@ class HttpClient:
 
     def _prepare_request_headers(
         self,
-        request_context: "RequestContext",
+        request_context: "_RequestContext",
         data: dict[str, Any] | bytes | str | None,
     ) -> tuple[dict[str, str], dict[str, Any] | bytes | str | None, bool]:
         """
@@ -325,10 +232,6 @@ class HttpClient:
                           False if via content= or data= parameter
         """
         request_headers = request_context.headers.copy()
-        if self._auth_token and "Authorization" not in request_headers:
-            auth_header = f"{self._auth_token_type} {self._auth_token}"
-            request_headers["Authorization"] = auth_header
-            self.__logger.debug(f"Authorization header set: {auth_header}")
         self.__logger.debug(f"Request headers: {request_headers}")
         request_data = request_context.data or data
         use_json_param = False
@@ -395,28 +298,15 @@ class HttpClient:
                 )
                 self.__logger.debug(f"Request data sent as content: {content_repr}")
         self.__logger.debug(f"Request kwargs: {request_kwargs}")
-        if self._enable_auto_retry and self.config.retry_count > 0:
-
-            @retry_on_connection_error(
-                max_attempts=self.config.retry_count,
-                delay=self.config.retry_delay,
-                backoff=2.0,
-            )
-            async def _make_request_with_retry():
-                return await self.client.request(**request_kwargs)
-
-            self.__logger.debug(f"Making request with retry: {method} {url}")
-            return await _make_request_with_retry()
-        else:
-            self.__logger.debug(f"Making request without retry: {method} {url}")
-            return await self.client.request(**request_kwargs)
+        self.__logger.debug(f"Making request: {method} {url}")
+        return await self.client.request(**request_kwargs)
 
     def _parse_http_response(
         self,
         response: Response,
         endpoint: str,
         method: HTTPMethod,
-        request_context: "RequestContext",
+        request_context: "_RequestContext",
     ) -> HttpResult:
         """
         Parse HTTP response into HttpResult.
@@ -482,41 +372,28 @@ class HttpClient:
         method: HTTPMethod,
         url: str,
         request_headers: dict[str, str],
-        request_context: "RequestContext",
-        use_cache: bool,
+        request_context: "_RequestContext",
     ) -> HttpResult:
         """
-        Process response through middleware and cache if needed.
+        Process response through middleware.
 
         Args:
-            result: ApiResult to process
+            result: HttpResult to process
             method: HTTP method
             url: URL to request
             request_headers: Request headers
             request_context: Request context
-            use_cache: Whether to use cache if available
 
         Returns:
             HttpResult with processed response data
         """
         if self._middleware:
-            response_context = ResponseContext(result)
+            response_context = _ResponseContext(result)
             response_context.metadata.update(result.metadata)
             self.__logger.debug(f"Processing response through middleware: {response_context}")
             await self._middleware.process_response(response_context)
             result = response_context.result
             self.__logger.debug(f"Processed response: {result}")
-        if use_cache and self._cache and method == HTTPMethod.GET and result.success:
-            self.__logger.debug(f"Caching response: {result}")
-            self._cache.set(
-                method=method,
-                url=url,
-                value=result,
-                headers=request_headers,
-                params=request_context.params,
-                data=request_context.data,
-            )
-            self.__logger.debug(f"Response cached: {result}")
         return result
 
     async def _handle_request_error(
@@ -524,7 +401,7 @@ class HttpClient:
         error: Exception,
         endpoint: str,
         method: HTTPMethod | str,
-        request_context: "RequestContext",
+        request_context: "_RequestContext",
     ) -> HttpResult:
         """
         Handle request errors and return error HttpResult.
@@ -570,13 +447,11 @@ class HttpClient:
         data: dict[str, Any] | bytes | str | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-        use_cache: bool = True,
-        skip_rate_limit: bool = False,
     ) -> HttpResult:
         """
         Make HTTP request to API endpoint.
 
-        Supports middleware, caching, rate limiting, and automatic retry.
+        Supports middleware for rate limiting, retry, and other features.
 
         Args:
             endpoint: API endpoint path (relative to base URL) or full URL
@@ -589,8 +464,6 @@ class HttpClient:
             headers: Custom request headers (will be merged with auth token if set). \
                 Set Content-Type explicitly for non-JSON data \
                 (e.g., "multipart/form-data", "text/xml")
-            use_cache: Whether to use cache if available (default: True)
-            skip_rate_limit: Skip rate limiting for this request (default: False)
 
         Returns:
             ApiResult with request result including status, headers, body, and timing
@@ -618,19 +491,12 @@ class HttpClient:
             ...     headers={"Content-Type": "application/octet-stream"}
             ... )
         """
-        if use_cache:
-            cached_result = await self._check_cache(method, endpoint, headers, params, data)
-            self.__logger.debug(f"Cached result: {cached_result}")
-            if cached_result is not None:
-                self.__logger.debug(f"Returning cached result: {cached_result}")
-                return cached_result
         request_context = await self._prepare_request_context(
             method=method,
             endpoint=endpoint,
             headers=headers,
             data=data,
             params=params,
-            skip_rate_limit=skip_rate_limit,
         )
         self.__logger.debug(f"Prepared request context: {request_context}")
         try:
@@ -659,7 +525,6 @@ class HttpClient:
                 url=url,
                 request_headers=request_headers,
                 request_context=request_context,
-                use_cache=use_cache,
             )
             self.__logger.debug(f"Processed response: {result}")
             return result

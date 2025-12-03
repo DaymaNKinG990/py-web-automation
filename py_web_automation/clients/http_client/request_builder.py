@@ -11,10 +11,8 @@ from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 
-from .http_result import HttpResult
-
 # Local imports
-from .request_validator import RequestValidator
+from .http_result import HttpResult
 
 if TYPE_CHECKING:
     from loguru._logger import Logger
@@ -319,24 +317,6 @@ class RequestBuilder:
         self._headers.update(kwargs)
         return self
 
-    def auth(self, token: str, token_type: str = "Bearer") -> "RequestBuilder":
-        """
-        Set authentication token.
-
-        Args:
-            token: Authentication token
-            token_type: Token type (default: "Bearer")
-
-        Returns:
-            Self for method chaining
-
-        Example:
-            >>> builder.auth("your-token-here")
-        """
-        self.__logger.debug(f"Setting authentication token: {token} with type {token_type}")
-        self._client.set_auth_token(token=token, token_type=token_type)
-        return self
-
     async def execute(self) -> HttpResult:
         """
         Execute the built request.
@@ -356,13 +336,6 @@ class RequestBuilder:
             f"data={self._data} "
             f"params={self._params} "
             f"headers={self._headers}"
-        )
-        RequestValidator().validate(
-            endpoint=self._endpoint,
-            method=self._method,
-            data=self._data,
-            headers=self._headers if self._headers else None,
-            params=self._params,
         )
         return await self._client.make_request(
             endpoint=self._endpoint,
