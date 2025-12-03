@@ -6,6 +6,7 @@ This module provides MetricsMiddleware for collecting performance metrics.
 
 # Python imports
 from time import time
+from typing import Optional
 
 from ..http_result import HttpResult
 from ..metrics import Metrics
@@ -29,7 +30,7 @@ class MetricsMiddleware(Middleware):
         >>> chain.add(MetricsMiddleware(metrics))
     """
 
-    def __init__(self, metrics: "Metrics" | None = None) -> None:
+    def __init__(self, metrics: Optional["Metrics"] = None) -> None:
         """
         Initialize metrics middleware.
 
@@ -73,7 +74,9 @@ class MetricsMiddleware(Middleware):
                 error_type=error_type,
             )
 
-    async def process_error(self, context: _RequestContext, error: Exception) -> HttpResult | None:
+    async def process_error(
+        self, context: _RequestContext, error: Exception
+    ) -> HttpResult | None:
         """
         Record error metrics.
 

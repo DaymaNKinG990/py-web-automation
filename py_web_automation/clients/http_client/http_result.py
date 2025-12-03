@@ -68,9 +68,22 @@ class HttpResult(Struct, frozen=True):
         Raises:
             Exception: If status code is 4xx or 5xx (client or server error)
         """
-        converted_status = [
-            status for status in HTTPStatus.__members__.values() if status.value == self.status_code
-        ][0]
-        if converted_status.is_client_error or converted_status.is_server_error:
-            error_msg = self.error_message or self.text
-            raise Exception(f"HTTP {self.status_code}: {error_msg}")
+        if not self._is_error_status():
+            return
+
+        error_msg = self.error_message or self.text
+        raise Exception(f"HTTP {self.status_code}: {error_msg}")
+
+    def _is_error_status(self) -> bool:
+        """
+        Check if status code indicates error.
+
+        Returns:
+            True if status code is 4xx or 5xx
+        """
+        try:
+            status = HTTPStatus(self.status_code)
+            return status.is_client_error or status.is_server_error
+        except ValueError:
+            # Invalid status code - treat as error if >= 400
+            return self.status_code >= 400

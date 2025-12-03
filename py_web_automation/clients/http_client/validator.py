@@ -11,7 +11,7 @@ Use ValidationMiddleware for validation.
 
 # Python imports
 from http import HTTPMethod
-from typing import TYPE_CHECKING, Any, NoReturn, cast, get_args
+from typing import TYPE_CHECKING, Any, NoReturn, get_args
 
 import msgspec
 from msgspec import Struct
@@ -158,21 +158,35 @@ class _RequestValidator:
                 f"Got {type(headers).__name__} instead of dict",
             )
         for key, value in headers.items():
-            if not isinstance(key, str):
-                raise ValidationError(
-                    "Header keys must be strings",
-                    f"Got {type(key).__name__} for header key: {key}",
-                )
-            if not isinstance(value, str):
-                raise ValidationError(
-                    "Header values must be strings",
-                    f"Got {type(value).__name__} for header '{key}': {value}",
-                )
-            if key == "":
-                raise ValidationError(
-                    "Header key cannot be an empty string",
-                    "All header keys must be non-empty strings",
-                )
+            _RequestValidator._validate_header_pair(key, value)
+
+    @staticmethod
+    def _validate_header_pair(key: str, value: str) -> None:
+        """
+        Validate single header key-value pair.
+
+        Args:
+            key: Header key
+            value: Header value
+
+        Raises:
+            ValidationError: If header pair is invalid
+        """
+        if not isinstance(key, str):
+            raise ValidationError(
+                "Header keys must be strings",
+                f"Got {type(key).__name__} for header key: {key}",
+            )
+        if not isinstance(value, str):
+            raise ValidationError(
+                "Header values must be strings",
+                f"Got {type(value).__name__} for header '{key}': {value}",
+            )
+        if key == "":
+            raise ValidationError(
+                "Header key cannot be an empty string",
+                "All header keys must be non-empty strings",
+            )
 
     @staticmethod
     def _validate_params(params: dict[str, Any]) -> None:
@@ -198,6 +212,105 @@ class _RequestValidator:
                 )
 
 
+class _ValidatorStrategy:
+    """Base strategy for schema validation."""
+
+    def validate(
+        self, data: dict[str, Any] | list[Any], schema: type
+    ) -> Struct | dict[str, Any] | list[Any]:
+        """
+        Validate data against schema.
+
+        Args:
+            data: Data to validate
+            schema: Schema to validate against
+
+        Returns:
+            Validated data
+        """
+        raise NotImplementedError
+
+
+class _StructValidatorStrategy(_ValidatorStrategy):
+    """Strategy for validating msgspec Struct schemas."""
+
+    @staticmethod
+    def validate(data: dict[str, Any] | list[Any], schema: type[Struct]) -> Struct:
+        """Validate data against msgspec Struct schema."""
+        return msgspec.convert(data, schema)
+
+
+class _DictValidatorStrategy(_ValidatorStrategy):
+    """Strategy for validating dict schemas."""
+
+    @staticmethod
+    def validate(data: dict[str, Any] | list[Any], schema: type) -> dict[str, Any]:
+        """Validate data as dictionary."""
+        if not isinstance(data, dict):
+            raise ValidationError(
+                f"Expected dict, got {type(data).__name__}",
+                f"Data: {data}",
+            )
+        return data
+
+
+class _ListValidatorStrategy(_ValidatorStrategy):
+    """Strategy for validating list schemas."""
+
+    def validate(self, data: dict[str, Any] | list[Any], schema: type[list[Any]]) -> list[Any]:
+        """Validate data as list."""
+        if not isinstance(data, list):
+            raise ValidationError(
+                f"Expected list, got {type(data).__name__}",
+                f"Data: {data}",
+            )
+
+        item_schema = self._extract_item_schema(schema)
+        if item_schema is None:
+            return data
+
+        return self._validate_list_items(data, item_schema)
+
+    @staticmethod
+    def _extract_item_schema(schema: type[list[Any]]) -> type | None:
+        """Extract item schema from list type annotation."""
+        args = get_args(schema)
+        if not args:
+            return None
+        item_schema = args[0]
+        if isinstance(item_schema, type) and (
+            issubclass(item_schema, Struct) or item_schema in (dict, list, str, int, float, bool)
+        ):
+            return item_schema
+        return None
+
+    @staticmethod
+    def _validate_list_items(data: list[Any], item_schema: type) -> list[Any]:
+        """Validate each item in list against item schema."""
+        validated_items: list[Any] = []
+        for item in data:
+            if issubclass(item_schema, Struct):
+                validated_items.append(msgspec.convert(item, item_schema))
+            else:
+                if not isinstance(item, item_schema):
+                    raise ValidationError(
+                        f"Expected list item of type {item_schema.__name__}, "
+                        f"got {type(item).__name__}",
+                        f"Item: {item}",
+                    )
+                validated_items.append(item)
+        return validated_items
+
+
+class _StrictValidatorStrategy(_ValidatorStrategy):
+    """Strategy for validating with msgspec strict mode."""
+
+    @staticmethod
+    def validate(data: dict[str, Any] | list[Any], schema: type) -> Any:
+        """Validate data using msgspec with strict mode."""
+        return msgspec.convert(data, schema, strict=True)
+
+
 class _ResponseValidator:
     """
     Internal validator for HTTP response data.
@@ -214,6 +327,13 @@ class _ResponseValidator:
     - Response body must be valid JSON (if schema provided)
     - Response data must match provided schema
     """
+
+    def __init__(self) -> None:
+        """Initialize validator with strategy instances."""
+        self._list_strategy = _ListValidatorStrategy()
+        self._dict_strategy = _DictValidatorStrategy()
+        self._struct_strategy = _StructValidatorStrategy()
+        self._strict_strategy = _StrictValidatorStrategy()
 
     def validate(
         self,
@@ -338,7 +458,7 @@ class _ResponseValidator:
         Validate response data against msgspec schema.
 
         Validates response data against a msgspec Struct schema or type annotation.
-        Provides fast validation with clear error messages.
+        Uses Strategy Pattern to select appropriate validation strategy.
 
         Args:
             data: Response data to validate (dict or list)
@@ -362,140 +482,54 @@ class _ResponseValidator:
             >>> assert isinstance(user, UserResponse)
         """
         try:
-            if isinstance(schema, type) and issubclass(schema, Struct):
-                return self._validate_struct(data, schema)
-            elif schema is dict or (hasattr(schema, "__origin__") and schema.__origin__ is dict):
-                return self._validate_dict(data)
-            elif schema is list or (hasattr(schema, "__origin__") and schema.__origin__ is list):
-                return self._validate_list(data, cast(type[list[Any]], schema))
-            else:
-                return self._validate_with_msgspec_strict(data, schema)
+            strategy = self._get_validator_strategy(schema)
+            return strategy.validate(data, schema)
         except MsgspecValidationError as e:
             self._handle_msgspec_error(e, schema)
         except Exception as e:
             self._handle_general_error(e)
 
-    @staticmethod
-    def _validate_struct(data: dict[str, Any] | list[Any], schema: type[Struct]) -> Struct:
+    def _get_validator_strategy(
+        self, schema: type[Struct] | type[dict[str, Any]] | type[list[Any]]
+    ) -> _ValidatorStrategy:
         """
-        Validate data against msgspec Struct schema.
+        Get appropriate validator strategy for schema type.
 
         Args:
-            data: Data to validate
-            schema: msgspec Struct class
+            schema: Schema type to get strategy for
 
         Returns:
-            Validated Struct instance
-
-        Raises:
-            ValidationError: If validation fails
+            Validator strategy instance
         """
-        return msgspec.convert(data, schema)
-
-    @staticmethod
-    def _validate_dict(data: dict[str, Any] | list[Any]) -> dict[str, Any]:
-        """
-        Validate data as dictionary.
-
-        Args:
-            data: Data to validate
-
-        Returns:
-            Validated dict
-
-        Raises:
-            ValidationError: If data is not a dict
-        """
-        if not isinstance(data, dict):
-            raise ValidationError(
-                f"Expected dict, got {type(data).__name__}",
-                f"Data: {data}",
-            )
-        return data
-
-    def _validate_list(
-        self,
-        data: dict[str, Any] | list[Any],
-        schema: type[list[Any]],
-    ) -> list[Any]:
-        """
-        Validate data as list.
-
-        Args:
-            data: Data to validate
-            schema: List schema type
-
-        Returns:
-            Validated list
-
-        Raises:
-            ValidationError: If data is not a list or items don't match schema
-        """
-        if not isinstance(data, list):
-            raise ValidationError(
-                f"Expected list, got {type(data).__name__}",
-                f"Data: {data}",
-            )
-
-        args = get_args(schema)
-        if args and len(args) > 0:
-            item_schema = args[0]
-            if isinstance(item_schema, type) and (
-                issubclass(item_schema, Struct)
-                or item_schema in (dict, list, str, int, float, bool)
-            ):
-                return self._validate_list_items(data, item_schema)
-
-        return data
+        if self._is_struct_schema(schema):
+            return self._struct_strategy
+        if self._is_dict_schema(schema):
+            return self._dict_strategy
+        if self._is_list_schema(schema):
+            return self._list_strategy
+        return self._strict_strategy
 
     @staticmethod
-    def _validate_list_items(data: list[Any], item_schema: type) -> list[Any]:
-        """
-        Validate each item in list against item schema.
-
-        Args:
-            data: List data to validate
-            item_schema: Schema for list items
-
-        Returns:
-            Validated list with converted items
-
-        Raises:
-            ValidationError: If any item doesn't match schema
-        """
-        validated_items: list[Any] = []
-        for item in data:
-            if issubclass(item_schema, Struct):
-                validated_items.append(msgspec.convert(item, item_schema))
-            else:
-                if not isinstance(item, item_schema):
-                    raise ValidationError(
-                        f"Expected list item of type {item_schema.__name__}, "
-                        f"got {type(item).__name__}",
-                        f"Item: {item}",
-                    )
-                validated_items.append(item)
-        return validated_items
+    def _is_struct_schema(schema: type) -> bool:
+        """Check if schema is a msgspec Struct."""
+        try:
+            return isinstance(schema, type) and issubclass(schema, Struct)
+        except TypeError:
+            return False
 
     @staticmethod
-    def _validate_with_msgspec_strict(
-        data: dict[str, Any] | list[Any],
-        schema: type,
-    ) -> Any:
-        """
-        Validate data using msgspec with strict mode.
+    def _is_dict_schema(schema: type) -> bool:
+        """Check if schema is dict type."""
+        if schema is dict:
+            return True
+        return hasattr(schema, "__origin__") and schema.__origin__ is dict
 
-        Args:
-            data: Data to validate
-            schema: Schema type
-
-        Returns:
-            Validated data
-
-        Raises:
-            ValidationError: If validation fails
-        """
-        return msgspec.convert(data, schema, strict=True)
+    @staticmethod
+    def _is_list_schema(schema: type) -> bool:
+        """Check if schema is list type."""
+        if schema is list:
+            return True
+        return hasattr(schema, "__origin__") and schema.__origin__ is list
 
     @staticmethod
     def _handle_msgspec_error(e: MsgspecValidationError, schema: type) -> NoReturn:
@@ -509,19 +543,45 @@ class _ResponseValidator:
         Raises:
             ValidationError: Converted validation error
         """
-        try:
-            if hasattr(e, "errors") and callable(getattr(e, "errors", None)):
-                error_details = "; ".join(str(err) for err in e.errors())
-            else:
-                error_details = str(e)
-        except (AttributeError, TypeError):
-            error_details = str(e)
-
-        schema_name = schema.__name__ if hasattr(schema, "__name__") else schema
+        error_details = _ResponseValidator._extract_error_details(e)
+        schema_name = _ResponseValidator._get_schema_name(schema)
         raise ValidationError(
             f"Validation failed for schema {schema_name}",
             error_details,
         ) from e
+
+    @staticmethod
+    def _extract_error_details(e: MsgspecValidationError) -> str:
+        """
+        Extract error details from msgspec error safely.
+
+        Args:
+            e: MsgspecValidationError exception
+
+        Returns:
+            Error details as string
+        """
+        if hasattr(e, "errors"):
+            errors_attr = getattr(e, "errors", None)
+            if callable(errors_attr):
+                try:
+                    return "; ".join(str(err) for err in errors_attr())
+                except (AttributeError, TypeError):
+                    pass
+        return str(e)
+
+    @staticmethod
+    def _get_schema_name(schema: type) -> str:
+        """
+        Get schema name safely.
+
+        Args:
+            schema: Schema type
+
+        Returns:
+            Schema name as string
+        """
+        return schema.__name__ if hasattr(schema, "__name__") else str(schema)
 
     @staticmethod
     def _handle_general_error(e: Exception) -> NoReturn:

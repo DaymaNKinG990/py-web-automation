@@ -87,26 +87,32 @@ class RateLimiter:
             ...     result = await http_client.build_request().get("/endpoint").execute()
         """
         async with self._lock:
-            now = datetime.now()
-            window_start = now - timedelta(seconds=self.config.window)
-            # Remove requests outside the window
-            while self.requests and self.requests[0] < window_start:
-                self.requests.popleft()
-            # Check if we can make a request
-            if len(self.requests) >= self.config.max_requests:
-                # Calculate wait time
-                oldest_request = self.requests[0]
-                wait_until = oldest_request + timedelta(seconds=self.config.window)
-                wait_time = (wait_until - now).total_seconds()
-                if wait_time > 0:
-                    await asyncio.sleep(wait_time)
-                    # Re-check after waiting
-                    now = datetime.now()
-                    window_start = now - timedelta(seconds=self.config.window)
-                    while self.requests and self.requests[0] < window_start:
-                        self.requests.popleft()
-            # Record this request
-            self.requests.append(now)
+            self._cleanup_old_requests()
+
+            if self._is_rate_limit_exceeded():
+                await self._wait_for_slot()
+                self._cleanup_old_requests()
+
+            self.requests.append(datetime.now())
+
+    def _cleanup_old_requests(self) -> None:
+        """Remove requests outside the time window."""
+        now = datetime.now()
+        window_start = now - timedelta(seconds=self.config.window)
+        while self.requests and self.requests[0] < window_start:
+            self.requests.popleft()
+
+    def _is_rate_limit_exceeded(self) -> bool:
+        """Check if rate limit is exceeded."""
+        return len(self.requests) >= self.config.max_requests
+
+    async def _wait_for_slot(self) -> None:
+        """Wait until a slot becomes available."""
+        oldest_request = self.requests[0]
+        wait_until = oldest_request + timedelta(seconds=self.config.window)
+        wait_time = (wait_until - datetime.now()).total_seconds()
+        if wait_time > 0:
+            await asyncio.sleep(wait_time)
 
     async def try_acquire(self) -> bool:
         """

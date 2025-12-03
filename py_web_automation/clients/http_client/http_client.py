@@ -9,7 +9,7 @@ including request handling, authentication, and response validation.
 import time
 from http import HTTPMethod
 from types import TracebackType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 from urllib.parse import urlencode
 
 from httpx import AsyncClient, Limits, Response
@@ -56,7 +56,7 @@ class HttpClient:
         self,
         url: str,
         config: Config,
-        middleware: MiddlewareChain | None = None,
+        middleware: Union["MiddlewareChain", None] = None,
     ) -> None:
         """
         Initialize HTTP client.
@@ -234,28 +234,54 @@ class HttpClient:
         request_headers = request_context.headers.copy()
         self.__logger.debug(f"Request headers: {request_headers}")
         request_data = request_context.data or data
-        use_json_param = False
-        if request_data is not None:
-            data_repr = (
-                request_data.decode("utf-8", errors="replace")
-                if isinstance(request_data, bytes)
-                else str(request_data)
-            )
-            self.__logger.debug(f"Request data: {data_repr}")
-            if "Content-Type" not in request_headers:
-                if isinstance(request_data, dict):
-                    use_json_param = True
-                    self.__logger.debug(
-                        "Using json= parameter for dict data "
-                        "(Content-Type will be set automatically)"
-                    )
-                else:
-                    self.__logger.debug(
-                        f"Data type is {type(request_data).__name__}, "
-                        f"Content-Type not set automatically"
-                    )
+
+        if request_data is None:
+            return request_headers, None, False
+
+        self._log_request_data(request_data)
+        use_json_param = self._should_use_json_param(request_data, request_headers)
         self.__logger.debug(f"Use JSON parameter: {use_json_param}")
         return request_headers, request_data, use_json_param
+
+    def _log_request_data(self, request_data: dict[str, Any] | bytes | str) -> None:
+        """
+        Log request data representation.
+
+        Args:
+            request_data: Request data to log
+        """
+        if isinstance(request_data, bytes):
+            data_repr = request_data.decode("utf-8", errors="replace")
+        else:
+            data_repr = str(request_data)
+        self.__logger.debug(f"Request data: {data_repr}")
+
+    def _should_use_json_param(
+        self, request_data: dict[str, Any] | bytes | str, request_headers: dict[str, str]
+    ) -> bool:
+        """
+        Determine if data should be sent as JSON.
+
+        Args:
+            request_data: Request body data
+            request_headers: Request headers
+
+        Returns:
+            True if data should be sent via json= parameter
+        """
+        if "Content-Type" in request_headers:
+            return False
+
+        if isinstance(request_data, dict):
+            self.__logger.debug(
+                "Using json= parameter for dict data (Content-Type will be set automatically)"
+            )
+            return True
+
+        self.__logger.debug(
+            f"Data type is {type(request_data).__name__}, Content-Type not set automatically"
+        )
+        return False
 
     async def _execute_http_request(
         self,
@@ -301,6 +327,78 @@ class HttpClient:
         self.__logger.debug(f"Making request: {method} {url}")
         return await self.client.request(**request_kwargs)
 
+    @staticmethod
+    def _redact_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
+        """
+        Redact sensitive headers from response headers.
+
+        Args:
+            headers: Response headers dictionary
+
+        Returns:
+            Headers dictionary with sensitive headers redacted
+        """
+        sensitive_headers = {
+            "authorization",
+            "cookie",
+            "set-cookie",
+            "x-api-key",
+            "x-auth-token",
+        }
+        return {
+            k.lower(): ("[REDACTED]" if k.lower() in sensitive_headers else v)
+            for k, v in headers.items()
+        }
+
+    @staticmethod
+    def _extract_content_type(headers: dict[str, str]) -> str | None:
+        """
+        Extract Content-Type header value from headers.
+
+        Args:
+            headers: Response headers dictionary
+
+        Returns:
+            Content-Type value or None if not found
+        """
+        for key, value in headers.items():
+            if key.lower() == "content-type":
+                return value
+        return None
+
+    @staticmethod
+    def _get_response_time(response: Response) -> float:
+        """
+        Get response time safely from response object.
+
+        Args:
+            response: HTTP response object
+
+        Returns:
+            Response time in seconds, or 0.0 if unavailable
+        """
+        try:
+            return response.elapsed.total_seconds()
+        except (AttributeError, RuntimeError):
+            return 0.0
+
+    def _log_response_info(
+        self, response: Response, response_time: float, response_body: bytes
+    ) -> None:
+        """
+        Log response information.
+
+        Args:
+            response: HTTP response object
+            response_time: Response time in seconds
+            response_body: Response body content
+        """
+        self.__logger.info(
+            f"Response got: status_code={response.status_code}, "
+            f"elapsed={response_time:.3f}s, "
+            f"content_length={len(response_body)}"
+        )
+
     def _parse_http_response(
         self,
         response: Response,
@@ -322,32 +420,13 @@ class HttpClient:
         """
         response_body = response.content
         response_headers = dict(response.headers)
-        sensitive_headers = {
-            "authorization",
-            "cookie",
-            "set-cookie",
-            "x-api-key",
-            "x-auth-token",
-        }
-        redacted_headers = {
-            k.lower(): ("[REDACTED]" if k.lower() in sensitive_headers else v)
-            for k, v in response_headers.items()
-        }
-        content_type = None
-        for key, value in response_headers.items():
-            if key.lower() == "content-type":
-                content_type = value
-                break
+        redacted_headers = self._redact_sensitive_headers(response_headers)
+        content_type = self._extract_content_type(response_headers)
+        response_time = self._get_response_time(response)
         reason = getattr(response, "reason_phrase", None)
-        try:
-            response_time = response.elapsed.total_seconds()
-        except (AttributeError, RuntimeError):
-            response_time = 0.0
-        self.__logger.info(
-            f"Response got: status_code={response.status_code}, "
-            f"elapsed={response_time:.3f}s, "
-            f"content_length={len(response_body)}"
-        )
+
+        self._log_response_info(response, response_time, response_body)
+
         return HttpResult(
             endpoint=endpoint,
             method=method,

@@ -32,18 +32,21 @@ class RequestBuilder:
     - Method selection (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
     - Endpoint configuration
     - Query parameters
-    - Request body (JSON, form data, raw)
+    - Request body (JSON dict, bytes, or str - automatically detected)
     - Headers
     - Authentication
 
+    Request body format is automatically determined by type:
+    - dict: Sent as JSON with Content-Type: application/json
+    - bytes/str: Sent as raw content (set Content-Type header explicitly)
+
     Attributes:
-        _client: ApiClient instance for executing requests
+        _client: HttpClient instance for executing requests
         _method: HTTP method (default: "GET")
         _endpoint: API endpoint path
         _params: Query parameters dictionary
-        _data: Request body data
+        _data: Request body data (dict, bytes, str, or None)
         _headers: Request headers dictionary
-        _json_body: Whether to send body as JSON (default: True)
     """
 
     def __init__(self, client: "HttpClient") -> None:
@@ -65,9 +68,8 @@ class RequestBuilder:
         self._method: HTTPMethod = HTTPMethod.GET
         self._endpoint: str = ""
         self._params: dict[str, Any] = {}
-        self._data: dict[str, Any] | None = None
+        self._data: dict[str, Any] | bytes | str | None = None
         self._headers: dict[str, str] = {}
-        self._json_body: bool = True
         self.__logger: Logger = logger.bind(name=self.__class__.__name__)
 
     @property
@@ -81,7 +83,7 @@ class RequestBuilder:
         return self._method
 
     @property
-    def get_data(self) -> dict[str, Any] | None:
+    def get_data(self) -> dict[str, Any] | bytes | str | None:
         """Get request body data."""
         return self._data
 
@@ -129,7 +131,6 @@ class RequestBuilder:
         self.__logger.debug(f"Setting HTTP method to POST and endpoint to {endpoint}")
         self._method = HTTPMethod.POST
         self._endpoint = endpoint
-        self._json_body = True
         return self
 
     def put(self, endpoint: str) -> "RequestBuilder":
@@ -148,7 +149,6 @@ class RequestBuilder:
         self.__logger.debug(f"Setting HTTP method to PUT and endpoint to {endpoint}")
         self._method = HTTPMethod.PUT
         self._endpoint = endpoint
-        self._json_body = True
         return self
 
     def delete(self, endpoint: str) -> "RequestBuilder":
@@ -185,7 +185,6 @@ class RequestBuilder:
         self.__logger.debug(f"Setting HTTP method to PATCH and endpoint to {endpoint}")
         self._method = HTTPMethod.PATCH
         self._endpoint = endpoint
-        self._json_body = True
         return self
 
     def head(self, endpoint: str) -> "RequestBuilder":
@@ -261,9 +260,37 @@ class RequestBuilder:
         self._params[key] = value
         return self
 
+    def body(self, data: dict[str, Any] | bytes | str) -> "RequestBuilder":
+        """
+        Set request body data.
+
+        Supports multiple data types:
+        - dict: Will be sent as JSON (Content-Type: application/json)
+        - bytes/str: Will be sent as raw content (set Content-Type in headers if needed)
+
+        Args:
+            data: Request body data (dict, bytes, or str)
+
+        Returns:
+            Self for method chaining
+
+        Example:
+            >>> # JSON body (dict)
+            >>> builder.body({"name": "John"})
+            >>> # XML body (str)
+            >>> builder.body("<user><name>John</name></user>").header("Content-Type", "text/xml")
+            >>> # Binary body (bytes)
+            >>> builder.body(b"binary data").header("Content-Type", "application/octet-stream")
+        """
+        self.__logger.debug(f"Setting request body: type={type(data).__name__}")
+        self._data = data
+        return self
+
     def json(self, data: dict[str, Any]) -> "RequestBuilder":
         """
-        Set request body as JSON.
+        Set request body as JSON (alias for body with dict).
+
+        Convenience method for setting JSON body. Type is automatically detected.
 
         Args:
             data: Request body data as dictionary
@@ -274,10 +301,7 @@ class RequestBuilder:
         Example:
             >>> builder.json({"name": "John"})
         """
-        self.__logger.debug(f"Setting request body as JSON: {data}")
-        self._data = data
-        self._json_body = True
-        return self
+        return self.body(data)
 
     def header(self, key: str, value: str) -> "RequestBuilder":
         """
@@ -329,11 +353,16 @@ class RequestBuilder:
         Example:
             >>> result = await builder.get("/users").params(page=1).execute()
         """
+        data_repr = (
+            self._data.decode("utf-8", errors="replace")
+            if isinstance(self._data, bytes)
+            else self._data
+        )
         self.__logger.debug(
             "Executing built request: "
             f"endpoint={self._endpoint} "
             f"method={self._method} "
-            f"data={self._data} "
+            f"data={data_repr} "
             f"params={self._params} "
             f"headers={self._headers}"
         )
@@ -361,5 +390,4 @@ class RequestBuilder:
         self._params.clear()
         self._data = None
         self._headers.clear()
-        self._json_body = True
         return self

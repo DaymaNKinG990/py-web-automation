@@ -65,13 +65,28 @@ class Metrics:
         """
         self.request_count += 1
         self.last_request_time = datetime.now()
+
         if success:
-            self.success_count += 1
+            self._record_success(latency)
         else:
-            self.error_count += 1
-            if error_type:
-                self.errors_by_type[error_type] += 1
+            self._record_error(latency, error_type)
+
+        self._update_latency_stats(latency)
+
+    def _record_success(self, latency: float) -> None:
+        """Record successful request metrics."""
+        self.success_count += 1
         self.total_latency += latency
+
+    def _record_error(self, latency: float, error_type: str | None) -> None:
+        """Record error request metrics."""
+        self.error_count += 1
+        self.total_latency += latency
+        if error_type:
+            self.errors_by_type[error_type] += 1
+
+    def _update_latency_stats(self, latency: float) -> None:
+        """Update min and max latency statistics."""
         if self.min_latency is None or latency < self.min_latency:
             self.min_latency = latency
         if self.max_latency is None or latency > self.max_latency:
