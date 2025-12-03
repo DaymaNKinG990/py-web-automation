@@ -5,13 +5,21 @@ This module provides RequestBuilder class following the Builder pattern
 for constructing complex HTTP requests with a fluent API.
 """
 
+# Python imports
+from http import HTTPMethod
 from typing import TYPE_CHECKING, Any
 
-from ..exceptions import ValidationError
-from .models import ApiResult
+from loguru import logger
+
+from .http_result import HttpResult
+
+# Local imports
+from .request_validator import RequestValidator
 
 if TYPE_CHECKING:
-    from .api_client import ApiClient
+    from loguru._logger import Logger
+
+    from .http_client import HttpClient
 
 
 class RequestBuilder:
@@ -38,44 +46,56 @@ class RequestBuilder:
         _data: Request body data
         _headers: Request headers dictionary
         _json_body: Whether to send body as JSON (default: True)
-
-    Example:
-        >>> from py_web_automation import Config, ApiClient, RequestBuilder
-        >>> config = Config(timeout=30)
-        >>> async with ApiClient("https://api.example.com", config) as api:
-        ...     builder = RequestBuilder(api)
-        ...     result = await (builder
-        ...         .get("/users")
-        ...         .params({"page": 1, "limit": 10})
-        ...         .header("X-Custom-Header", "value")
-        ...         .execute())
     """
 
-    def __init__(self, client: "ApiClient") -> None:
+    def __init__(self, client: "HttpClient") -> None:
         """
         Initialize request builder.
 
         Args:
-            client: ApiClient instance for executing requests
+            client: HttpClient instance for executing requests
 
         Raises:
-            TypeError: If client is not an ApiClient instance
+            TypeError: If client is not an HttpClient instance
 
         Example:
             >>> builder = RequestBuilder(api_client)
         """
-        from .api_client import ApiClient
-
-        if not isinstance(client, ApiClient):
-            raise TypeError(f"Expected ApiClient, got {type(client).__name__}")
-
-        self._client: ApiClient = client
-        self._method: str = "GET"
+        if not isinstance(client, HttpClient):
+            raise TypeError(f"Expected HttpClient, got {type(client).__name__}")
+        self._client: HttpClient = client
+        self._method: HTTPMethod = HTTPMethod.GET
         self._endpoint: str = ""
         self._params: dict[str, Any] = {}
         self._data: dict[str, Any] | None = None
         self._headers: dict[str, str] = {}
         self._json_body: bool = True
+        self.__logger: Logger = logger.bind(name=self.__class__.__name__)
+
+    @property
+    def get_endpoint(self) -> str:
+        """Get request endpoint."""
+        return self._endpoint
+
+    @property
+    def get_method(self) -> HTTPMethod:
+        """Get HTTP method."""
+        return self._method
+
+    @property
+    def get_data(self) -> dict[str, Any] | None:
+        """Get request body data."""
+        return self._data
+
+    @property
+    def get_headers(self) -> dict[str, str]:
+        """Get request headers."""
+        return self._headers.copy()
+
+    @property
+    def get_params(self) -> dict[str, Any]:
+        """Get query parameters."""
+        return self._params.copy()
 
     def get(self, endpoint: str) -> "RequestBuilder":
         """
@@ -90,7 +110,8 @@ class RequestBuilder:
         Example:
             >>> builder.get("/users")
         """
-        self._method = "GET"
+        self.__logger.debug(f"Setting HTTP method to GET and endpoint to {endpoint}")
+        self._method = HTTPMethod.GET
         self._endpoint = endpoint
         return self
 
@@ -107,7 +128,8 @@ class RequestBuilder:
         Example:
             >>> builder.post("/users")
         """
-        self._method = "POST"
+        self.__logger.debug(f"Setting HTTP method to POST and endpoint to {endpoint}")
+        self._method = HTTPMethod.POST
         self._endpoint = endpoint
         self._json_body = True
         return self
@@ -125,7 +147,8 @@ class RequestBuilder:
         Example:
             >>> builder.put("/users/1")
         """
-        self._method = "PUT"
+        self.__logger.debug(f"Setting HTTP method to PUT and endpoint to {endpoint}")
+        self._method = HTTPMethod.PUT
         self._endpoint = endpoint
         self._json_body = True
         return self
@@ -143,7 +166,8 @@ class RequestBuilder:
         Example:
             >>> builder.delete("/users/1")
         """
-        self._method = "DELETE"
+        self.__logger.debug(f"Setting HTTP method to DELETE and endpoint to {endpoint}")
+        self._method = HTTPMethod.DELETE
         self._endpoint = endpoint
         return self
 
@@ -160,7 +184,8 @@ class RequestBuilder:
         Example:
             >>> builder.patch("/users/1")
         """
-        self._method = "PATCH"
+        self.__logger.debug(f"Setting HTTP method to PATCH and endpoint to {endpoint}")
+        self._method = HTTPMethod.PATCH
         self._endpoint = endpoint
         self._json_body = True
         return self
@@ -178,7 +203,8 @@ class RequestBuilder:
         Example:
             >>> builder.head("/users")
         """
-        self._method = "HEAD"
+        self.__logger.debug(f"Setting HTTP method to HEAD and endpoint to {endpoint}")
+        self._method = HTTPMethod.HEAD
         self._endpoint = endpoint
         return self
 
@@ -195,7 +221,8 @@ class RequestBuilder:
         Example:
             >>> builder.options("/users")
         """
-        self._method = "OPTIONS"
+        self.__logger.debug(f"Setting HTTP method to OPTIONS and endpoint to {endpoint}")
+        self._method = HTTPMethod.OPTIONS
         self._endpoint = endpoint
         return self
 
@@ -214,6 +241,7 @@ class RequestBuilder:
             >>> # Or with dict
             >>> builder.params(**{"page": 1, "limit": 10})
         """
+        self.__logger.debug(f"Adding query parameters: {kwargs}")
         self._params.update(kwargs)
         return self
 
@@ -231,29 +259,13 @@ class RequestBuilder:
         Example:
             >>> builder.param("page", 1)
         """
+        self.__logger.debug(f"Adding single query parameter: {key}={value}")
         self._params[key] = value
-        return self
-
-    def body(self, data: dict[str, Any]) -> "RequestBuilder":
-        """
-        Set request body (JSON).
-
-        Args:
-            data: Request body data as dictionary
-
-        Returns:
-            Self for method chaining
-
-        Example:
-            >>> builder.body({"name": "John", "email": "john@example.com"})
-        """
-        self._data = data
-        self._json_body = True
         return self
 
     def json(self, data: dict[str, Any]) -> "RequestBuilder":
         """
-        Set request body as JSON (alias for body).
+        Set request body as JSON.
 
         Args:
             data: Request body data as dictionary
@@ -264,7 +276,10 @@ class RequestBuilder:
         Example:
             >>> builder.json({"name": "John"})
         """
-        return self.body(data)
+        self.__logger.debug(f"Setting request body as JSON: {data}")
+        self._data = data
+        self._json_body = True
+        return self
 
     def header(self, key: str, value: str) -> "RequestBuilder":
         """
@@ -280,6 +295,7 @@ class RequestBuilder:
         Example:
             >>> builder.header("X-Custom-Header", "value")
         """
+        self.__logger.debug(f"Adding request header: {key}={value}")
         self._headers[key] = value
         return self
 
@@ -299,6 +315,7 @@ class RequestBuilder:
             ...     X_Another_Header="another"
             ... )
         """
+        self.__logger.debug(f"Adding multiple request headers: {kwargs}")
         self._headers.update(kwargs)
         return self
 
@@ -316,46 +333,37 @@ class RequestBuilder:
         Example:
             >>> builder.auth("your-token-here")
         """
-        self._client.set_auth_token(token, token_type)
+        self.__logger.debug(f"Setting authentication token: {token} with type {token_type}")
+        self._client.set_auth_token(token=token, token_type=token_type)
         return self
 
-    def validate(self) -> None:
-        """
-        Validate request configuration.
-
-        Raises:
-            ValidationError: If request configuration is invalid
-
-        Example:
-            >>> builder.get("/users").validate()
-        """
-        if not self._endpoint:
-            raise ValidationError(
-                "Request endpoint is required",
-                "Call get(), post(), put(), delete(), etc. to set endpoint",
-            )
-
-        if self._method in ("POST", "PUT", "PATCH") and self._data is None:
-            # Allow empty body for these methods
-            pass
-
-    async def execute(self) -> ApiResult:
+    async def execute(self) -> HttpResult:
         """
         Execute the built request.
 
-        Validates request configuration and executes it using the ApiClient.
+        Executes the built request using the HttpClient.
 
         Returns:
-            ApiResult with request result
-
-        Raises:
-            ValidationError: If request configuration is invalid
+            HttpResult with request result
 
         Example:
             >>> result = await builder.get("/users").params(page=1).execute()
         """
-        self.validate()
-
+        self.__logger.debug(
+            "Executing built request: "
+            f"endpoint={self._endpoint} "
+            f"method={self._method} "
+            f"data={self._data} "
+            f"params={self._params} "
+            f"headers={self._headers}"
+        )
+        RequestValidator().validate(
+            endpoint=self._endpoint,
+            method=self._method,
+            data=self._data,
+            headers=self._headers if self._headers else None,
+            params=self._params,
+        )
         return await self._client.make_request(
             endpoint=self._endpoint,
             method=self._method,
@@ -374,7 +382,8 @@ class RequestBuilder:
         Example:
             >>> builder.reset()
         """
-        self._method = "GET"
+        self.__logger.debug("Resetting builder to initial state")
+        self._method = HTTPMethod.GET
         self._endpoint = ""
         self._params.clear()
         self._data = None
