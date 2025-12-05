@@ -4,7 +4,8 @@ SQLite database client using aiosqlite.
 
 # Python imports
 from typing import Any
-from aiosqlite import connect, Connection, Row
+
+from aiosqlite import Connection, Row, connect
 
 # Local imports
 from .db_client import DBClient
@@ -15,31 +16,23 @@ class SQLiteClient(DBClient):
     SQLite database client.
     """
 
-    def __init__(
-        self,
-        connection_string: str | None = None
-    ) -> None:
+    def __init__(self, connection_string: str | None = None) -> None:
         """
         Initialize SQLite client.
 
         Args:
             connection_string: SQLite connection string (e.g., 'sqlite:///path/to/db.sqlite')
         """
-        super().__init__(
-            connection_string=connection_string,
-            log_file_name=self.__class__.__name__
-        )
+        super().__init__(connection_string=connection_string)
         self._connection: Connection
 
     async def connect(self) -> None:
         """Establish SQLite connection."""
         if self._is_connected:
-            self.logger.debug("Already connected to SQLite")
             return
         self._connection = await connect(self.connection_string)
         self._connection.row_factory = Row
         self._is_connected = True
-        self.logger.debug(f"Connected to SQLite database")
 
     async def disconnect(self) -> None:
         """Close SQLite connection."""
@@ -49,12 +42,9 @@ class SQLiteClient(DBClient):
         self._is_connected = False
         self._in_transaction = False
         self._transaction_level = 0
-        self.logger.info("Disconnected from SQLite database")
 
     async def execute_query(
-        self,
-        query: str,
-        params: dict[str, Any] | None = None
+        self, query: str, params: dict[str, Any] | None = None
     ) -> list[dict[str, Any]]:
         """
         Execute SELECT query.
@@ -73,11 +63,7 @@ class SQLiteClient(DBClient):
         columns = [description[0] for description in cursor.description]
         return [dict(zip(columns, row, strict=True)) for row in rows]
 
-    async def execute_command(
-        self,
-        command: str,
-        params: dict[str, Any] | None = None
-    ) -> None:
+    async def execute_command(self, command: str, params: dict[str, Any] | None = None) -> None:
         """
         Execute INSERT/UPDATE/DELETE command.
 

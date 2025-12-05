@@ -4,8 +4,9 @@ MySQL database adapter using aiomysql.
 
 # Python imports
 from typing import Any
-from urllib.parse import urlparse, parse_qs
-from aiomysql import Connection, connect, DictCursor
+from urllib.parse import parse_qs, urlparse
+
+from aiomysql import Connection, DictCursor, connect
 
 # Local imports
 from .db_client import DBClient
@@ -16,10 +17,7 @@ class MySQLClient(DBClient):
     MySQL database client.
     """
 
-    def __init__(
-        self,
-        connection_string: str | None = None
-    ) -> None:
+    def __init__(self, connection_string: str | None = None) -> None:
         """
         Initialize MySQL client.
 
@@ -27,10 +25,7 @@ class MySQLClient(DBClient):
             connection_string: MySQL connection string
             **kwargs: Additional connection parameters (host, port, database, user, password)
         """
-        super().__init__(
-            connection_string=connection_string,
-            log_file_name=self.__class__.__name__
-        )
+        super().__init__(connection_string=connection_string)
         self._connection: Connection
 
     async def _parse_connection_string(self) -> dict[str, Any]:
@@ -62,28 +57,11 @@ class MySQLClient(DBClient):
         """
         if not self.connection_string:
             return {}
-        parsed = urlparse(self.connection_string)
-        params: dict[str, Any] = {}
-        if parsed.username:
-            params["user"] = parsed.username
-        if parsed.password:
-            params["password"] = parsed.password
-        if parsed.hostname:
-            params["host"] = parsed.hostname
-        if parsed.port:
-            params["port"] = parsed.port
-        if parsed.path:
-            params["database"] = parsed.path.lstrip("/")
-        if parsed.query:
-            query_params = parse_qs(parsed.query, keep_blank_values=True)
-            for key, value in query_params.items():
-                params[key] = value[0] if len(value) == 1 else value
-        return params
+        return self._parse_url_connection_string(self.connection_string)
 
     async def connect(self) -> None:
         """Establish MySQL connection."""
         if self._is_connected:
-            self.logger.debug("Already connected to MySQL")
             return
         connection_params = await self._parse_connection_string()
         self._connection = await connect(
@@ -91,10 +69,9 @@ class MySQLClient(DBClient):
             port=connection_params.get("port"),
             db=connection_params.get("database"),
             user=connection_params.get("user"),
-            password=connection_params.get("password")
+            password=connection_params.get("password"),
         )
         self._is_connected = True
-        self.logger.debug("Connected to MySQL database")
 
     async def disconnect(self) -> None:
         """Close MySQL connection."""
@@ -103,7 +80,6 @@ class MySQLClient(DBClient):
             await self._connection.ensure_closed()
             self._connection = None
         self._is_connected = False
-        self.logger.debug("Disconnected from MySQL database")
 
     async def execute_query(
         self,

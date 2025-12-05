@@ -12,14 +12,22 @@ via DBAdapterRegistry without modifying existing code.
 # Python imports
 from abc import ABC, abstractmethod
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from enum import StrEnum
 from types import TracebackType
-from typing import Any, TYPE_CHECKING
-from urllib.parse import urlparse, parse_qs
-from loguru import logger
+from typing import Any
+from urllib.parse import parse_qs, urlparse
+
+# Local imports
+from .query_builder import _QueryBuilder
 
 
-if TYPE_CHECKING:
-    from loguru._logger import Logger
+class DBCommandType(StrEnum):
+    """Database command type."""
+
+    SELECT = "SELECT"
+    INSERT = "INSERT"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
 
 
 class DBClient(ABC):
@@ -87,9 +95,72 @@ class DBClient(ABC):
         self.connection_string: str | None = connection_string
         self._connection: Any | None = None
         self._is_connected: bool = False
-        self.logger: "Logger" = logger.bind(
-            name=self.__class__.__name__ if log_file_name is None else log_file_name
-        )
+
+    @staticmethod
+    def _parse_url_components(parsed: Any) -> dict[str, Any]:
+        """Parse URL components (user, password, host, port, database) into params."""
+        url_component_mapping = {
+            "user": ("username", lambda x: x),
+            "password": ("password", lambda x: x),
+            "host": ("hostname", lambda x: x),
+            "port": ("port", lambda x: x),
+            "database": ("path", lambda x: x.lstrip("/")),
+        }
+        return {
+            param_key: transform(getattr(parsed, attr_name))
+            for param_key, (attr_name, transform) in url_component_mapping.items()
+            if getattr(parsed, attr_name, None)
+        }
+
+    @staticmethod
+    def _parse_url_query_params(parsed: Any) -> dict[str, Any]:
+        """Parse URL query parameters into params."""
+        if not parsed.query:
+            return {}
+        query_params = parse_qs(parsed.query, keep_blank_values=True)
+        return {
+            key: value[0] if len(value) == 1 else value
+            for key, value in query_params.items()
+        }
+
+    @staticmethod
+    def _parse_url_connection_string(connection_string: str) -> dict[str, Any]:
+        """
+        Parse database connection URL into parameters.
+
+        Supports standard URL format: scheme://[user[:password]@]host[:port]/database[?params]
+
+        Args:
+            connection_string: Database connection URL string
+
+        Returns:
+            Dictionary with connection parameters:
+            - host: Database host
+            - port: Database port
+            - database: Database name
+            - user: Username
+            - password: Password
+            - Additional query parameters as key-value pairs
+
+        Example:
+            >>> params = DBClient._parse_url_connection_string(
+            ...     "postgresql://user:pass@localhost:5432/mydb?sslmode=require"
+            ... )
+            >>> # Returns: {
+            ... #     'host': 'localhost',
+            ... #     'port': 5432,
+            ... #     'database': 'mydb',
+            ... #     'user': 'user',
+            ... #     'password': 'pass',
+            ... #     'sslmode': 'require'
+            ... # }
+        """
+        if not connection_string:
+            return {}
+        parsed = urlparse(connection_string)
+        params = DBClient._parse_url_components(parsed)
+        params.update(DBClient._parse_url_query_params(parsed))
+        return params
 
     @abstractmethod
     async def connect(self) -> None:
@@ -107,7 +178,9 @@ class DBClient(ABC):
         pass
 
     @abstractmethod
-    async def execute_query(self, query: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    async def execute_query(
+        self, query: str, params: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Execute SELECT query and return results.
 
@@ -175,22 +248,16 @@ class DBClient(ABC):
             ...     await db.execute_command("INSERT INTO users (name) VALUES ('Bob')")
             # Transaction is committed if no exceptions, rolled back otherwise
         """
-        self.logger.debug("Starting transaction")
         await self.begin_transaction()
         try:
             yield
-            self.logger.debug("Transaction committed")
             await self.commit_transaction()
         except Exception:
-            self.logger.debug("Transaction rolled back")
             await self.rollback_transaction()
             raise
-        finally:
-            self.logger.debug("Transaction ended")
 
     async def close(self) -> None:
         """Close database connection."""
-        self.logger.debug("Closing database connection")
         await self.disconnect()
 
     async def __aenter__(self) -> "DBClient":
@@ -200,7 +267,6 @@ class DBClient(ABC):
         Returns:
             Self for use in async with statement
         """
-        self.logger.debug("Connecting to database")
         await self.connect()
         return self
 
@@ -218,7 +284,6 @@ class DBClient(ABC):
             exc_val: Exception value
             exc_tb: Exception traceback
         """
-        self.logger.debug("Disconnecting from database")
         await self.close()
 
     async def is_connected(self) -> bool:
@@ -229,3 +294,16 @@ class DBClient(ABC):
             True if connected, False otherwise
         """
         return self._is_connected
+
+    def query(self) -> _QueryBuilder:
+        """
+        Create _QueryBuilder instance for this database client.
+
+        Returns:
+            _QueryBuilder configured for this database
+
+        Example:
+            >>> builder = db.query().select("*").from_table("users")
+            >>> results = await builder.where("active", "=", True).execute(db)
+        """
+        return _QueryBuilder()
