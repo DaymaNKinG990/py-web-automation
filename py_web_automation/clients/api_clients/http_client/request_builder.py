@@ -6,6 +6,8 @@ for constructing complex HTTP requests with a fluent API.
 """
 
 # Python imports
+from __future__ import annotations
+
 from http import HTTPMethod
 from typing import TYPE_CHECKING, Any
 
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
     from .http_client import HttpClient
 
 
-class RequestBuilder:
+class _RequestBuilder:
     """
     Builder for constructing HTTP requests with fluent API.
 
@@ -45,7 +47,7 @@ class RequestBuilder:
         _headers: Request headers dictionary
     """
 
-    def __init__(self, client: "HttpClient") -> None:
+    def __init__(self, client: HttpClient) -> None:
         """
         Initialize request builder.
 
@@ -56,7 +58,7 @@ class RequestBuilder:
             TypeError: If client is not an HttpClient instance
 
         Example:
-            >>> builder = RequestBuilder(api_client)
+            >>> builder = _RequestBuilder(api_client)
         """
         if not isinstance(client, HttpClient):
             raise TypeError(f"Expected HttpClient, got {type(client).__name__}")
@@ -92,7 +94,7 @@ class RequestBuilder:
         """Get query parameters."""
         return self._params.copy()
 
-    def get(self, endpoint: str) -> "RequestBuilder":
+    def get(self, endpoint: str) -> _RequestBuilder:
         """
         Set HTTP method to GET and endpoint.
 
@@ -109,7 +111,7 @@ class RequestBuilder:
         self._endpoint = endpoint
         return self
 
-    def post(self, endpoint: str) -> "RequestBuilder":
+    def post(self, endpoint: str) -> _RequestBuilder:
         """
         Set HTTP method to POST and endpoint.
 
@@ -126,7 +128,7 @@ class RequestBuilder:
         self._endpoint = endpoint
         return self
 
-    def put(self, endpoint: str) -> "RequestBuilder":
+    def put(self, endpoint: str) -> _RequestBuilder:
         """
         Set HTTP method to PUT and endpoint.
 
@@ -143,7 +145,7 @@ class RequestBuilder:
         self._endpoint = endpoint
         return self
 
-    def delete(self, endpoint: str) -> "RequestBuilder":
+    def delete(self, endpoint: str) -> _RequestBuilder:
         """
         Set HTTP method to DELETE and endpoint.
 
@@ -160,7 +162,7 @@ class RequestBuilder:
         self._endpoint = endpoint
         return self
 
-    def patch(self, endpoint: str) -> "RequestBuilder":
+    def patch(self, endpoint: str) -> _RequestBuilder:
         """
         Set HTTP method to PATCH and endpoint.
 
@@ -177,7 +179,7 @@ class RequestBuilder:
         self._endpoint = endpoint
         return self
 
-    def head(self, endpoint: str) -> "RequestBuilder":
+    def head(self, endpoint: str) -> _RequestBuilder:
         """
         Set HTTP method to HEAD and endpoint.
 
@@ -194,7 +196,7 @@ class RequestBuilder:
         self._endpoint = endpoint
         return self
 
-    def options(self, endpoint: str) -> "RequestBuilder":
+    def options(self, endpoint: str) -> _RequestBuilder:
         """
         Set HTTP method to OPTIONS and endpoint.
 
@@ -211,7 +213,7 @@ class RequestBuilder:
         self._endpoint = endpoint
         return self
 
-    def params(self, **kwargs: Any) -> "RequestBuilder":
+    def params(self, **kwargs: Any) -> _RequestBuilder:
         """
         Add query parameters.
 
@@ -229,7 +231,7 @@ class RequestBuilder:
         self._params.update(kwargs)
         return self
 
-    def param(self, key: str, value: Any) -> "RequestBuilder":
+    def param(self, key: str, value: Any) -> _RequestBuilder:
         """
         Add single query parameter.
 
@@ -246,7 +248,7 @@ class RequestBuilder:
         self._params[key] = value
         return self
 
-    def body(self, data: dict[str, Any] | bytes | str) -> "RequestBuilder":
+    def body(self, data: dict[str, Any] | bytes | str) -> _RequestBuilder:
         """
         Set request body data.
 
@@ -271,7 +273,7 @@ class RequestBuilder:
         self._data = data
         return self
 
-    def json(self, data: dict[str, Any]) -> "RequestBuilder":
+    def json(self, data: dict[str, Any]) -> _RequestBuilder:
         """
         Set request body as JSON (alias for body with dict).
 
@@ -288,7 +290,7 @@ class RequestBuilder:
         """
         return self.body(data)
 
-    def header(self, key: str, value: str) -> "RequestBuilder":
+    def header(self, key: str, value: str) -> _RequestBuilder:
         """
         Add request header.
 
@@ -305,7 +307,7 @@ class RequestBuilder:
         self._headers[key] = value
         return self
 
-    def headers(self, **kwargs: str) -> "RequestBuilder":
+    def headers(self, **kwargs: str) -> _RequestBuilder:
         """
         Add multiple request headers.
 
@@ -344,7 +346,7 @@ class RequestBuilder:
             headers=self._headers if self._headers else None,
         )
 
-    def reset(self) -> "RequestBuilder":
+    def reset(self) -> _RequestBuilder:
         """
         Reset builder to initial state.
 

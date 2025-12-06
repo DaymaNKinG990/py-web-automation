@@ -20,7 +20,6 @@ from .middleware import (
     ValidationMiddleware,
 )
 from .rate_limit import RateLimitConfig, RateLimiter
-from .request_builder import RequestBuilder
 from .retry import RetryConfig, RetryHandler
 
 __all__ = [
@@ -34,7 +33,6 @@ __all__ = [
     "RateLimitMiddleware",
     "RetryMiddleware",
     "ValidationMiddleware",
-    "RequestBuilder",
     "RetryConfig",
     "RetryHandler",
     "RateLimitConfig",

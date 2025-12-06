@@ -4,7 +4,6 @@ MySQL database adapter using aiomysql.
 
 # Python imports
 from typing import Any
-from urllib.parse import parse_qs, urlparse
 
 from aiomysql import Connection, DictCursor, connect
 

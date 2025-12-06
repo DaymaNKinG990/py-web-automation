@@ -14,14 +14,14 @@ Page Objects:
     SyncBasePage, SyncComponent, SyncPageFactory: Sync page objects (from sync_page_objects)
 """
 
-from .async_ui_client.ui_client import UiClient as AsyncUiClient
 from .async_ui_client.page_objects import BasePage as AsyncBasePage
 from .async_ui_client.page_objects import Component as AsyncComponent
 from .async_ui_client.page_objects import PageFactory as AsyncPageFactory
-from .sync_ui_client.ui_client import UiClient as SyncUiClient
+from .async_ui_client.ui_client import UiClient as AsyncUiClient
 from .sync_ui_client.page_objects import BasePage as SyncBasePage
 from .sync_ui_client.page_objects import Component as SyncComponent
 from .sync_ui_client.page_objects import PageFactory as SyncPageFactory
+from .sync_ui_client.ui_client import UiClient as SyncUiClient
 
 # Default export is async version (recommended for production)
 UiClient = AsyncUiClient

@@ -21,7 +21,7 @@ from .http_result import HttpResult
 if TYPE_CHECKING:
     from .middleware.context import _HttpRequestContext, _HttpResponseContext
     from .middleware.middleware import MiddlewareChain
-    from .request_builder import RequestBuilder
+    from .request_builder import _RequestBuilder
 
 
 class HttpClient:
@@ -132,18 +132,18 @@ class HttpClient:
         """
         await self.client.aclose()
 
-    def build_request(self) -> "RequestBuilder":
+    def build_request(self) -> "_RequestBuilder":
         """
         Create a RequestBuilder for constructing complex requests.
 
         Returns:
-            RequestBuilder instance for fluent request construction
+            _RequestBuilder instance for fluent request construction
 
         Example:
             >>> builder = api.build_request()
             >>> result = await builder.get("/users").params(page=1).execute()
         """
-        return RequestBuilder(self)
+        return _RequestBuilder(self)
 
     async def _prepare_request_context(
         self,
