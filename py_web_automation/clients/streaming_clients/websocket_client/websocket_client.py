@@ -102,6 +102,40 @@ class WebSocketClient:
         self._message_handlers: dict[str, Callable[[dict[str, Any]], None]] = {}
         self._middleware = middleware
 
+    async def _establish_connection(self) -> None:
+        """Establish WebSocket connection."""
+        self._websocket = await connect(self.url, timeout=self.config.timeout, ping_interval=None)
+        self._is_connected = True
+
+    async def _handle_connection_retry(
+        self, connection_context: _WebSocketConnectionContext, error: Exception
+    ) -> bool:
+        """Handle connection retry logic. Returns True if should retry."""
+        if not self._middleware:
+            return False
+        error_result = await self._middleware.process_error(connection_context, error)
+        if error_result is not None:
+            return True  # Middleware handled, retry
+        if not connection_context.metadata_context.get("should_retry"):
+            return False
+        delay = connection_context.metadata_context.get("retry_delay", 0)
+        if delay > 0:
+            await sleep(delay)
+        return True  # Should retry
+
+    async def _process_connection_middleware(
+        self, connection_context: _WebSocketConnectionContext
+    ) -> None:
+        """Process connection through middleware."""
+        if self._middleware:
+            await self._middleware.process_connection(connection_context)
+
+    async def _process_successful_connection(
+        self, connection_context: _WebSocketConnectionContext
+    ) -> None:
+        """Process successful connection through middleware."""
+        await self._process_connection_middleware(connection_context)
+
     async def __aenter__(self) -> WebSocketClient:
         """
         Async context manager entry.
@@ -146,34 +180,16 @@ class WebSocketClient:
             event_type="connect",
             url=self.url,
         )
-        # Process connection through middleware
-        if self._middleware:
-            await self._middleware.process_connection(connection_context)
+        await self._process_connection_middleware(connection_context)
         # Retry loop for connection
         while True:
             try:
-                self._websocket = await connect(
-                    self.url, timeout=self.config.timeout, ping_interval=None
-                )
-                self._is_connected = True
-                # Process successful connection
-                if self._middleware:
-                    await self._middleware.process_connection(connection_context)
+                await self._establish_connection()
+                await self._process_successful_connection(connection_context)
                 return
             except (WebSocketException, Exception) as e:
-                # Process error through middleware
-                if self._middleware:
-                    error_result = await self._middleware.process_error(connection_context, e)
-                    if error_result is not None:
-                        # Middleware handled the error
-                        continue
-                    # Check if retry is needed
-                    if connection_context.metadata_context.get("should_retry"):
-                        delay = connection_context.metadata_context.get("retry_delay", 0)
-                        if delay > 0:
-                            await sleep(delay)
-                        continue  # Retry connection
-                # No retry, raise error
+                if await self._handle_connection_retry(connection_context, e):
+                    continue  # Retry connection
                 error_msg = f"Failed to connect to WebSocket {self.url}: {e}"
                 raise ConnectionError(error_msg, str(e)) from e
 
@@ -204,6 +220,101 @@ class WebSocketClient:
             True if connected, False otherwise
         """
         return self._is_connected and self._websocket is not None
+
+    def _serialize_message(self, message: dict[str, Any] | str) -> str:
+        """Serialize message to string for sending."""
+        if isinstance(message, dict):
+            return dumps(message)
+        return str(message)
+
+    async def _create_send_result(
+        self, message: dict[str, Any] | str, timestamp: float
+    ) -> WebSocketResult:
+        """Create successful send result."""
+        message_context = _WebSocketMessageContext(direction="send", message=message)
+        if self._middleware:
+            await self._middleware.process_message(message_context)
+        return WebSocketResult(
+            direction="send",
+            message=message_context.message,
+            timestamp=timestamp,
+            success=True,
+            error=None,
+            metadata=message_context.metadata_context.copy(),
+        )
+
+    async def _handle_send_error(
+        self, message: dict[str, Any] | str, error: Exception, timestamp: float
+    ) -> WebSocketResult:
+        """Handle error during message sending."""
+        message_context = _WebSocketMessageContext(direction="send", message=message)
+        if self._middleware:
+            error_result = await self._middleware.process_error(message_context, error)
+            if error_result is not None:
+                return error_result
+        error_msg = f"Failed to send message: {error}"
+        return WebSocketResult(
+            direction="send",
+            message=message,
+            timestamp=timestamp,
+            success=False,
+            error=error_msg,
+            metadata=message_context.metadata_context.copy(),
+        )
+
+    def _parse_received_message(self, message_str: str | bytes) -> dict[str, Any] | str:
+        """Parse received message as JSON or return as string."""
+        if isinstance(message_str, bytes):
+            message_str = message_str.decode("utf-8", errors="replace")
+        try:
+            return loads(message_str)
+        except (JSONDecodeError, TypeError):
+            return message_str
+
+    def _get_receive_timeout(self, timeout: float | None) -> float:
+        """Get receive timeout with default fallback."""
+        if timeout is not None:
+            return timeout
+        return self.config.timeout if self.config.timeout is not None else 30.0
+
+    async def _handle_receive_error_and_raise(
+        self, error: Exception, timeout: float | None, is_timeout: bool
+    ) -> WebSocketResult:
+        """Handle error during message receiving and raise if not handled."""
+        if is_timeout:
+            error_msg = f"Timeout waiting for message: {timeout}s"
+            ws_error: Exception = TimeoutError(error_msg, str(error))
+        else:
+            error_msg = f"Failed to receive message: {error}"
+            ws_error = error
+        message_context = _WebSocketMessageContext(direction="receive", message="")
+        if self._middleware:
+            error_result = await self._middleware.process_error(message_context, ws_error)
+            if error_result is not None:
+                return error_result
+        if is_timeout:
+            raise TimeoutError(error_msg, str(error)) from error
+        raise OperationError(error_msg, str(error)) from error
+
+    async def _create_receive_result(
+        self, message: dict[str, Any] | str, timestamp: float
+    ) -> WebSocketResult:
+        """Create successful receive result with middleware processing."""
+        message_context = _WebSocketMessageContext(
+            direction="receive",
+            message=message,
+        )
+        message_context.metadata_context["receive_timestamp"] = timestamp
+        if self._middleware:
+            await self._middleware.process_message(message_context)
+        return WebSocketResult(
+            direction="receive",
+            message=message_context.message,
+            timestamp=timestamp,
+            success=True,
+            error=None,
+            metadata=message_context.metadata_context.copy(),
+        )
 
     async def send_message(self, message: dict[str, Any] | str) -> WebSocketResult:
         """
@@ -236,38 +347,14 @@ class WebSocketClient:
         if self._middleware:
             await self._middleware.process_message(message_context)
         try:
-            # Use message from context (may have been modified by middleware)
             processed_message = message_context.message
-            if isinstance(processed_message, dict):
-                message_str = dumps(processed_message)
-            else:
-                message_str = str(processed_message)
+            message_str = self._serialize_message(processed_message)
             if self._websocket is None:
                 raise RuntimeError("WebSocket is not connected")
             await self._websocket.send(message_str)
-            return WebSocketResult(
-                direction="send",
-                message=processed_message,
-                timestamp=timestamp,
-                success=True,
-                error=None,
-                metadata=message_context.metadata_context.copy(),
-            )
+            return await self._create_send_result(processed_message, timestamp)
         except Exception as e:
-            # Process error through middleware
-            if self._middleware:
-                error_result = await self._middleware.process_error(message_context, e)
-                if error_result is not None:
-                    return error_result
-            error_msg = f"Failed to send message: {e}"
-            return WebSocketResult(
-                direction="send",
-                message=message,
-                timestamp=timestamp,
-                success=False,
-                error=error_msg,
-                metadata=message_context.metadata_context.copy(),
-            )
+            return await self._handle_send_error(message, e, timestamp)
 
     async def receive_message(self, timeout: float | None = None) -> WebSocketResult:
         """
@@ -292,66 +379,21 @@ class WebSocketClient:
         if not await self.is_connected():
             error_msg = "Not connected to WebSocket. Call connect() first."
             raise ConnectionError(error_msg)
-        timeout = timeout or self.config.timeout
+        receive_timeout = self._get_receive_timeout(timeout)
         timestamp = time()
         try:
             if self._websocket is None:
                 raise RuntimeError("WebSocket is not connected")
             message_str = await wait_for(
                 self._websocket.recv(),
-                timeout=timeout if timeout is not None else 30.0,
+                timeout=receive_timeout,
             )
-            # Try to parse as JSON
-            try:
-                # Handle bytes if needed
-                if isinstance(message_str, bytes):
-                    message_str = message_str.decode("utf-8", errors="replace")
-                message = loads(message_str)
-            except (JSONDecodeError, TypeError):
-                # Ensure message_str is string for logging and return
-                if isinstance(message_str, bytes):
-                    message_str = message_str.decode("utf-8", errors="replace")
-                message = message_str
-            message_context = _WebSocketMessageContext(
-                direction="receive",
-                message=message,
-            )
-            message_context.metadata_context["receive_timestamp"] = timestamp
-            # Process message through middleware (may modify message)
-            if self._middleware:
-                await self._middleware.process_message(message_context)
-            return WebSocketResult(
-                direction="receive",
-                message=message_context.message,  # Use potentially modified message
-                timestamp=timestamp,
-                success=True,
-                error=None,
-                metadata=message_context.metadata_context.copy(),
-            )
+            message = self._parse_received_message(message_str)
+            return await self._create_receive_result(message, timestamp)
         except TimeoutError as e:
-            error_msg = f"Timeout waiting for message: {timeout}s"
-            message_context = _WebSocketMessageContext(
-                direction="receive",
-                message="",
-            )
-            if self._middleware:
-                error_result = await self._middleware.process_error(
-                    message_context, TimeoutError(error_msg, str(e))
-                )
-                if error_result is not None:
-                    return error_result
-            raise TimeoutError(error_msg, str(e)) from e
+            return await self._handle_receive_error_and_raise(e, timeout, True)
         except Exception as e:
-            error_msg = f"Failed to receive message: {e}"
-            message_context = _WebSocketMessageContext(
-                direction="receive",
-                message="",
-            )
-            if self._middleware:
-                error_result = await self._middleware.process_error(message_context, e)
-                if error_result is not None:
-                    return error_result
-            raise OperationError(error_msg, str(e)) from e
+            return await self._handle_receive_error_and_raise(e, timeout, False)
 
     async def listen(
         self, handler: Callable[[dict[str, Any] | str], None] | None = None
@@ -380,17 +422,23 @@ class WebSocketClient:
             error_msg = "Not connected to WebSocket. Call connect() first."
             raise ConnectionError(error_msg)
         try:
-            while self._is_connected:
-                result = await self.receive_message()
-                if handler:
-                    handler(result.message)
+            async for result in self._listen_messages(handler):
                 yield result
         except (ConnectionError, OperationError):
-            # Re-raise connection and operation errors
             raise
         except Exception as e:
             error_msg = f"Error in WebSocket listener: {e}"
             raise OperationError(error_msg, str(e)) from e
+
+    async def _listen_messages(
+        self, handler: Callable[[dict[str, Any] | str], None] | None
+    ) -> AsyncIterator[WebSocketResult]:
+        """Listen for messages in loop."""
+        while self._is_connected:
+            result = await self.receive_message()
+            if handler:
+                handler(result.message)
+            yield result
 
     def register_handler(
         self, message_type: str, handler: Callable[[dict[str, Any]], None]
