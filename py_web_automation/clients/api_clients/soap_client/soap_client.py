@@ -214,6 +214,16 @@ class SoapClient:
             result = response_context.result
         return result
 
+    def _extract_soap_fault(self, error: Exception) -> dict[str, Any] | None:
+        """Extract SOAP fault information from exception."""
+        if not isinstance(error, Fault):
+            return None
+        return {
+            "faultcode": str(error.code) if hasattr(error, "code") else "Unknown",
+            "faultstring": str(error.message) if hasattr(error, "message") else str(error),
+            "detail": str(error.detail) if hasattr(error, "detail") else None,
+        }
+
     async def _handle_operation_error(
         self,
         error: Exception,
@@ -234,20 +244,14 @@ class SoapClient:
             SoapResult representing the error
         """
         response_time = time() - start_time
+        soap_fault = self._extract_soap_fault(error)
 
-        # Extract SOAP fault if available
-        soap_fault = None
-        if isinstance(error, Fault):
-            soap_fault = {
-                "faultcode": str(error.code) if hasattr(error, "code") else "Unknown",
-                "faultstring": str(error.message) if hasattr(error, "message") else str(error),
-                "detail": str(error.detail) if hasattr(error, "detail") else None,
-            }
         # Process error through middleware
         if self._middleware:
             error_result = await self._middleware.process_error(request_context, error)
             if error_result is not None:
                 return error_result
+
         # Create error result
         return SoapResult(
             operation=operation,
@@ -258,6 +262,52 @@ class SoapClient:
             headers={},
             metadata=request_context.metadata_context.copy(),
         )
+
+    def _get_operation_proxy(self, operation: str) -> Any:
+        """Get SOAP operation proxy by name."""
+        service = self.client.service
+        operation_proxy = getattr(service, operation, None)
+        if operation_proxy is not None:
+            return operation_proxy
+        # Try using item access for operations with invalid Python names
+        try:
+            return service[operation]
+        except (KeyError, AttributeError):
+            raise OperationError(f"Operation '{operation}' not found in WSDL") from None
+
+    def _extract_response_headers(self) -> dict[str, str]:
+        """Extract response headers from httpx client if available."""
+        if hasattr(self._httpx_client, "headers"):
+            return dict(self._httpx_client.headers)
+        return {}
+
+    def _create_success_result(
+        self,
+        operation: str,
+        response: Any,
+        request_context: _SoapRequestContext,
+        response_time: float,
+        response_headers: dict[str, str],
+    ) -> SoapResult:
+        """Create successful SoapResult."""
+        return SoapResult(
+            operation=operation,
+            response_time=response_time,
+            success=True,
+            response=response,
+            soap_fault=None,
+            headers=response_headers,
+            metadata=request_context.metadata_context.copy(),
+        )
+
+    async def _handle_retry(self, request_context: _SoapRequestContext) -> bool:
+        """Check if retry is needed and wait if necessary."""
+        if not request_context.metadata_context.get("should_retry"):
+            return False
+        delay = request_context.metadata_context.get("retry_delay", 0)
+        if delay > 0:
+            await sleep(delay)
+        return True
 
     async def call(
         self,
@@ -302,33 +352,14 @@ class SoapClient:
                 # Update transport headers from context (middleware may have modified them)
                 if request_context.headers:
                     self._httpx_client.headers.update(request_context.headers)
-                # Get operation from service
-                service = self.client.service
-                operation_proxy = getattr(service, operation, None)
-                if operation_proxy is None:
-                    # Try using item access for operations with invalid Python names
-                    try:
-                        operation_proxy = service[operation]
-                    except (KeyError, AttributeError):
-                        raise OperationError(f"Operation '{operation}' not found in WSDL") from None
-                # Execute operation with body from context (may have been modified by middleware)
+
+                operation_proxy = self._get_operation_proxy(operation)
                 response = await operation_proxy(**request_context.body)
                 response_time = time() - start_time
-                # Extract headers from httpx client if available
-                response_headers: dict[str, str] = {}
-                if hasattr(self._httpx_client, "headers"):
-                    response_headers = dict(self._httpx_client.headers)
-                # Create result
-                result = SoapResult(
-                    operation=operation,
-                    response_time=response_time,
-                    success=True,
-                    response=response,
-                    soap_fault=None,
-                    headers=response_headers,
-                    metadata=request_context.metadata_context.copy(),
+                response_headers = self._extract_response_headers()
+                result = self._create_success_result(
+                    operation, response, request_context, response_time, response_headers
                 )
-                # Process response through middleware
                 result = await self._process_response(result, request_context)
                 return result
             except Exception as e:
@@ -336,9 +367,6 @@ class SoapClient:
                     e, operation, request_context, start_time
                 )
                 # Check if retry is needed (set by RetryMiddleware)
-                if request_context.metadata_context.get("should_retry"):
-                    delay = request_context.metadata_context.get("retry_delay", 0)
-                    if delay > 0:
-                        await sleep(delay)
+                if await self._handle_retry(request_context):
                     continue  # Retry the operation
                 return error_result

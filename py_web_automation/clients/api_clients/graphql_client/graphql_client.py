@@ -237,6 +237,14 @@ class GraphQLClient:
         """
         return await self._execute("mutation", mutation, variables, operation_name, headers)
 
+    def _get_schema(self) -> Any:
+        """Get schema from instance or client."""
+        if self._schema:
+            return self._schema
+        if hasattr(self.client, "schema"):
+            return self.client.schema
+        return None
+
     async def _prepare_request_context(
         self,
         operation_type: str,
@@ -266,14 +274,65 @@ class GraphQLClient:
             headers=headers.copy() if headers else {},
         )
         # Add schema to metadata for ValidationMiddleware
-        schema = self._schema
-        if schema is None and hasattr(self.client, "schema"):
-            schema = self.client.schema
+        schema = self._get_schema()
         if schema:
             request_context.metadata["schema"] = schema
         if self._middleware:
             await self._middleware.process_request(request_context)
         return request_context
+
+    def _apply_transport_headers(self, headers: dict[str, str]) -> None:
+        """Apply headers to transport if available."""
+        if not headers:
+            return
+        if not hasattr(self._transport, "headers"):
+            return
+        transport_headers = getattr(self._transport, "headers", None)
+        if transport_headers is not None:
+            transport_headers.update(headers)
+
+    def _extract_response_headers(self) -> dict[str, str]:
+        """Extract response headers from transport if available."""
+        if not hasattr(self._transport, "headers"):
+            return {}
+        transport_headers = getattr(self._transport, "headers", None)
+        if transport_headers:
+            return dict(transport_headers)
+        return {}
+
+    async def _ensure_session(self) -> None:
+        """Ensure gql session is created."""
+        if self._session is None:
+            self._session = await self.client.connect_async()
+
+    async def _execute_operation(self, request_context: _GraphQLRequestContext) -> Any:
+        """Execute GraphQL operation and return result data."""
+        gql_query = gql(request_context.query)
+        return await self._session.execute(
+            gql_query,
+            variable_values=request_context.variables,
+            operation_name=request_context.operation_name,
+        )
+
+    def _create_success_result(
+        self,
+        operation_type: str,
+        result_data: Any,
+        request_context: _GraphQLRequestContext,
+        response_time: float,
+        response_headers: dict[str, str],
+    ) -> GraphQLResult:
+        """Create successful GraphQLResult."""
+        return GraphQLResult(
+            operation_name=request_context.operation_name,
+            operation_type=operation_type,
+            response_time=response_time,
+            success=True,
+            data={"data": result_data} if result_data is not None else None,
+            errors=[],
+            headers=response_headers,
+            metadata=request_context.metadata.copy(),
+        )
 
     async def _execute(
         self,
@@ -310,42 +369,18 @@ class GraphQLClient:
             )
             request_context.metadata["start_time"] = start_time
             try:
-                # Ensure session is created
-                if self._session is None:
-                    self._session = await self.client.connect_async()
-                # Apply headers from context (middleware may have modified them)
-                if request_context.headers:
-                    if hasattr(self._transport, "headers"):
-                        transport_headers = getattr(self._transport, "headers", None)
-                        if transport_headers is not None:
-                            transport_headers.update(request_context.headers)
-                # Convert query string to gql DocumentNode
-                gql_query = gql(request_context.query)
-                # Execute query - gql handles exceptions
-                result_data = await self._session.execute(
-                    gql_query,
-                    variable_values=request_context.variables,
-                    operation_name=request_context.operation_name,
-                )
+                await self._ensure_session()
+                self._apply_transport_headers(request_context.headers)
+                result_data = await self._execute_operation(request_context)
                 response_time = time() - start_time
-                # Extract headers from transport if available
-                response_headers: dict[str, str] = {}
-                if hasattr(self._transport, "headers"):
-                    transport_headers = getattr(self._transport, "headers", None)
-                    if transport_headers:
-                        response_headers = dict(transport_headers)
-                # Create GraphQLResult
-                result = GraphQLResult(
-                    operation_name=request_context.operation_name,
-                    operation_type=operation_type,
-                    response_time=response_time,
-                    success=True,
-                    data={"data": result_data} if result_data is not None else None,
-                    errors=[],
-                    headers=response_headers,
-                    metadata=request_context.metadata.copy(),
+                response_headers = self._extract_response_headers()
+                result = self._create_success_result(
+                    operation_type,
+                    result_data,
+                    request_context,
+                    response_time,
+                    response_headers,
                 )
-                # Process response through middleware
                 result = await self._process_response(result, request_context)
                 return result
             except Exception as e:

@@ -309,6 +309,54 @@ class GrpcClient:
             metadata_context=request_context.metadata_context.copy(),
         )
 
+    def _get_call_timeout(self, request_context: _GrpcRequestContext) -> float | None:
+        """Get call timeout from context or config."""
+        if request_context.timeout is not None:
+            return request_context.timeout
+        return self.config.timeout if self.config else None
+
+    async def _execute_unary_call(
+        self, method_path: str, request: Any, metadata: dict, timeout: float | None
+    ) -> Any:
+        """Execute unary gRPC call and return response."""
+        from typing import Never
+
+        from grpclib.client import UnaryUnaryMethod
+
+        # Create method handler
+        # Response type is unknown at runtime, so we use Never as placeholder
+        method_handler: UnaryUnaryMethod[Any, Any] = UnaryUnaryMethod(
+            self._channel,
+            method_path,
+            request.__class__,
+            Never,
+        )
+
+        # Execute call
+        return await method_handler(request, metadata=metadata, timeout=timeout)
+
+    def _create_grpc_result(
+        self,
+        service: str,
+        method: str,
+        response: Any,
+        request_context: _GrpcRequestContext,
+        response_time: float,
+    ) -> GrpcResult:
+        """Create successful GrpcResult."""
+        return GrpcResult(
+            service=service,
+            method=method,
+            response_time=response_time,
+            success=True,
+            response=response,
+            error=None,
+            status_code=None,
+            metadata={},  # Response metadata not easily accessible in grpclib
+            request_metadata=request_context.metadata.copy(),
+            metadata_context=request_context.metadata_context.copy(),
+        )
+
     async def unary_call(
         self,
         service: str,
@@ -359,50 +407,15 @@ class GrpcClient:
             request_context.metadata_context["start_time"] = start_time
 
             try:
-                # Construct method path
                 method_path = f"/{service}/{method}"
-
-                # Use grpclib's low-level API for unary calls
-                from typing import Never
-
-                from grpclib.client import UnaryUnaryMethod
-
-                # Create method handler
-                # Response type is unknown at runtime, so we use Never as placeholder
-                method_handler: UnaryUnaryMethod[Any, Any] = UnaryUnaryMethod(
-                    self._channel,
-                    method_path,
-                    request.__class__,
-                    Never,
+                call_timeout = self._get_call_timeout(request_context)
+                response = await self._execute_unary_call(
+                    method_path, request, request_context.metadata, call_timeout
                 )
-
-                # Use metadata from context (may have been modified by middleware)
-                call_timeout = request_context.timeout
-                if call_timeout is None:
-                    call_timeout = self.config.timeout if self.config else None
-
-                # Execute call
-                response = await method_handler(
-                    request, metadata=request_context.metadata, timeout=call_timeout
-                )
-
                 response_time = time() - start_time
-
-                # Create result
-                result = GrpcResult(
-                    service=service,
-                    method=method,
-                    response_time=response_time,
-                    success=True,
-                    response=response,
-                    error=None,
-                    status_code=None,
-                    metadata={},  # Response metadata not easily accessible in grpclib
-                    request_metadata=request_context.metadata.copy(),
-                    metadata_context=request_context.metadata_context.copy(),
+                result = self._create_grpc_result(
+                    service, method, response, request_context, response_time
                 )
-
-                # Process response through middleware
                 result = await self._process_response(result, request_context)
                 return result
 

@@ -15,6 +15,7 @@ from .context import _GraphQLRequestContext, _GraphQLResponseContext
 from .middleware import Middleware
 
 if TYPE_CHECKING:
+    from graphql import DocumentNode
     from graphql.type import GraphQLSchema
 
 
@@ -78,6 +79,16 @@ class ValidationMiddleware(Middleware):
             return schema
         return self.schema
 
+    def _validate_query(
+        self, schema: "GraphQLSchema", document: "DocumentNode"
+    ) -> None:
+        """Validate GraphQL query and raise GraphQLError if invalid."""
+        validation_errors = validate(schema, document)
+        if validation_errors:
+            error_messages = [str(err) for err in validation_errors]
+            error_msg = f"Query validation failed: {'; '.join(error_messages)}"
+            raise GraphQLError(error_msg) from validation_errors[0]
+
     async def process_request(self, context: _GraphQLRequestContext) -> None:
         """
         Validate GraphQL query before execution.
@@ -101,11 +112,7 @@ class ValidationMiddleware(Middleware):
             if schema is None:
                 return
             # Validate query
-            validation_errors = validate(schema, document)
-            if validation_errors:
-                error_messages = [str(err) for err in validation_errors]
-                error_msg = f"Query validation failed: {'; '.join(error_messages)}"
-                raise GraphQLError(error_msg) from validation_errors[0]
+            self._validate_query(schema, document)
         except GraphQLError:
             # Re-raise GraphQLError as-is
             raise
