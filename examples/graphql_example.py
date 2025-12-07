@@ -7,7 +7,8 @@ including queries, mutations, and subscriptions.
 
 import asyncio
 
-from py_web_automation import Config, GraphQLClient
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.graphql_client import GraphQLClient
 
 
 async def main():
@@ -79,9 +80,9 @@ async def main():
             print(f"   Status: {result.status_code}")
             print(f"   Success: {result.success}")
 
-            # Example 4: Query with Authentication
+            # Example 4: Query with Authentication (using middleware)
             print("\n4. Executing authenticated query...")
-            gql.set_auth_token("your-jwt-token-here", token_type="Bearer")
+            # Note: Authentication should be set via middleware in new structure
             result = await gql.query(
                 """
                 query {
@@ -95,7 +96,6 @@ async def main():
             )
             print(f"   Status: {result.status_code}")
             print(f"   Success: {result.success}")
-            gql.clear_auth_token()
 
             # Example 5: Handling GraphQL Errors
             print("\n5. Handling GraphQL errors...")

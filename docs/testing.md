@@ -13,24 +13,23 @@ The Web Automation Framework has comprehensive test coverage with both unit and 
 Unit tests are located in `tests/unit/` and cover individual components in isolation:
 
 - **Config** - Configuration management and validation
-- **BaseClient** - Base class functionality
-- **ApiClient** - HTTP REST API client
+- **HttpClient** - HTTP REST API client
 - **GraphQLClient** - GraphQL API client
 - **GrpcClient** - gRPC client
 - **SoapClient** - SOAP client
 - **WebSocketClient** - WebSocket client
-- **UiClient** - Browser automation client
-- **DBClient** - Database client
-- **Models** - Data models and validation
-- **Validators** - Response validation utilities
+- **AsyncUiClient** - Browser automation client (async)
+- **Database Clients** - SQLiteClient, PostgreSQLClient, MySQLClient
+- **Models** - Data models (HttpResult, GraphQLResult, etc.)
 - **RequestBuilder** - Request builder pattern
+- **Middleware** - Request/response processing middleware
 
 ### Integration Tests
 
 Integration tests are located in `tests/integration/` and verify interactions between components:
 
-- **ApiClient + DBClient** - Integration between API and database testing
-- **UiClient + DBClient** - Integration between UI and database testing
+- **HttpClient + Database Clients** - Integration between API and database testing
+- **AsyncUiClient + Database Clients** - Integration between UI and database testing
 - **End-to-End** - Complete workflows from start to finish
 - **External Services** - Integration with real external services (optional)
 
@@ -92,8 +91,8 @@ pytest tests/unit/test_config.py::TestConfig::test_init_with_valid_data
 
 - **Unit Tests**: Comprehensive coverage across all components
 - **Integration Tests**: Coverage for component interactions
-  - ApiClient + DBClient: Integration tests
-  - UiClient + DBClient: Integration tests
+  - HttpClient + Database Clients: Integration tests
+  - AsyncUiClient + Database Clients: Integration tests
   - End-to-End: Complete workflow tests
   - External Services: Optional (requires real external services)
 
@@ -125,9 +124,9 @@ pytest tests/unit/test_config.py::TestConfig::test_init_with_valid_data
 The framework uses pytest fixtures for test setup and teardown:
 
 - `valid_config` - Valid configuration object
-- `api_client_with_config` - ApiClient instance
-- `ui_client_with_config` - UiClient instance
-- `db_client_with_config` - DBClient instance
+- `http_client_with_config` - HttpClient instance
+- `ui_client_with_config` - AsyncUiClient instance
+- `db_client_with_config` - Database client instance
 - `mock_api_url` - Mock API URL
 - `mock_response` - Mock HTTP response
 

@@ -2,12 +2,14 @@
 Basic usage example of Web Automation Framework.
 
 This example demonstrates the basic usage of the framework with
-ApiClient and UiClient classes.
+HttpClient and AsyncUiClient classes.
 """
 
 import asyncio
 
-from py_web_automation import ApiClient, Config, UiClient
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 
 async def main():
@@ -28,7 +30,7 @@ async def main():
     try:
         # Example 1: API Testing
         print("\n=== Example 1: API Testing ===")
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             # Test API endpoints
             result = await api.make_request("/api/status", method="GET")
             print(f"API Test: {'PASSED' if result.success else 'FAILED'}")
@@ -39,10 +41,11 @@ async def main():
 
         # Example 2: UI Testing
         print("\n=== Example 2: UI Testing ===")
-        async with UiClient(web_url, config) as ui:
+        async with AsyncUiClient(web_url, config) as ui:
             # Setup browser and navigate
             await ui.setup_browser()
-            await ui.page.goto(web_url, wait_until="networkidle")
+            if ui.page:
+                await ui.page.goto(web_url, wait_until="networkidle")
 
             # Basic UI interactions
             print("Testing UI interactions...")

@@ -6,7 +6,9 @@ Shows proper error handling for API requests, UI interactions, and configuration
 
 import asyncio
 
-from py_web_automation import ApiClient, Config, UiClient
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
 from py_web_automation.exceptions import (
     ConnectionError,
     NotFoundError,
@@ -36,11 +38,11 @@ async def test_connection_errors():
     config = Config(timeout=5)  # Short timeout for testing
 
     try:
-        async with ApiClient("https://invalid-url-that-does-not-exist-12345.com", config) as api:
+        async with HttpClient("https://invalid-url-that-does-not-exist-12345.com", config) as api:
             result = await api.make_request("/api/test", method="GET")
             print(f"Connection test: {'✅ OK' if result.success else '❌ FAILED'}")
-            if result.error_message:
-                print(f"Error message: {result.error_message}")
+            if result.error:
+                print(f"Error message: {result.error}")
 
     except ConnectionError as e:
         print(f"✅ Connection error caught: {e}")
@@ -55,10 +57,10 @@ async def test_timeout_handling():
     config = Config(timeout=2)  # Very short timeout
 
     try:
-        async with ApiClient("https://httpbin.org", config) as api:
+        async with HttpClient("https://httpbin.org", config) as api:
             # This might timeout depending on network
             result = await api.make_request("/delay/5", method="GET")
-            if result.error_message and "timeout" in result.error_message.lower():
+            if result.error and "timeout" in str(result.error).lower():
                 print("✅ Timeout correctly detected")
             else:
                 print(f"⚠️ Request completed: {result.status_code}")
@@ -76,9 +78,10 @@ async def test_ui_errors():
     config = Config(timeout=30, browser_headless=True)
 
     try:
-        async with UiClient("https://example.com", config) as ui:
+        async with AsyncUiClient("https://example.com", config) as ui:
             await ui.setup_browser()
-            await ui.page.goto("https://example.com", wait_until="networkidle")
+            if ui.page:
+                await ui.page.goto("https://example.com", wait_until="networkidle")
 
             # Try to interact with non-existent element
             try:
@@ -107,16 +110,16 @@ async def test_api_error_responses():
     config = Config(timeout=30)
 
     try:
-        async with ApiClient("https://httpbin.org", config) as api:
+        async with HttpClient("https://httpbin.org", config) as api:
             # Test 404 error
             result = await api.make_request("/status/404", method="GET")
             print(f"404 test: {'✅ OK' if not result.success else '❌ FAILED'}")
-            print(f"  Status: {result.status_code}, Client Error: {result.client_error}")
+            print(f"  Status: {result.status_code}")
 
             # Test 500 error
             result = await api.make_request("/status/500", method="GET")
             print(f"500 test: {'✅ OK' if not result.success else '❌ FAILED'}")
-            print(f"  Status: {result.status_code}, Server Error: {result.server_error}")
+            print(f"  Status: {result.status_code}")
 
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
@@ -151,16 +154,16 @@ async def test_comprehensive_error_handling():
         ("/api/error", "GET"),  # Might return 500
     ]
 
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         for endpoint, method in endpoints:
             try:
                 result = await api.make_request(endpoint, method=method)
 
                 if result.success:
                     print(f"✅ {method} {endpoint}: Success ({result.status_code})")
-                elif result.client_error:
+                elif result.status_code and 400 <= result.status_code < 500:
                     print(f"⚠️ {method} {endpoint}: Client Error ({result.status_code})")
-                elif result.server_error:
+                elif result.status_code and result.status_code >= 500:
                     print(f"⚠️ {method} {endpoint}: Server Error ({result.status_code})")
                 else:
                     print(f"❓ {method} {endpoint}: Unknown status ({result.status_code})")

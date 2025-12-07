@@ -7,7 +7,8 @@ including operation invocation and response handling.
 
 import asyncio
 
-from py_web_automation import Config, SoapClient
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.soap_client import SoapClient
 
 
 async def main():
@@ -42,20 +43,19 @@ async def main():
             print(f"   Status: {result.status_code}")
             print(f"   Success: {result.success}")
 
-            # Example 3: SOAP Call with Authentication
+            # Example 3: SOAP Call with Authentication (via middleware)
             print("\n3. Executing authenticated SOAP operation...")
-            soap.set_auth_token("your-soap-token", token_type="Bearer")
+            # Note: Authentication should be set via middleware in new structure
             result = await soap.call(
                 operation="CelsiusToFahrenheit",
                 body={"Celsius": "30"},
             )
             print(f"   Status: {result.status_code}")
             print(f"   Success: {result.success}")
-            soap.clear_auth_token()
 
             # Example 4: SOAP 1.2 Call
             print("\n4. Executing SOAP 1.2 operation...")
-            soap_12 = SoapClient(soap_url, config, soap_version="1.2")
+            soap_12 = SoapClient(soap_url, config, wsdl_url=wsdl_url, soap_version="1.2")
             result = await soap_12.call(
                 operation="CelsiusToFahrenheit",
                 body={"Celsius": "20"},
@@ -72,7 +72,7 @@ async def main():
                     body={"invalid": "data"},
                 )
                 if not result.success:
-                    print(f"   SOAP fault detected: {result.error_message}")
+                    print(f"   SOAP fault detected: {result.error}")
             except Exception as e:
                 print(f"   Exception caught: {e}")
 

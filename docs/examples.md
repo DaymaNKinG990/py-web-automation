@@ -25,12 +25,13 @@ This document provides comprehensive examples of using the Web Automation Framew
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def basic_api_test():
     config = Config(timeout=30)
     
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         result = await api.make_request("/api/status", method="GET")
         print(f"Status: {result.status_code}")
         print(f"Success: {result.success}")
@@ -45,12 +46,13 @@ asyncio.run(basic_api_test())
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def basic_api_test():
     config = Config(timeout=30)
 
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         # Test GET endpoint
         result = await api.make_request("/api/status", method="GET")
         print(f"Status: {result.status_code}")
@@ -67,12 +69,13 @@ asyncio.run(basic_api_test())
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def post_request_example():
     config = Config(timeout=30)
 
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         # Test POST endpoint with data
         data = {
             "username": "test_user",
@@ -105,7 +108,8 @@ asyncio.run(post_request_example())
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def multiple_endpoints_example():
     config = Config(timeout=30)
@@ -117,7 +121,7 @@ async def multiple_endpoints_example():
         ("/api/settings", "GET"),
     ]
 
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         results = []
 
         for endpoint, method in endpoints:
@@ -145,7 +149,8 @@ asyncio.run(multiple_endpoints_example())
 
 ```python
 import asyncio
-from py_web_automation import GraphQLClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.graphql_client import GraphQLClient
 
 async def graphql_query_example():
     config = Config(timeout=30)
@@ -162,7 +167,7 @@ async def graphql_query_example():
         """
         
         variables = {"id": "123"}
-        result = await client.execute_query(query, variables=variables)
+        result = await client.query(query, variables=variables)
         print(f"Success: {result.success}")
         print(f"Data: {result.data}")
 
@@ -173,7 +178,8 @@ asyncio.run(graphql_query_example())
 
 ```python
 import asyncio
-from py_web_automation import GraphQLClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.graphql_client import GraphQLClient
 
 async def graphql_mutation_example():
     config = Config(timeout=30)
@@ -196,7 +202,7 @@ async def graphql_mutation_example():
             }
         }
         
-        result = await client.execute_mutation(mutation, variables=variables)
+        result = await client.mutate(mutation, variables=variables)
         print(f"Success: {result.success}")
         print(f"Data: {result.data}")
 
@@ -209,20 +215,19 @@ asyncio.run(graphql_mutation_example())
 
 ```python
 import asyncio
-from py_web_automation import GrpcClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.grpc_client import GrpcClient
 
 async def grpc_example():
     config = Config(timeout=30)
     
     async with GrpcClient("localhost:50051", config) as client:
         # Call gRPC method
-        result = await client.call_method(
-            "UserService",
-            "GetUser",
-            {"id": "123"}
-        )
-        print(f"Success: {result.success}")
-        print(f"Response: {result.response}")
+        await client.connect()
+        # result = await client.unary_call("UserService", "GetUser", request)
+        # if result.success:
+        #     print(result.response)
+        print("gRPC call executed (conceptual example)")
 
 asyncio.run(grpc_example())
 ```
@@ -233,16 +238,17 @@ asyncio.run(grpc_example())
 
 ```python
 import asyncio
-from py_web_automation import SoapClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.soap_client import SoapClient
 
 async def soap_example():
     config = Config(timeout=30)
     
     async with SoapClient("https://api.example.com/soap", config) as client:
         # Call SOAP method
-        result = await client.call_method(
-            "GetUser",
-            {"userId": "123"}
+        result = await client.call(
+            operation="GetUser",
+            body={"userId": "123"}
         )
         print(f"Success: {result.success}")
         print(f"Response: {result.response}")
@@ -256,24 +262,34 @@ asyncio.run(soap_example())
 
 ```python
 import asyncio
-from py_web_automation import WebSocketClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.streaming_clients.websocket_client.websocket_client import (
+    WebSocketClient,
+)
 
 async def websocket_example():
     config = Config(timeout=30)
     
     async with WebSocketClient("ws://example.com/ws", config) as ws:
+        # Connect first
+        await ws.connect()
+        
         # Send message
-        await ws.send_message({"type": "ping", "data": "hello"})
+        result = await ws.send_message({"type": "ping", "data": "hello"})
+        if result.success:
+            print(f"Sent at {result.timestamp}")
         
         # Receive message
-        message = await ws.receive_message()
-        print(f"Received: {message}")
+        received_result = await ws.receive_message(timeout=5.0)
+        if received_result.success:
+            print(f"Received: {received_result.message}")
         
         # Listen to messages
-        async for msg in ws.listen():
-            print(f"Message: {msg}")
-            if msg.get("type") == "close":
-                break
+        async for result in ws.listen():
+            if result.success:
+                print(f"Message: {result.message}")
+                if isinstance(result.message, dict) and result.message.get("type") == "close":
+                    break
 
 asyncio.run(websocket_example())
 ```
@@ -284,12 +300,13 @@ asyncio.run(websocket_example())
 
 ```python
 import asyncio
-from py_web_automation import UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 async def basic_ui_test():
     config = Config(timeout=30)
 
-    async with UiClient("https://example.com", config) as ui:
+    async with AsyncUiClient("https://example.com", config) as ui:
         # Setup browser and navigate
         await ui.setup_browser()
         await ui.page.goto("https://example.com", wait_until="networkidle")
@@ -309,12 +326,13 @@ asyncio.run(basic_ui_test())
 
 ```python
 import asyncio
-from py_web_automation import UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 async def form_interaction_example():
     config = Config(timeout=30)
 
-    async with UiClient("https://example.com", config) as ui:
+    async with AsyncUiClient("https://example.com", config) as ui:
         await ui.setup_browser()
         await ui.page.goto("https://example.com", wait_until="networkidle")
 
@@ -348,12 +366,13 @@ asyncio.run(form_interaction_example())
 
 ```python
 import asyncio
-from py_web_automation import UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 async def advanced_ui_interactions():
     config = Config(timeout=30)
 
-    async with UiClient("https://example.com", config) as ui:
+    async with AsyncUiClient("https://example.com", config) as ui:
         await ui.setup_browser()
         await ui.page.goto("https://example.com", wait_until="networkidle")
 
@@ -397,19 +416,14 @@ asyncio.run(advanced_ui_interactions())
 
 ```python
 import asyncio
-from py_web_automation import DBClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.db_clients.sqlite_client import SQLiteClient
 
 async def basic_database_test():
     config = Config()
 
     # SQLite example
-    async with await DBClient.create(
-        "https://example.com/app",
-        config,
-        db_type="sqlite",
-        connection_string="sqlite:///:memory:"
-    ) as db:
-        await db.connect()
+    async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
 
         # Create table
         await db.execute_command(
@@ -419,7 +433,7 @@ async def basic_database_test():
         # Insert data
         await db.execute_command(
             "INSERT INTO users (name, email) VALUES (:name, :email)",
-            {"name": "Test User", "email": "test@example.com"}
+            params={"name": "Test User", "email": "test@example.com"}
         )
 
         # Query data
@@ -427,18 +441,18 @@ async def basic_database_test():
         print(f"Users: {users}")
 
         # Update data
-        rows_affected = await db.execute_command(
+        await db.execute_command(
             "UPDATE users SET email = :email WHERE name = :name",
-            {"email": "updated@example.com", "name": "Test User"}
+            params={"email": "updated@example.com", "name": "Test User"}
         )
-        print(f"Updated {rows_affected} rows")
+        print("Updated rows")
 
         # Delete data
-        rows_affected = await db.execute_command(
+        await db.execute_command(
             "DELETE FROM users WHERE name = :name",
-            {"name": "Test User"}
+            params={"name": "Test User"}
         )
-        print(f"Deleted {rows_affected} rows")
+        print("Deleted rows")
 
 asyncio.run(basic_database_test())
 ```
@@ -447,48 +461,29 @@ asyncio.run(basic_database_test())
 
 ```python
 import asyncio
-from py_web_automation import DBClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.db_clients.sqlite_client import SQLiteClient
 
 async def database_transactions():
     config = Config()
 
-    # PostgreSQL example with transactions
-    db = await DBClient.create(
-        "https://example.com/app",
-        config,
-        db_type="postgresql",
-        connection_string="postgresql://user:pass@localhost/db"
-    )
-
-    try:
-        await db.connect()
+    # SQLite example with transactions
+    async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+        await db.execute_command(
+            "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)"
+        )
 
         # Use transaction context manager
         async with db.transaction():
             await db.execute_command(
                 "INSERT INTO users (name) VALUES (:name)",
-                {"name": "User 1"}
+                params={"name": "User 1"}
             )
             await db.execute_command(
                 "INSERT INTO users (name) VALUES (:name)",
-                {"name": "User 2"}
+                params={"name": "User 2"}
             )
             # Transaction commits automatically on exit
-
-        # Manual transaction management
-        await db.begin_transaction()
-        try:
-            await db.execute_command(
-                "INSERT INTO users (name) VALUES (:name)",
-                {"name": "User 3"}
-            )
-            await db.commit_transaction()
-        except Exception:
-            await db.rollback_transaction()
-            raise
-
-    finally:
-        await db.disconnect()
 
 asyncio.run(database_transactions())
 ```
@@ -499,12 +494,13 @@ asyncio.run(database_transactions())
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def request_builder_example():
     config = Config(timeout=30)
     
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         # Build request with fluent API
         result = await (api.build_request()
             .get("/users")
@@ -529,13 +525,18 @@ asyncio.run(request_builder_example())
 
 ## Response Validation
 
-### Schema Validation
+Response validation is available through ValidationMiddleware for each client.
+Validation is handled internally and validates requests/responses according to
+the client's specific requirements (e.g., GraphQL query validation).
+
+For manual validation, you can use msgspec directly:
 
 ```python
 import asyncio
-from msgspec import Struct
-from py_web_automation import ApiClient, Config
-from py_web_automation.validators import validate_api_result
+from msgspec import Struct, json
+
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 class UserResponse(Struct):
     id: int
@@ -545,12 +546,14 @@ class UserResponse(Struct):
 async def validation_example():
     config = Config(timeout=30)
     
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         result = await api.make_request("/users/1", method="GET")
         
-        # Validate response against schema
-        user = validate_api_result(result, UserResponse)
-        print(f"User: {user.name} ({user.email})")
+        if result.success and result.body:
+            # Manual validation using msgspec
+            user_data = result.json()
+            user = json.decode(json.encode(user_data), type=UserResponse)
+            print(f"User: {user.name} ({user.email})")
 
 asyncio.run(validation_example())
 ```
@@ -561,7 +564,8 @@ asyncio.run(validation_example())
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 from py_web_automation.exceptions import WebAutomationError, ConnectionError
 
 async def robust_api_testing():
@@ -574,7 +578,7 @@ async def robust_api_testing():
         "/api/error"
     ]
 
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         for endpoint in endpoints:
             try:
                 result = await api.make_request(endpoint, method="GET")
@@ -598,12 +602,13 @@ asyncio.run(robust_api_testing())
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def retry_logic_example():
     config = Config(timeout=30, retry_count=3, retry_delay=1.0)
 
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         max_retries = 3
         retry_delay = 1.0
 
@@ -664,7 +669,8 @@ config = Config.from_yaml("config.yaml")
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def parallel_api_testing():
     config = Config(timeout=30)
@@ -678,7 +684,7 @@ async def parallel_api_testing():
     ]
 
     async def test_endpoint(endpoint: str):
-        async with ApiClient("https://api.example.com", config) as api:
+        async with HttpClient("https://api.example.com", config) as api:
             result = await api.make_request(endpoint, method="GET")
             return {
                 "endpoint": endpoint,
@@ -709,13 +715,15 @@ asyncio.run(parallel_api_testing())
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 async def ecommerce_testing():
     config = Config(timeout=30)
 
     # Test product API
-    async with ApiClient("https://api.shop.com", config) as api:
+    async with HttpClient("https://api.shop.com", config) as api:
         # Test product listing
         products = await api.make_request("/api/products", method="GET")
         print(f"Products API: {products.status_code}")
@@ -730,7 +738,7 @@ async def ecommerce_testing():
         print(f"Add to cart: {cart.status_code}")
 
     # Test shopping flow UI
-    async with UiClient("https://shop.com", config) as ui:
+    async with AsyncUiClient("https://shop.com", config) as ui:
         await ui.setup_browser()
         await ui.page.goto("https://shop.com", wait_until="networkidle")
 

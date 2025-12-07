@@ -1,12 +1,17 @@
 """
 Simple authentication example for Web Automation Framework.
 
-This example demonstrates basic authentication using API tokens.
+This example demonstrates basic authentication using API tokens with AuthMiddleware.
 """
 
 import asyncio
 
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    AuthMiddleware,
+    MiddlewareChain,
+)
 
 
 async def main():
@@ -26,10 +31,13 @@ async def main():
     try:
         print("=== Simple Authentication Example ===")
 
-        async with ApiClient(base_url, config) as api:
-            # Set authentication token
-            api.set_auth_token(auth_token, token_type="Bearer")
-            print("✅ Authentication token set")
+        # Setup authentication middleware
+        auth_middleware = AuthMiddleware(token=auth_token, token_type="Bearer")
+        middleware_chain = MiddlewareChain()
+        middleware_chain.add(auth_middleware)
+
+        async with HttpClient(base_url, config, middleware=middleware_chain) as api:
+            print("✅ Authentication middleware configured")
 
             # Make authenticated request
             result = await api.make_request("/api/protected", method="GET")
@@ -42,7 +50,7 @@ async def main():
                 print(f"Response data: {data}")
 
             # Clear authentication token
-            api.clear_auth_token()
+            auth_middleware.clear_token()
             print("✅ Authentication token cleared")
 
             # Try request without authentication

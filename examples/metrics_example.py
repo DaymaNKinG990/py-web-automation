@@ -7,8 +7,9 @@ and analyzing performance metrics.
 
 import asyncio
 
-from py_web_automation import ApiClient, Config
-from py_web_automation.metrics import Metrics
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.api_clients.http_client.metrics import Metrics
 
 
 async def main():
@@ -24,7 +25,7 @@ async def main():
         print("1. Basic metrics collection...")
         metrics = Metrics()
 
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             for i in range(5):
                 start_time = asyncio.get_event_loop().time()
                 result = await api.make_request(f"/api/endpoint-{i}", method="GET")
@@ -45,7 +46,7 @@ async def main():
         print("\n2. Latency metrics...")
         metrics = Metrics()
 
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             for i in range(10):
                 start_time = asyncio.get_event_loop().time()
                 result = await api.make_request(f"/api/data-{i}", method="GET")
@@ -57,14 +58,16 @@ async def main():
                 )
 
         print(f"   Average latency: {metrics.avg_latency:.3f}s")
-        print(f"   Min latency: {metrics.min_latency:.3f}s" if metrics.min_latency else "   Min latency: N/A")
-        print(f"   Max latency: {metrics.max_latency:.3f}s" if metrics.max_latency else "   Max latency: N/A")
+        if metrics.min_latency is not None:
+            print(f"   Min latency: {metrics.min_latency:.3f}s")
+        if metrics.max_latency is not None:
+            print(f"   Max latency: {metrics.max_latency:.3f}s")
 
         # Example 3: Error Tracking
         print("\n3. Error tracking...")
         metrics = Metrics()
 
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             endpoints = ["/api/success", "/api/timeout", "/api/error", "/api/success"]
             for endpoint in endpoints:
                 start_time = asyncio.get_event_loop().time()
@@ -75,7 +78,7 @@ async def main():
                 if not result.success:
                     if result.status_code == 408:
                         error_type = "timeout"
-                    elif result.status_code >= 500:
+                    elif result.status_code and result.status_code >= 500:
                         error_type = "server_error"
                     else:
                         error_type = "client_error"
@@ -93,7 +96,7 @@ async def main():
         print("\n4. Metrics summary...")
         metrics = Metrics()
 
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             for i in range(20):
                 start_time = asyncio.get_event_loop().time()
                 result = await api.make_request(f"/api/item-{i}", method="GET")
@@ -104,13 +107,13 @@ async def main():
                     latency=latency,
                 )
 
-        print(f"   Summary: {metrics.get_summary()}")
+        print(f"   Summary: {metrics.to_dict()}")
 
         # Example 5: Metrics to Dictionary
         print("\n5. Converting metrics to dictionary...")
         metrics = Metrics()
 
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             for i in range(5):
                 start_time = asyncio.get_event_loop().time()
                 result = await api.make_request(f"/api/test-{i}", method="GET")
@@ -131,7 +134,7 @@ async def main():
         print("\n6. Resetting metrics...")
         metrics = Metrics()
 
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             for i in range(3):
                 start_time = asyncio.get_event_loop().time()
                 result = await api.make_request(f"/api/pre-{i}", method="GET")

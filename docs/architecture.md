@@ -12,13 +12,13 @@ The Web Automation Framework is designed as a comprehensive library for automate
 
 The framework separates different testing responsibilities:
 
-- **ApiClient**: HTTP REST API testing
+- **HttpClient**: HTTP REST API testing
 - **GraphQLClient**: GraphQL API testing
 - **GrpcClient**: gRPC API testing
 - **SoapClient**: SOAP API testing
 - **WebSocketClient**: WebSocket communication
-- **UiClient**: Browser-based UI testing with Playwright
-- **DBClient**: Database client with support for multiple backends (PostgreSQL, MySQL, SQLite)
+- **AsyncUiClient**: Browser-based UI testing with Playwright (async)
+- **Database Clients**: Direct client classes (SQLiteClient, PostgreSQLClient, MySQLClient)
 
 ### 2. Async-First Design
 
@@ -48,32 +48,31 @@ Configuration is handled through:
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   ApiClient     │    │ GraphQLClient   │    │   GrpcClient    │    │   SoapClient    │
+│   HttpClient    │    │ GraphQLClient   │    │   GrpcClient    │    │   SoapClient    │
 │                 │    │                 │    │                 │    │                 │
 │ • HTTP Client   │    │ • GraphQL       │    │ • gRPC          │    │ • SOAP          │
-│ • REST API      │    │ • Queries       │    │ • Protobuf       │    │ • XML           │
-│ • Validation    │    │ • Mutations     │    │ • Streaming     │    │ • WSDL          │
+│ • REST API      │    │ • Queries       │    │ • Protobuf      │    │ • XML           │
+│ • Middleware    │    │ • Mutations     │    │ • Streaming     │    │ • WSDL          │
 └─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │                       │
-         └───────────────────────┼───────────────────────┼───────────────────────┘
+         │                       │                       │                       │
+         │                       │                       │                       │
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ WebSocketClient │    │  AsyncUiClient  │    │  SQLiteClient   │    │PostgreSQLClient │
+│                 │    │                 │    │                 │    │                 │
+│ • WebSocket     │    │ • Playwright    │    │ • SQLite        │    │ • PostgreSQL    │
+│ • Messages      │    │ • Browser       │    │ • Query Builder │    │ • Query Builder │
+│ • Handlers      │    │ • UI Testing    │    │ • Transactions  │    │ • Transactions  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
                                  │
                     ┌─────────────────┐
-                    │   BaseClient    │
+                    │     Config      │
                     │                 │
-                    │ • URL           │
-                    │ • Config        │
+                    │ • Timeouts      │
+                    │ • Retry         │
                     │ • Logging       │
+                    │ • Browser       │
                     └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ WebSocketClient │    │   UiClient      │    │   DBClient      │
-│                 │    │                 │    │                 │
-│ • WebSocket     │    │ • Playwright    │    │ • PostgreSQL    │
-│ • Messages      │    │ • Browser       │    │ • SQLite        │
-│ • Handlers      │    │ • UI Testing    │    │ • MySQL         │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
                                  │
                     ┌─────────────────┐
                     │     Config      │
@@ -87,7 +86,7 @@ Configuration is handled through:
 
 ## Class Responsibilities
 
-### ApiClient
+### HttpClient
 
 **Purpose**: Test HTTP REST API endpoints
 
@@ -95,6 +94,7 @@ Configuration is handled through:
 - HTTP request handling
 - Response analysis
 - Error handling
+- Middleware support
 - Request/response logging
 
 **Dependencies**:
@@ -104,6 +104,8 @@ Configuration is handled through:
 **Key Methods**:
 - `make_request()` - Make HTTP requests
 - `build_request()` - Create request builder
+
+**Location**: `py_web_automation/clients/api_clients/http_client/http_client.py`
 
 ### GraphQLClient
 
@@ -166,9 +168,9 @@ Configuration is handled through:
 - `receive_message()` - Receive WebSocket message
 - `listen()` - Async iterator for messages
 
-### UiClient
+### AsyncUiClient
 
-**Purpose**: Test web application user interface
+**Purpose**: Test web application user interface (asynchronous)
 
 **Responsibilities**:
 - Browser automation
@@ -189,47 +191,47 @@ Configuration is handled through:
 - `execute_script()` - Execute JavaScript
 
 **Design Decisions**:
-- Uses Playwright for modern browser automation
+- Uses Playwright async API for modern browser automation
 - Supports headless and headed modes
 - Focused on UI testing only
+- Also available: `SyncUiClient` for synchronous usage
 
-### DBClient
+**Location**: `py_web_automation/clients/ui_clients/async_ui_client/ui_client.py`
 
-**Purpose**: Database client for testing applications with database backends
+### Database Clients
+
+**Purpose**: Database clients for testing applications with database backends
+
+**Separate Client Classes**:
+- **SQLiteClient**: SQLite database client
+- **PostgreSQLClient**: PostgreSQL database client
+- **MySQLClient**: MySQL database client
 
 **Responsibilities**:
 - Database connection management
 - Query execution (SELECT, INSERT, UPDATE, DELETE)
 - Transaction handling
-- Support for multiple database backends
+- Query Builder integration
 
 **Dependencies**:
 - Database-specific libraries (asyncpg, psycopg, aiosqlite, aiomysql, pymysql)
 - `Config` for configuration
 
-**Supported Backends**:
-- **PostgreSQL**: via `asyncpg` or `psycopg`
-- **SQLite**: via `aiosqlite`
-- **MySQL**: via `aiomysql` or `pymysql`
-
-**Key Methods**:
+**Key Methods** (common to all):
 - `connect()` - Establish database connection
 - `disconnect()` - Close database connection
-- `execute_query()` - Execute SELECT queries
+- `execute_query()` - Execute SELECT queries (returns list of dicts)
 - `execute_command()` - Execute INSERT/UPDATE/DELETE commands
-- `begin_transaction()` - Start transaction
-- `commit_transaction()` - Commit transaction
-- `rollback_transaction()` - Rollback transaction
 - `transaction()` - Context manager for transactions
-
-**Factory Method**:
-- `DBClient.create()` - Create database client instance based on `db_type`
+- `query()` - Create QueryBuilder instance
 
 **Design Decisions**:
-- Pluggable adapter pattern for different database backends
-- Automatic adapter detection based on available libraries
+- Direct client classes instead of factory pattern
 - Unified interface across all database backends
-- Support for both connection strings and keyword arguments
+- Integrated QueryBuilder for fluent SQL construction
+- Support for connection strings
+
+**Location**: `py_web_automation/clients/db_clients/`
 
 ### Config
 
@@ -265,8 +267,11 @@ All data models use `msgspec.Struct` for:
 - Zero-cost validation
 
 **Models**:
-- `ApiResult` - API request results
-- Response models for different clients
+- `HttpResult` - HTTP request results
+- `GraphQLResult` - GraphQL operation results
+- `SoapResult` - SOAP operation results
+- `GrpcResult` - gRPC call results
+- `WebSocketResult` - WebSocket message results
 
 ## Error Handling Strategy
 
@@ -277,11 +282,11 @@ Exception
 ├── WebAutomationError (Base)
 │   ├── ConfigurationError
 │   ├── ConnectionError
-│   ├── ValidationError
 │   ├── OperationError
 │   ├── TimeoutError
 │   ├── AuthenticationError
-│   └── NotFoundError
+│   ├── NotFoundError
+│   └── CircuitBreakerOpenError
 ```
 
 ### Error Handling Patterns
@@ -298,7 +303,9 @@ Exception
 All classes implement context managers for proper resource cleanup:
 
 ```python
-async with ApiClient(url, config) as api:
+from py_web_automation.clients.api_clients.http_client import HttpClient
+
+async with HttpClient(url, config) as api:
     # Automatic cleanup on exit
     result = await api.make_request("/endpoint")
 # HTTP client automatically closed
@@ -313,16 +320,17 @@ async with ApiClient(url, config) as api:
 
 ## Design Patterns
 
-### Factory Pattern
+### Builder Pattern (QueryBuilder)
 
-**Location**: `DBClient.create()`
+**Location**: `QueryBuilder` in database clients
 
-**Purpose**: Create database clients based on type string
+**Purpose**: Fluent API for constructing SQL queries
 
 **Benefits**:
-- Decouples client creation from concrete implementations
-- Easy to add new database types
-- Centralized creation logic
+- Readable query construction
+- Method chaining
+- Type-safe parameters
+- Integrated into database clients
 
 ### Strategy Pattern
 
@@ -345,16 +353,17 @@ async with ApiClient(url, config) as api:
 - Automatic detection of available libraries
 - Unified interface for all backends
 
-### Template Method Pattern
+### Middleware Pattern
 
-**Location**: `BaseClient` and its subclasses
+**Location**: All API clients (`HttpClient`, `GraphQLClient`, `GrpcClient`, `SoapClient`, `WebSocketClient`)
 
-**Purpose**: Define skeleton of algorithm in base class
+**Purpose**: Intercept and modify requests/responses through middleware chain
 
 **Benefits**:
-- Common behavior in base class
-- Specific behavior in subclasses
-- Consistent structure across clients
+- Cross-cutting concerns (logging, auth, retry, rate limiting)
+- Reusable middleware components
+- Flexible request/response processing
+- Easy to extend functionality
 
 ### Builder Pattern
 
@@ -431,14 +440,14 @@ async with ApiClient(url, config) as api:
 
 ## Extensibility
 
-### Plugin Architecture
+### Extensibility through Middleware
 
-The framework is designed for easy extension:
+The framework is designed for easy extension through middleware:
 
-1. **Custom Validators**: Add custom validation logic
-2. **Custom Clients**: Implement custom HTTP clients
-3. **Custom Browsers**: Add support for other browsers
-4. **Custom Models**: Extend data models
+1. **Custom Middleware**: Implement custom request/response processing
+2. **Validation Middleware**: Built-in validation for GraphQL and other clients
+3. **Authentication Middleware**: Flexible auth handling
+4. **Metrics and Logging**: Built-in middleware for observability
 
 ### Configuration Extensions
 

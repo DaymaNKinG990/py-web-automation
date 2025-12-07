@@ -7,7 +7,10 @@ WebSocket connections, including message sending, receiving, and event handling.
 
 import asyncio
 
-from py_web_automation import Config, WebSocketClient
+from py_web_automation import Config
+from py_web_automation.clients.streaming_clients.websocket_client.websocket_client import (
+    WebSocketClient,
+)
 
 
 async def main():
@@ -28,11 +31,14 @@ async def main():
             # Example 2: Send and Receive Message
             print("\n2. Sending and receiving messages...")
             test_message = {"type": "ping", "data": "Hello WebSocket!"}
-            await ws.send_message(test_message)
+            result = await ws.send_message(test_message)
             print(f"   Sent: {test_message}")
+            if result.success:
+                print(f"   Send successful at {result.timestamp}")
 
-            received = await ws.receive_message(timeout=5)
-            print(f"   Received: {received}")
+            received_result = await ws.receive_message(timeout=5)
+            if received_result.success:
+                print(f"   Received: {received_result.message}")
 
             # Example 3: Send Multiple Messages
             print("\n3. Sending multiple messages...")
@@ -43,26 +49,28 @@ async def main():
             ]
 
             for msg in messages:
-                await ws.send_message(msg)
-                print(f"   Sent: {msg}")
-                response = await ws.receive_message(timeout=5)
-                print(f"   Echo: {response}")
+                send_result = await ws.send_message(msg)
+                if send_result.success:
+                    print(f"   Sent: {msg}")
+                recv_result = await ws.receive_message(timeout=5)
+                if recv_result.success:
+                    print(f"   Echo: {recv_result.message}")
 
             # Example 4: Register Message Handler
             print("\n4. Using message handlers...")
             received_messages = []
 
-            def message_handler(message: dict) -> None:
+            def message_handler(message: dict | str) -> None:
                 received_messages.append(message)
                 print(f"   Handler received: {message}")
 
-            ws.register_message_handler("test", message_handler)
+            ws.register_handler("test", message_handler)
             await ws.send_message({"type": "test", "data": "Handler test"})
             await asyncio.sleep(1)  # Wait for handler to process
 
             # Example 5: Check Connection Status
             print("\n5. Checking connection status...")
-            is_connected = ws.is_connected()
+            is_connected = await ws.is_connected()
             print(f"   Is connected: {is_connected}")
 
             # Example 6: Disconnect

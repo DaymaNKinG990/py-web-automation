@@ -1,13 +1,14 @@
 """
-Example: Using only UiClient for UI testing.
+Example: Using only AsyncUiClient for UI testing.
 
-This example demonstrates how to use UiClient class independently
+This example demonstrates how to use AsyncUiClient class independently
 for comprehensive UI testing of web applications.
 """
 
 import asyncio
 
-from py_web_automation import Config, UiClient
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 
 async def test_ui_only():
@@ -22,10 +23,10 @@ async def test_ui_only():
     )
 
     # Initialize UI client
-    ui = UiClient("https://example.com", config)
+    ui = AsyncUiClient("https://example.com", config)
 
     try:
-        print("=== UiClient Testing ===")
+        print("=== AsyncUiClient Testing ===")
 
         # Setup browser and navigate
         print("\n1. Setting up browser and navigating...")
@@ -164,18 +165,20 @@ async def test_ui_only():
         await ui.close()
 
     print("\n=== Context Manager Testing ===")
-    async with UiClient("https://example.com", config) as ui_context:
+    async with AsyncUiClient("https://example.com", config) as ui_context:
         await ui_context.setup_browser()
-        await ui_context.page.goto("https://example.com", wait_until="networkidle")
+        if ui_context.page:
+            await ui_context.page.goto("https://example.com", wait_until="networkidle")
         await ui_context.take_screenshot("context_manager_screenshot.png")
         print("Screenshot taken in context manager")
     print("Context manager cleanup completed")
 
     print("\n=== Workflow Testing ===")
-    async with UiClient("https://example.com", config) as ui_workflow:
+    async with AsyncUiClient("https://example.com", config) as ui_workflow:
         print("Step 1: Navigate to web application...")
         await ui_workflow.setup_browser()
-        await ui_workflow.page.goto("https://example.com", wait_until="networkidle")
+        if ui_workflow.page:
+            await ui_workflow.page.goto("https://example.com", wait_until="networkidle")
         print("[OK] Navigated to web application")
 
         print("Step 2: Fill form...")

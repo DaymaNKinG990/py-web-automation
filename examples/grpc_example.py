@@ -7,7 +7,8 @@ including unary calls, streaming, and metadata handling.
 
 import asyncio
 
-from py_web_automation import Config, GrpcClientImpl
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.grpc_client import GrpcClient
 
 
 async def main():
@@ -19,10 +20,10 @@ async def main():
     try:
         print("=== gRPC Client Examples ===\n")
 
-        # Note: GrpcClientImpl requires actual gRPC service definitions
+        # Note: GrpcClient requires actual gRPC service definitions
         # This is a conceptual example showing the API usage
 
-        async with GrpcClientImpl(grpc_url, config) as grpc:
+        async with GrpcClient(grpc_url, config) as grpc:
             # Example 1: Connect to gRPC Server
             print("1. Connecting to gRPC server...")
             await grpc.connect()
@@ -32,7 +33,7 @@ async def main():
             print("\n2. Executing unary RPC call...")
             # In real usage, you would use actual protobuf message types
             # request = YourRequestMessage(field="value")
-            # response = await grpc.unary_call(
+            # result = await grpc.unary_call(
             #     service="YourService",
             #     method="YourMethod",
             #     request=request
@@ -47,7 +48,7 @@ async def main():
 
             # Example 4: Unary Call with Metadata
             print("\n4. Executing unary call with metadata...")
-            # response = await grpc.unary_call(
+            # result = await grpc.unary_call(
             #     service="YourService",
             #     method="YourMethod",
             #     request=request,
@@ -70,7 +71,7 @@ async def main():
             # async def request_generator():
             #     for i in range(5):
             #         yield YourRequestMessage(id=i)
-            # response = await grpc.client_streaming_call(
+            # result = await grpc.client_streaming_call(
             #     service="YourService",
             #     method="StreamMethod",
             #     requests=request_generator()

@@ -360,7 +360,7 @@ python --version
    # Good: Parameterized
    await db.execute_query(
        "SELECT * FROM users WHERE id = :id",
-       {"id": 1}
+       params={"id": 1}
    )
    
    # Bad: String formatting (SQL injection risk)
@@ -388,9 +388,11 @@ python --version
 
 1. **Use connection pooling**:
    ```python
+   from py_web_automation.clients.api_clients.http_client import HttpClient
+   
    # Connection pooling is handled automatically by httpx
    # Reuse client instances
-   async with ApiClient(url, config) as api:
+   async with HttpClient(url, config) as api:
        # Multiple requests reuse connection
        await api.make_request("/endpoint1")
        await api.make_request("/endpoint2")
@@ -438,7 +440,7 @@ python --version
 
 ## Common Error Messages
 
-### `'ApiClient' object has no attribute 'method_name'`
+### `'HttpClient' object has no attribute 'method_name'`
 
 **Problem**: Method doesn't exist on client
 
@@ -465,7 +467,7 @@ result = await api.make_request("/endpoint", method="GET")
 config = Config(timeout=60)  # Increase timeout
 ```
 
-### `ValidationError: Invalid configuration`
+### `ConfigurationError: Invalid configuration`
 
 **Problem**: Configuration values are invalid
 
@@ -498,27 +500,33 @@ await ui.take_screenshot("debug.png")
 ```python
 result = await api.make_request("/endpoint", method="GET")
 print(f"Status: {result.status_code}")
-print(f"Response: {result.response}")
+if result.body:
+    print(f"Response: {result.json()}")
 print(f"Error: {result.error_message}")
 ```
 
 ### Test Components Individually
 
 ```python
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
+
 # Test API separately
-async with ApiClient(url, config) as api:
+async with HttpClient(url, config) as api:
     result = await api.make_request("/test")
 
 # Test UI separately
-async with UiClient(url, config) as ui:
+async with AsyncUiClient(url, config) as ui:
     await ui.setup_browser()
 ```
 
 ### Use Network Inspection
 
 ```python
+from py_web_automation.clients.api_clients.http_client import HttpClient
+
 # Enable network logging
-async with ApiClient(url, config) as api:
+async with HttpClient(url, config) as api:
     # Check network requests in logs
     result = await api.make_request("/endpoint")
 ```

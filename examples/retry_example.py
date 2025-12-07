@@ -1,15 +1,22 @@
 """
 Retry mechanism usage example.
 
-This example demonstrates how to use retry decorators for automatic
+This example demonstrates how to use RetryMiddleware for automatic
 retry of failed operations with exponential backoff.
 """
 
 import asyncio
 
-from py_web_automation import ApiClient, Config
-from py_web_automation.exceptions import ConnectionError, TimeoutError
-from py_web_automation.retry import RetryConfig, retry_on_connection_error, retry_on_failure
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.api_clients.http_client.middleware import MiddlewareChain
+from py_web_automation.clients.api_clients.http_client.middleware.retry_middleware import (
+    RetryMiddleware,
+)
+from py_web_automation.clients.api_clients.http_client.retry import (
+    RetryConfig,
+    RetryHandler,
+)
 
 
 async def main():
@@ -21,84 +28,79 @@ async def main():
     try:
         print("=== Retry Mechanism Examples ===\n")
 
-        # Example 1: Basic Retry with retry_on_connection_error
-        print("1. Basic retry on connection errors...")
-
-        @retry_on_connection_error(max_attempts=3, delay=1.0, backoff=2.0)
-        async def fetch_with_retry():
-            async with ApiClient(base_url, config) as api:
-                return await api.make_request("/api/data", method="GET")
-
-        try:
-            result = await fetch_with_retry()
-            print(f"   Status: {result.status_code}")
-        except Exception as e:
-            print(f"   Failed after retries: {e}")
-
-        # Example 2: Retry with Custom Exceptions
-        print("\n2. Retry with custom exceptions...")
-
-        @retry_on_failure(
-            max_attempts=3,
-            delay=0.5,
-            backoff=2.0,
-            exceptions=(ConnectionError, TimeoutError),
-        )
-        async def fetch_with_custom_retry():
-            async with ApiClient(base_url, config) as api:
-                return await api.make_request("/api/unreliable", method="GET")
-
-        try:
-            result = await fetch_with_custom_retry()
-            print(f"   Status: {result.status_code}")
-        except Exception as e:
-            print(f"   Failed after retries: {e}")
-
-        # Example 3: Retry with Callback
-        print("\n3. Retry with callback...")
-
-        retry_count = 0
-
-        def on_retry(attempt: int, exception: Exception) -> None:
-            nonlocal retry_count
-            retry_count += 1
-            print(f"   Retry attempt {attempt}: {type(exception).__name__}")
-
-        @retry_on_failure(
+        # Example 1: Basic Retry with Middleware
+        print("1. Basic retry with middleware...")
+        retry_config = RetryConfig(
             max_attempts=3,
             delay=1.0,
             backoff=2.0,
-            exceptions=(ConnectionError,),
-            on_retry=on_retry,
         )
-        async def fetch_with_callback():
-            async with ApiClient(base_url, config) as api:
-                return await api.make_request("/api/data", method="GET")
+        retry_handler = RetryHandler(retry_config)
+        retry_middleware = RetryMiddleware(retry_handler)
 
-        try:
-            result = await fetch_with_callback()
-            print(f"   Total retries: {retry_count}")
+        chain = MiddlewareChain()
+        chain.add(retry_middleware)
+
+        async with HttpClient(base_url, config, middleware=chain) as api:
+            result = await api.make_request("/api/data", method="GET")
             print(f"   Status: {result.status_code}")
-        except Exception as e:
-            print(f"   Failed after {retry_count} retries: {e}")
+            print(f"   Success: {result.success}")
 
-        # Example 4: Exponential Backoff
+        # Example 2: Retry with Custom Configuration
+        print("\n2. Retry with custom configuration...")
+        retry_config = RetryConfig(
+            max_attempts=5,
+            delay=0.5,
+            backoff=2.0,
+        )
+        retry_handler = RetryHandler(retry_config)
+        retry_middleware = RetryMiddleware(retry_handler)
+
+        chain = MiddlewareChain()
+        chain.add(retry_middleware)
+
+        async with HttpClient(base_url, config, middleware=chain) as api:
+            result = await api.make_request("/api/unreliable", method="GET")
+            print(f"   Status: {result.status_code}")
+            print(f"   Success: {result.success}")
+
+        # Example 3: Retry with Logging
+        print("\n3. Retry with logging middleware...")
+        from py_web_automation.clients.api_clients.http_client.middleware import (
+            LoggingMiddleware,
+        )
+
+        retry_config = RetryConfig(max_attempts=3, delay=1.0, backoff=2.0)
+        retry_handler = RetryHandler(retry_config)
+        retry_middleware = RetryMiddleware(retry_handler)
+
+        chain = MiddlewareChain()
+        chain.add(LoggingMiddleware())
+        chain.add(retry_middleware)
+
+        async with HttpClient(base_url, config, middleware=chain) as api:
+            result = await api.make_request("/api/data", method="GET")
+            print(f"   Status: {result.status_code}")
+
+        # Example 4: Exponential Backoff Demonstration
         print("\n4. Exponential backoff demonstration...")
+        retry_config = RetryConfig(
+            max_attempts=4,
+            delay=0.5,
+            backoff=2.0,
+        )
+        retry_handler = RetryHandler(retry_config)
+        retry_middleware = RetryMiddleware(retry_handler)
 
-        @retry_on_connection_error(max_attempts=4, delay=0.5, backoff=2.0)
-        async def fetch_with_backoff():
+        chain = MiddlewareChain()
+        chain.add(retry_middleware)
+
+        async with HttpClient(base_url, config, middleware=chain) as api:
             start_time = asyncio.get_event_loop().time()
-            async with ApiClient(base_url, config) as api:
-                result = await api.make_request("/api/data", method="GET")
-                elapsed = asyncio.get_event_loop().time() - start_time
-                print(f"   Request completed in {elapsed:.2f}s")
-                return result
-
-        try:
-            result = await fetch_with_backoff()
+            result = await api.make_request("/api/data", method="GET")
+            elapsed = asyncio.get_event_loop().time() - start_time
+            print(f"   Request completed in {elapsed:.2f}s")
             print(f"   Status: {result.status_code}")
-        except Exception as e:
-            print(f"   Failed: {e}")
 
         # Example 5: Retry Configuration
         print("\n5. Using RetryConfig...")
@@ -106,46 +108,39 @@ async def main():
             max_attempts=5,
             delay=1.0,
             backoff=2.0,
-            exceptions=(ConnectionError, TimeoutError),
         )
 
-        @retry_on_failure(
-            max_attempts=retry_config.max_attempts,
-            delay=retry_config.delay,
-            backoff=retry_config.backoff,
-            exceptions=retry_config.exceptions,
-        )
-        async def fetch_with_config():
-            async with ApiClient(base_url, config) as api:
-                return await api.make_request("/api/data", method="GET")
+        retry_handler = RetryHandler(retry_config)
+        retry_middleware = RetryMiddleware(retry_handler)
 
-        try:
-            result = await fetch_with_config()
+        chain = MiddlewareChain()
+        chain.add(retry_middleware)
+
+        async with HttpClient(base_url, config, middleware=chain) as api:
+            result = await api.make_request("/api/data", method="GET")
             print(f"   Status: {result.status_code}")
-        except Exception as e:
-            print(f"   Failed: {e}")
 
         # Example 6: Retry for Different Operations
         print("\n6. Retry for different operations...")
+        retry_config = RetryConfig(max_attempts=3, delay=1.0, backoff=2.0)
+        retry_handler = RetryHandler(retry_config)
+        retry_middleware = RetryMiddleware(retry_handler)
 
-        @retry_on_connection_error(max_attempts=3, delay=1.0)
-        async def create_user(user_data: dict):
-            async with ApiClient(base_url, config) as api:
-                return await api.make_request("/api/users", method="POST", data=user_data)
+        chain = MiddlewareChain()
+        chain.add(retry_middleware)
 
-        @retry_on_connection_error(max_attempts=3, delay=1.0)
-        async def update_user(user_id: str, user_data: dict):
-            async with ApiClient(base_url, config) as api:
-                return await api.make_request(f"/api/users/{user_id}", method="PUT", data=user_data)
-
-        try:
-            result = await create_user({"name": "John", "email": "john@example.com"})
+        async with HttpClient(base_url, config, middleware=chain) as api:
+            # Create user with retry
+            result = await api.make_request(
+                "/api/users", method="POST", data={"name": "John", "email": "john@example.com"}
+            )
             print(f"   Create user - Status: {result.status_code}")
 
-            result = await update_user("1", {"name": "Jane"})
+            # Update user with retry
+            result = await api.make_request(
+                "/api/users/1", method="PUT", data={"name": "Jane"}
+            )
             print(f"   Update user - Status: {result.status_code}")
-        except Exception as e:
-            print(f"   Operation failed: {e}")
 
         print("\n=== Retry Examples Completed ===")
 

@@ -7,7 +7,8 @@ complex HTTP requests with a fluent API.
 
 import asyncio
 
-from py_web_automation import ApiClient, Config, RequestBuilder
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 
 async def main():
@@ -19,8 +20,8 @@ async def main():
     try:
         print("=== RequestBuilder Examples ===\n")
 
-        async with ApiClient(base_url, config) as api:
-            builder = RequestBuilder(api)
+        async with HttpClient(base_url, config) as api:
+            builder = api.build_request()
 
             # Example 1: Simple GET Request
             print("1. Simple GET request...")
@@ -42,8 +43,8 @@ async def main():
 
             # Example 4: PUT with Headers
             print("\n4. PUT request with custom headers...")
-            result = await (
-                builder.put("/api/users/1")
+            result = (
+                await builder.put("/api/users/1")
                 .body({"name": "Jane Doe", "email": "jane@example.com"})
                 .header("X-Custom-Header", "value")
                 .header("Content-Type", "application/json")
@@ -61,15 +62,25 @@ async def main():
             result = await builder.patch("/api/users/1").body({"email": "newemail@example.com"}).execute()
             print(f"   Status: {result.status_code}")
 
-            # Example 7: Request with Authentication
+            # Example 7: Request with Authentication (via middleware)
             print("\n7. Request with authentication...")
-            result = await builder.get("/api/protected").auth("your-token-here").execute()
+            from py_web_automation.clients.api_clients.http_client.middleware import (
+                AuthMiddleware,
+                MiddlewareChain,
+            )
+
+            auth_middleware = AuthMiddleware(token="your-token-here", token_type="Bearer")
+            auth_chain = MiddlewareChain()
+            auth_chain.add(auth_middleware)
+            # Note: In real usage, middleware should be set when creating HttpClient
+            # This is just for demonstration
+            result = await builder.get("/api/protected").execute()
             print(f"   Status: {result.status_code}")
 
             # Example 8: Complex Request with All Options
             print("\n8. Complex request with all options...")
-            result = await (
-                builder.post("/api/users")
+            result = (
+                await builder.post("/api/users")
                 .params(validate=True)
                 .body(
                     {
@@ -80,7 +91,7 @@ async def main():
                 )
                 .header("X-Request-ID", "12345")
                 .header("X-Client-Version", "2.0")
-                .auth("bearer-token", token_type="Bearer")
+                .header("Authorization", "Bearer bearer-token")
                 .execute()
             )
             print(f"   Status: {result.status_code}")
@@ -88,11 +99,10 @@ async def main():
 
             # Example 9: Method Chaining
             print("\n9. Method chaining example...")
-            result = await (
-                builder.reset()
+            result = (
+                await builder.reset()
                 .get("/api/data")
-                .param("filter", "active")
-                .param("sort", "date")
+                .params(filter="active", sort="date")
                 .header("Accept", "application/json")
                 .execute()
             )

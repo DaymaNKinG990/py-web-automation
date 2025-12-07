@@ -1,24 +1,21 @@
 # Framework Features
 
-## Response Validators (msgspec)
+## Response Validation
 
 ### Overview
 
-Response validators provide fast and efficient schema validation using `msgspec`.
-This is useful for:
+Response validation can be done manually using `msgspec` directly, or through built-in ValidationMiddleware in specific clients (e.g., GraphQL query validation). This is useful for:
 - Validating API responses against expected schemas
 - Type-safe response handling
 - Early detection of API contract violations
 - Performance-critical validation (msgspec is 2-4x faster than Pydantic)
 
-### Usage
-
-#### Basic Validation
+### Manual Validation with msgspec
 
 ```python
-from msgspec import Struct
-from py_web_automation import ApiClient, Config
-from py_web_automation.validators import validate_api_result
+from msgspec import Struct, json
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 class UserResponse(Struct):
     id: int
@@ -26,57 +23,37 @@ class UserResponse(Struct):
     email: str
 
 config = Config(timeout=30)
-async with ApiClient("https://api.example.com", config) as api:
-    result = await api.make_request("/users/1")
-    user = validate_api_result(result, UserResponse)
-    print(f"User: {user.name} ({user.email})")
+async with HttpClient("https://api.example.com", config) as api:
+    result = await api.make_request("/users/1", method="GET")
+    if result.success and result.body:
+        user_data = result.json()
+        user = json.decode(json.encode(user_data), type=UserResponse)
+        print(f"User: {user.name} ({user.email})")
 ```
 
-#### Dynamic Schema Creation
+### Built-in Validation
 
-```python
-from py_web_automation.validators import create_schema_from_dict
-
-# Create schema at runtime
-UserSchema = create_schema_from_dict(
-    "User",
-    {
-        "id": int,
-        "name": str,
-        "email": str,
-        "age": (int, 0),  # Optional with default
-    }
-)
-
-user = UserSchema(id=1, name="John", email="john@example.com")
-```
-
-#### JSON String Validation
-
-```python
-from py_web_automation.validators import validate_json_response
-
-json_str = '{"id": 1, "name": "John", "email": "john@example.com"}'
-user = validate_json_response(json_str, UserResponse)
-```
+Some clients have built-in validation:
+- **GraphQLClient**: Automatic query validation via ValidationMiddleware
+- Other clients support custom validation through middleware
 
 ## Request Builder Pattern
 
 ### Overview
 
 Request Builder provides a fluent API for constructing complex HTTP requests.
-Similar to how `DBClient.create()` uses Factory pattern, RequestBuilder uses
-Builder pattern for request construction.
+RequestBuilder uses Builder pattern for request construction.
 
 ### Usage
 
 #### Basic Request
 
 ```python
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 config = Config(timeout=30)
-async with ApiClient("https://api.example.com", config) as api:
+async with HttpClient("https://api.example.com", config) as api:
     builder = api.build_request()
     result = await builder.get("/users").execute()
 ```

@@ -54,38 +54,32 @@ config = Config.from_env()
 config = Config.from_yaml("config.yaml")
 ```
 
-### BaseClient - Base Client
+### Client Structure
 
-All clients inherit from `BaseClient`, which provides:
-- URL management
-- Logging
+All clients follow a consistent structure:
+- Configuration through `Config` object
 - Context managers for automatic resource cleanup
+- Async/await support for all operations
 
-```python
-from py_web_automation.clients import BaseClient
-
-class MyClient(BaseClient):
-    async def custom_method(self):
-        # Use self.url, self.config, self.logger
-        pass
-```
+Each client is independent and can be used separately based on your testing needs.
 
 ---
 
 ## Clients
 
-### ApiClient - REST API Client
+### HttpClient - REST API Client
 
 Main client for testing HTTP REST APIs.
 
 #### Basic Usage
 
 ```python
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 async def basic_api_test():
     config = Config(timeout=30)
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         # Simple GET request
         result = await api.make_request("/users/1", method="GET")
         print(f"Status: {result.status_code}")
@@ -102,14 +96,22 @@ async def basic_api_test():
 #### Authentication
 
 ```python
-# Set token
-api.set_auth_token("your-token-here", token_type="Bearer")
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    AuthMiddleware,
+    MiddlewareChain,
+)
 
-# All subsequent requests automatically include token
-result = await api.make_request("/protected")
+# Setup authentication middleware
+auth_middleware = AuthMiddleware(token="your-token-here", token_type="Bearer")
+chain = MiddlewareChain()
+chain.add(auth_middleware)
 
-# Clear token
-api.clear_auth_token()
+async with HttpClient("https://api.example.com", config, middleware=chain) as api:
+    # All requests automatically include token
+    result = await api.make_request("/protected", method="GET")
+    
+    # Clear token
+    auth_middleware.clear_token()
 ```
 
 #### Request Builder - Fluent API
@@ -127,38 +129,34 @@ result = await (builder
 result = await (builder
     .post("/users")
     .body({"name": "Jane", "email": "jane@example.com"})
-    .auth("token")
     .execute())
 ```
 
 #### Advanced Features
 
 ```python
-from py_web_automation import (
-    ApiClient, Config,
-    MiddlewareChain, ResponseCache, RateLimiter,
-    LoggingMiddleware, MetricsMiddleware
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    LoggingMiddleware,
+    MetricsMiddleware,
+    MiddlewareChain,
+    RateLimitMiddleware,
 )
+from py_web_automation.clients.api_clients.http_client.rate_limit import RateLimiter
 
 # With middleware
 chain = MiddlewareChain()
 chain.add(LoggingMiddleware())
-chain.add(MetricsMiddleware())
-
-# With caching
-cache = ResponseCache(default_ttl=300)  # 5 minutes
+chain.add(MetricsMiddleware(metrics))
 
 # With rate limiting
 rate_limiter = RateLimiter(max_requests=100, window=60)
+chain.add(RateLimitMiddleware(rate_limiter))
 
-# Create client with all features
-api = ApiClient(
+# Create client with middleware
+api = HttpClient(
     "https://api.example.com",
     config,
-    middleware=chain,
-    cache=cache,
-    rate_limiter=rate_limiter,
-    enable_auto_retry=True  # Automatic retry
+    middleware=chain
 )
 ```
 
@@ -167,7 +165,8 @@ api = ApiClient(
 Client for working with GraphQL APIs.
 
 ```python
-from py_web_automation import GraphQLClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.graphql_client import GraphQLClient
 
 async def graphql_test():
     config = Config(timeout=30)
@@ -198,10 +197,6 @@ async def graphql_test():
             """,
             variables={"input": {"name": "John", "email": "john@example.com"}}
         )
-        
-        # With authentication
-        client.set_auth_token("token")
-        result = await client.query("query { me { id } }")
 ```
 
 ### SoapClient - SOAP Client
@@ -209,21 +204,21 @@ async def graphql_test():
 Client for working with SOAP web services.
 
 ```python
-from py_web_automation import SoapClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.soap_client import SoapClient
 
 async def soap_test():
     config = Config(timeout=30)
-    async with SoapClient("https://api.example.com/soap", config) as client:
+    async with SoapClient(
+        "https://api.example.com/soap", 
+        config,
+        wsdl_url="https://api.example.com/soap?WSDL"
+    ) as client:
         # SOAP call
         result = await client.call(
-            method="GetUser",
-            params={"id": 1},
-            namespace="http://example.com/soap"
+            operation="GetUser",
+            body={"id": 1}
         )
-        
-        # With authentication
-        client.set_auth_token("token")
-        result = await client.call("GetUser", {"id": 1})
 ```
 
 ### WebSocketClient - WebSocket Client
@@ -231,7 +226,10 @@ async def soap_test():
 Client for working with WebSocket connections.
 
 ```python
-from py_web_automation import WebSocketClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.streaming_clients.websocket_client.websocket_client import (
+    WebSocketClient,
+)
 
 async def websocket_test():
     config = Config(timeout=30)
@@ -240,42 +238,46 @@ async def websocket_test():
         await client.connect()
         
         # Send message
-        await client.send_message({"type": "subscribe", "channel": "updates"})
+        result = await client.send_message({"type": "subscribe", "channel": "updates"})
         
         # Receive message
-        message = await client.receive_message(timeout=5.0)
-        print(f"Received: {message}")
+        result = await client.receive_message(timeout=5.0)
+        if result.success:
+            print(f"Received: {result.message}")
         
         # Listen to messages
-        async for message in client.listen():
-            print(f"Message: {message}")
-            if message.get("type") == "done":
-                break
+        async for result in client.listen():
+            if result.success:
+                print(f"Message: {result.message}")
+                if isinstance(result.message, dict) and result.message.get("type") == "done":
+                    break
         
         # Register handler
         def handle_message(msg):
             print(f"Handler received: {msg}")
         
-        client.register_handler(handle_message)
+        client.register_handler("message", handle_message)
 ```
 
-### UiClient - UI Client
+### AsyncUiClient - UI Client
 
 Client for browser automation with Playwright.
 
 #### Basic Usage
 
 ```python
-from py_web_automation import UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 async def ui_test():
     config = Config(timeout=30, browser_headless=True)
-    async with UiClient("https://example.com", config) as ui:
+    async with AsyncUiClient("https://example.com", config) as ui:
         # Setup browser
         await ui.setup_browser()
         
         # Navigate
-        await ui.page.goto("https://example.com")
+        if ui.page:
+            await ui.page.goto("https://example.com")
         
         # Interact with elements
         await ui.fill_input("#username", "testuser")
@@ -334,31 +336,19 @@ Client for working with databases.
 #### Creating Client
 
 ```python
-from py_web_automation import DBClient, Config
-
-# PostgreSQL
-db = await DBClient.create(
-    "postgresql",
-    "https://example.com",
-    config,
-    connection_string="postgresql://user:pass@localhost/db"
-)
+from py_web_automation import Config
+from py_web_automation.clients.db_clients.sqlite_client import SQLiteClient
+from py_web_automation.clients.db_clients.postgresql_client import PostgreSQLClient
+from py_web_automation.clients.db_clients.mysql_client import MySQLClient
 
 # SQLite
-db = await DBClient.create(
-    "sqlite",
-    "https://example.com",
-    config,
-    connection_string="sqlite:///path/to/db.sqlite"
-)
+db = SQLiteClient(connection_string="sqlite:///path/to/db.sqlite")
+
+# PostgreSQL
+db = PostgreSQLClient(connection_string="postgresql://user:pass@localhost/db")
 
 # MySQL
-db = await DBClient.create(
-    "mysql",
-    "https://example.com",
-    config,
-    connection_string="mysql://user:pass@localhost/db"
-)
+db = MySQLClient(connection_string="mysql://user:pass@localhost/db")
 ```
 
 #### Executing Queries
@@ -368,25 +358,25 @@ async with db:
     # SELECT query
     results = await db.execute_query(
         "SELECT * FROM users WHERE active = :active",
-        {"active": True}
+        params={"active": True}
     )
     
     # INSERT command
-    rows_affected = await db.execute_command(
+    await db.execute_command(
         "INSERT INTO users (name, email) VALUES (:name, :email)",
-        {"name": "John", "email": "john@example.com"}
+        params={"name": "John", "email": "john@example.com"}
     )
     
     # UPDATE command
-    rows_affected = await db.execute_command(
+    await db.execute_command(
         "UPDATE users SET name = :name WHERE id = :id",
-        {"name": "Jane", "id": 1}
+        params={"name": "Jane", "id": 1}
     )
     
     # DELETE command
-    rows_affected = await db.execute_command(
+    await db.execute_command(
         "DELETE FROM users WHERE id = :id",
-        {"id": 1}
+        params={"id": 1}
     )
 ```
 
@@ -399,56 +389,50 @@ async with db.transaction():
     await db.execute_command("INSERT INTO profiles ...")
     # Automatic commit on success
 
-# Manual management
-await db.begin_transaction()
-try:
-    await db.execute_command("INSERT INTO users ...")
-    await db.commit_transaction()
-except Exception:
-    await db.rollback_transaction()
+# All transactions use context manager
+# Manual transaction management is not available
 ```
 
 #### Query Builder for Database
 
 ```python
-from py_web_automation import QueryBuilder
+# QueryBuilder is now integrated into DBClient
+async with SQLiteClient(connection_string="sqlite:///db.sqlite") as db:
+    # Building SELECT query
+    query, params = (db.query()
+        .select("id", "name", "email")
+        .from_table("users")
+        .where("active", "=", True)
+        .where("age", ">=", 18)
+        .order_by("name", "ASC")
+        .limit(10)
+        .offset(0)
+        ._build())
 
-# Building SELECT query
-builder = QueryBuilder()
-query, params = (builder
-    .select("id", "name", "email")
-    .from_table("users")
-    .where("active", "=", True)
-    .where("age", ">=", 18)
-    .order_by("name", "ASC")
-    .limit(10)
-    .offset(0)
-    .build())
+    results = await db.execute_query(query, params)
 
-results = await db.execute_query(query, params)
+    # INSERT query
+    query, params = (db.query()
+        .insert("users", name="John", email="john@example.com")
+        ._build())
 
-# INSERT query
-query, params = (builder
-    .insert("users", name="John", email="john@example.com")
-    .build())
+    await db.execute_command(query, params)
 
-rows_affected = await db.execute_command(query, params)
+    # UPDATE query
+    query, params = (db.query()
+        .update("users", name="Jane")
+        .where("id", "=", 1)
+        ._build())
 
-# UPDATE query
-query, params = (builder
-    .update("users", name="Jane")
-    .where("id", "=", 1)
-    .build())
+    await db.execute_command(query, params)
 
-rows_affected = await db.execute_command(query, params)
+    # DELETE query
+    query, params = (db.query()
+        .delete("users")
+        .where("id", "=", 1)
+        ._build())
 
-# DELETE query
-query, params = (builder
-    .delete("users")
-    .where("id", "=", 1)
-    .build())
-
-rows_affected = await db.execute_command(query, params)
+    await db.execute_command(query, params)
 ```
 
 ---
@@ -457,36 +441,33 @@ rows_affected = await db.execute_command(query, params)
 
 ### Retry Mechanism
 
-Automatic request retry with exponential backoff.
+Automatic request retry with exponential backoff via RetryMiddleware.
 
 ```python
-from py_web_automation import retry_on_failure, retry_on_connection_error
-
-# Decorator for automatic retry
-@retry_on_failure(
-    max_attempts=3,
-    delay=1.0,
-    backoff=2.0,
-    exceptions=(ConnectionError, TimeoutError)
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    RetryMiddleware,
+    MiddlewareChain,
 )
-async def fetch_data():
-    return await api.make_request("/data")
+from py_web_automation.clients.api_clients.http_client.retry import (
+    RetryConfig,
+    RetryHandler,
+)
 
-# Special decorator for connection errors
-@retry_on_connection_error(max_attempts=5, delay=2.0)
-async def connect_to_api():
-    return await api.make_request("/status")
-
-# Retry configuration
-from py_web_automation import RetryConfig
-
+# Create retry middleware
 retry_config = RetryConfig(
     max_attempts=5,
     delay=1.0,
     backoff=2.0,
-    max_delay=30.0,
-    jitter=True
 )
+retry_handler = RetryHandler(retry_config)
+retry_middleware = RetryMiddleware(retry_handler)
+
+# Add to middleware chain
+chain = MiddlewareChain()
+chain.add(retry_middleware)
+
+# Use with HttpClient
+api = HttpClient("https://api.example.com", config, middleware=chain)
 ```
 
 ### Middleware System
@@ -494,27 +475,32 @@ retry_config = RetryConfig(
 Intercept and modify requests/responses.
 
 ```python
-from py_web_automation import (
-    Middleware, MiddlewareChain,
-    RequestContext, ResponseContext,
-    LoggingMiddleware, MetricsMiddleware,
-    AuthMiddleware, ValidationMiddleware
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    Middleware,
+    MiddlewareChain,
+    LoggingMiddleware,
+    MetricsMiddleware,
+    AuthMiddleware,
+)
+from py_web_automation.clients.api_clients.http_client.middleware.context import (
+    _HttpRequestContext,
+    _HttpResponseContext,
 )
 
 # Create custom middleware
 class CustomMiddleware(Middleware):
-    async def process_request(self, context: RequestContext):
+    async def process_request(self, context: _HttpRequestContext):
         # Modify request
         context.headers["X-Custom-Header"] = "value"
         context.metadata["request_id"] = generate_id()
     
-    async def process_response(self, context: ResponseContext):
+    async def process_response(self, context: _HttpResponseContext):
         # Handle response
         if context.result.status_code == 401:
             # Refresh token
             refresh_token()
     
-    async def process_error(self, context: RequestContext, error):
+    async def process_error(self, context: _HttpRequestContext, error):
         # Handle errors
         log_error(context, error)
         return None  # Allow error to propagate
@@ -523,44 +509,27 @@ class CustomMiddleware(Middleware):
 chain = MiddlewareChain()
 chain.add(LoggingMiddleware())
 chain.add(MetricsMiddleware(metrics))
-chain.add(AuthMiddleware(token="abc123"))
+chain.add(AuthMiddleware(token="abc123", token_type="Bearer"))
 chain.add(CustomMiddleware())
 
-api = ApiClient("https://api.example.com", config, middleware=chain)
+api = HttpClient("https://api.example.com", config, middleware=chain)
 ```
 
 ### Caching
 
 Response caching for improved performance.
 
-```python
-from py_web_automation import ResponseCache
-
-# Create cache
-cache = ResponseCache(
-    default_ttl=300,  # 5 minutes
-    max_size=1000     # Maximum 1000 entries
-)
-
-# Use with ApiClient
-api = ApiClient("https://api.example.com", config, cache=cache)
-
-# Request with caching (GET only)
-result = await api.make_request("/users", method="GET", use_cache=True)
-
-# Invalidate cache
-cache.invalidate(method="GET", url_pattern="/users/*")
-
-# Cleanup expired entries
-expired_count = cache.cleanup_expired()
-```
 
 ### Rate Limiting
 
-Request rate limiting.
+Request rate limiting via RateLimitMiddleware.
 
 ```python
-from py_web_automation import RateLimiter
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    RateLimitMiddleware,
+    MiddlewareChain,
+)
+from py_web_automation.clients.api_clients.http_client.rate_limit import RateLimiter
 
 # Create rate limiter
 limiter = RateLimiter(
@@ -569,22 +538,12 @@ limiter = RateLimiter(
     burst=10           # Allow 10 additional requests
 )
 
-# Use with ApiClient
-api = ApiClient("https://api.example.com", config, rate_limiter=limiter)
+# Add to middleware chain
+chain = MiddlewareChain()
+chain.add(RateLimitMiddleware(limiter))
 
-# Manual usage
-await limiter.acquire()  # Blocks if limit exceeded
-result = await api.make_request("/endpoint")
-
-# Non-blocking attempt
-if await limiter.try_acquire():
-    result = await api.make_request("/endpoint")
-else:
-    print("Rate limit exceeded")
-
-# Check remaining requests
-remaining = limiter.get_remaining()
-wait_time = limiter.get_wait_time()
+# Use with HttpClient
+api = HttpClient("https://api.example.com", config, middleware=chain)
 ```
 
 ### Metrics
@@ -592,7 +551,11 @@ wait_time = limiter.get_wait_time()
 Performance metrics collection.
 
 ```python
-from py_web_automation import Metrics
+from py_web_automation.clients.api_clients.http_client.metrics import Metrics
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    MetricsMiddleware,
+    MiddlewareChain,
+)
 
 # Create metrics
 metrics = Metrics()
@@ -616,53 +579,32 @@ stats = metrics.to_dict()
 metrics.reset()
 
 # Use with middleware
-from py_web_automation import MetricsMiddleware
-
 chain = MiddlewareChain()
 chain.add(MetricsMiddleware(metrics))
-api = ApiClient("https://api.example.com", config, middleware=chain)
+api = HttpClient("https://api.example.com", config, middleware=chain)
 ```
 
-### Circuit Breaker
+### Retry and Error Handling
 
-Protection against cascading failures.
-
-```python
-from py_web_automation import CircuitBreaker
-
-# Create circuit breaker
-breaker = CircuitBreaker(
-    failure_threshold=5,   # Open after 5 errors
-    timeout=60.0,          # Try to close after 60 seconds
-    success_threshold=2    # Close after 2 successful requests
-)
-
-# Usage
-try:
-    result = await breaker.call(
-        api.make_request,
-        "/endpoint",
-        method="GET"
-    )
-except ConnectionError as e:
-    print(f"Circuit is open: {e}")
-
-# Check state
-state = breaker.get_state()  # CLOSED, OPEN, HALF_OPEN
-stats = breaker.get_stats()
-```
+All clients support retry logic through `RetryMiddleware` to handle transient failures.
+For more advanced error handling patterns, you can implement custom middleware.
 
 ### Page Object Model
 
 Page Object Model pattern for UI tests.
 
 ```python
-from py_web_automation import BasePage, Component, PageFactory
-from py_web_automation import UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
+from py_web_automation.clients.ui_clients.async_ui_client.page_objects import (
+    BasePage,
+    Component,
+    PageFactory,
+)
 
 # Create page
 class LoginPage(BasePage):
-    def __init__(self, ui_client: UiClient):
+    def __init__(self, ui_client: AsyncUiClient):
         super().__init__(ui_client, "https://example.com/login")
     
     async def is_loaded(self) -> bool:
@@ -676,7 +618,7 @@ class LoginPage(BasePage):
 
 # Create component
 class NavigationComponent(Component):
-    def __init__(self, ui_client: UiClient):
+    def __init__(self, ui_client: AsyncUiClient):
         super().__init__(ui_client, "nav.main-nav")
     
     async def click_home(self):
@@ -687,7 +629,7 @@ class NavigationComponent(Component):
 
 # Usage
 config = Config()
-async with UiClient("https://example.com", config) as ui:
+async with AsyncUiClient("https://example.com", config) as ui:
     factory = PageFactory(ui)
     login_page = factory.create_page(LoginPage)
     
@@ -700,20 +642,24 @@ async with UiClient("https://example.com", config) as ui:
 Visual regression testing.
 
 ```python
-from py_web_automation import VisualComparator, take_baseline_screenshot
-from py_web_automation import UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
+from py_web_automation.clients.ui_clients.visual_testing import (
+    VisualComparator,
+    take_baseline_screenshot,
+)
 
 # Create comparator
 comparator = VisualComparator(threshold=0.01)  # 1% threshold
 
 # Create baseline
 config = Config()
-async with UiClient("https://example.com", config) as ui:
+async with AsyncUiClient("https://example.com", config) as ui:
     await ui.setup_browser()
     await take_baseline_screenshot(ui, "baseline.png")
 
 # Compare
-diff = await comparator.compare("baseline.png", "current.png", "diff.png")
+diff = await comparator.compare("baseline.png", "current.png", diff_path="diff.png")
 
 if diff.is_different:
     print(f"Visual difference: {diff.diff_percentage:.2f}%")
@@ -723,40 +669,47 @@ if diff.is_different:
 identical = await comparator.compare_hashes("baseline.png", "current.png")
 ```
 
-### Plugin System
+### Custom Middleware
 
-Extend functionality through plugins.
+Extend functionality through custom middleware.
 
 ```python
-from py_web_automation import Plugin, PluginManager, HookType, HookContext
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    Middleware,
+    MiddlewareChain,
+)
+from py_web_automation.clients.api_clients.http_client.middleware.context import (
+    _HttpRequestContext,
+    _HttpResponseContext,
+)
 
-# Create plugin
-class CustomPlugin(Plugin):
-    def get_name(self) -> str:
-        return "custom"
+# Create custom middleware
+class CustomMiddleware(Middleware):
+    async def process_request(self, context: _HttpRequestContext):
+        # Modify request
+        context.headers["X-Custom-Header"] = "value"
     
-    def on_before_request(self, context: HookContext):
-        print(f"Request: {context.data.get('method')} {context.data.get('url')}")
-    
-    def on_after_request(self, context: HookContext):
-        print(f"Response: {context.data.get('status_code')}")
+    async def process_response(self, context: _HttpResponseContext):
+        # Handle response
+        if context.result.status_code == 401:
+            # Handle authentication error
+            pass
 
-# Register plugin
-manager = PluginManager()
-manager.register(CustomPlugin())
-manager.register(LoggingPlugin())
-
-# Usage (plugins integrate automatically)
-# through middleware or directly in clients
+# Register middleware
+chain = MiddlewareChain()
+chain.add(CustomMiddleware())
 ```
 
 ### Response Validation
 
-API response validation using msgspec.
+Response validation is available through ValidationMiddleware for each client.
+Validation is handled internally (e.g., GraphQL query validation).
+
+For manual validation, you can use msgspec directly:
 
 ```python
-from py_web_automation import validate_response, validate_api_result, create_schema_from_dict
-from msgspec import Struct
+from msgspec import Struct, json
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 # Create schema
 class User(Struct):
@@ -764,26 +717,12 @@ class User(Struct):
     name: str
     email: str
 
-# Validate response
-result = await api.make_request("/users/1")
-user = validate_api_result(result, User)
-
-# Dynamic schema creation
-UserSchema = create_schema_from_dict(
-    "User",
-    {
-        "id": int,
-        "name": str,
-        "email": str,
-        "age": (int, 0)  # Optional with default
-    }
-)
-
-# JSON string validation
-from py_web_automation import validate_json_response
-
-json_str = '{"id": 1, "name": "John", "email": "john@example.com"}'
-user = validate_json_response(json_str, User)
+# Validate response manually
+result = await api.make_request("/users/1", method="GET")
+if result.success and result.body:
+    user_data = result.json()
+    user = json.decode(json.encode(user_data), type=User)
+    print(f"User: {user.name}")
 ```
 
 ---
@@ -793,26 +732,31 @@ user = validate_json_response(json_str, User)
 ### Combining Clients
 
 ```python
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.db_clients.sqlite_client import SQLiteClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
+import json
+
 # API + Database
-async with ApiClient("https://api.example.com", config) as api:
-    result = await api.make_request("/users/1")
+async with HttpClient("https://api.example.com", config) as api:
+    result = await api.make_request("/users/1", method="GET")
     user_data = result.json()
     
-    async with DBClient.create("postgresql", "...", config, ...) as db:
+            async with SQLiteClient(connection_string="sqlite:///cache.db") as db:
         await db.execute_command(
             "INSERT INTO users_cache (id, data) VALUES (:id, :data)",
-            {"id": user_data["id"], "data": json.dumps(user_data)}
+            params={"id": user_data["id"], "data": json.dumps(user_data)}
         )
 
 # UI + API
-async with UiClient("https://example.com", config) as ui:
+async with AsyncUiClient("https://example.com", config) as ui:
     await ui.setup_browser()
     await ui.fill_input("#search", "test")
     await ui.click_element("#search-button")
     
     # Get data through API
-    async with ApiClient("https://api.example.com", config) as api:
-        result = await api.make_request("/search?q=test")
+    async with HttpClient("https://api.example.com", config) as api:
+        result = await api.make_request("/search?q=test", method="GET")
 ```
 
 ### Error Handling
@@ -823,7 +767,6 @@ from py_web_automation.exceptions import (
     ConnectionError,
     TimeoutError,
     NotFoundError,
-    ValidationError
 )
 
 try:
@@ -842,9 +785,8 @@ except WebAutomationError as e:
 
 1. **Use context managers**: Always use `async with` for automatic resource cleanup
 2. **Configure logging**: Use `Config` to set logging level
-3. **Validate responses**: Use `validate_api_result` for type-safe data handling
+3. **Validate responses**: Use msgspec directly for type-safe data handling
 4. **Use middleware**: For reusable logic (logging, metrics)
-5. **Cache requests**: For improved performance
 6. **Limit rate**: To protect against API rate limit violations
 7. **Use retry**: For handling temporary failures
 8. **Page Object Model**: For structuring UI tests
@@ -857,11 +799,18 @@ except WebAutomationError as e:
 
 ```python
 import asyncio
-from py_web_automation import (
-    ApiClient, UiClient, DBClient, Config,
-    MiddlewareChain, ResponseCache, RateLimiter,
-    LoggingMiddleware, MetricsMiddleware, Metrics
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.api_clients.http_client.metrics import Metrics
+from py_web_automation.clients.api_clients.http_client.middleware import (
+    LoggingMiddleware,
+    MetricsMiddleware,
+    MiddlewareChain,
+    RateLimitMiddleware,
 )
+from py_web_automation.clients.api_clients.http_client.rate_limit import RateLimiter
+from py_web_automation.clients.db_clients.sqlite_client import SQLiteClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 async def e2e_test():
     config = Config(timeout=30, retry_count=3)
@@ -872,17 +821,15 @@ async def e2e_test():
     chain.add(LoggingMiddleware())
     chain.add(MetricsMiddleware(metrics))
     
-    # Setup cache and rate limiting
-    cache = ResponseCache(default_ttl=300)
+    # Setup rate limiting
     limiter = RateLimiter(max_requests=100, window=60)
+    chain.add(RateLimitMiddleware(limiter))
     
     # API testing
-    async with ApiClient(
+    async with HttpClient(
         "https://api.example.com",
         config,
-        middleware=chain,
-        cache=cache,
-        rate_limiter=limiter
+        middleware=chain
     ) as api:
         # Create user via API
         result = await api.make_request(
@@ -890,31 +837,33 @@ async def e2e_test():
             method="POST",
             data={"name": "Test User", "email": "test@example.com"}
         )
-        user_id = result.json()["id"]
+        user_data = result.json()
+        user_id = user_data["id"]
         
         # UI testing
-        async with UiClient("https://example.com", config) as ui:
+        async with AsyncUiClient("https://example.com", config) as ui:
             await ui.setup_browser()
-            await ui.page.goto("https://example.com/login")
+            if ui.page:
+                await ui.page.goto("https://example.com/login")
             await ui.fill_input("#username", "test@example.com")
             await ui.fill_input("#password", "password")
             await ui.click_element("#login")
             await ui.wait_for_element("#dashboard")
             
             # Verify via API
-            result = await api.make_request(f"/users/{user_id}")
+            result = await api.make_request(f"/users/{user_id}", method="GET")
             assert result.json()["email"] == "test@example.com"
             
             # Verify via database
-            async with DBClient.create("postgresql", "...", config, ...) as db:
+            async with SQLiteClient(connection_string="sqlite:///test.db") as db:
                 results = await db.execute_query(
                     "SELECT * FROM users WHERE id = :id",
-                    {"id": user_id}
+                    params={"id": user_id}
                 )
                 assert len(results) == 1
     
     # Output metrics
-    print(metrics.get_summary())
+    print(metrics.to_dict())
 
 asyncio.run(e2e_test())
 ```

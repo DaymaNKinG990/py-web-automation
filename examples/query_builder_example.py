@@ -7,8 +7,8 @@ SQL queries with a fluent API.
 
 import asyncio
 
-from py_web_automation import Config, DBClient
-from py_web_automation.query_builder import QueryBuilder
+from py_web_automation import Config
+from py_web_automation.clients.db_clients.sqlite_client import SQLiteClient
 
 
 async def main():
@@ -21,111 +21,119 @@ async def main():
 
         # Example 1: Simple SELECT Query
         print("1. Simple SELECT query...")
-        query, params = QueryBuilder().select("id", "name", "email").from_table("users").build()
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = db.query().select("id", "name", "email").from_table("users")._build()
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
         # Example 2: SELECT with WHERE
         print("\n2. SELECT with WHERE clause...")
-        query, params = (
-            QueryBuilder().select("*").from_table("users").where("active", "=", True).where("age", ">", 18).build()
-        )
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = (
+                db.query()
+                .select("*")
+                .from_table("users")
+                .where("active", "=", True)
+                .where("age", ">", 18)
+                ._build()
+            )
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
         # Example 3: SELECT with ORDER BY and LIMIT
         print("\n3. SELECT with ORDER BY and LIMIT...")
-        query, params = (
-            QueryBuilder()
-            .select("id", "name", "created_at")
-            .from_table("users")
-            .order_by("created_at", "DESC")
-            .limit(10)
-            .build()
-        )
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = (
+                db.query()
+                .select("id", "name", "created_at")
+                .from_table("users")
+                .order_by("created_at", "DESC")
+                .limit(10)
+                ._build()
+            )
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
         # Example 4: INSERT Query
         print("\n4. INSERT query...")
-        query, params = QueryBuilder().insert("users", name="John Doe", email="john@example.com", age=30).build()
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = db.query().insert("users", name="John Doe", email="john@example.com", age=30)._build()
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
         # Example 5: UPDATE Query
         print("\n5. UPDATE query...")
-        query, params = QueryBuilder().update("users", email="newemail@example.com", age=31).where("id", "=", 1).build()
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = (
+                db.query()
+                .update("users", email="newemail@example.com", age=31)
+                .where("id", "=", 1)
+                ._build()
+            )
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
         # Example 6: DELETE Query
         print("\n6. DELETE query...")
-        query, params = QueryBuilder().delete("users").where("id", "=", 1).build()
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = db.query().delete("users").where("id", "=", 1)._build()
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
         # Example 7: Complex SELECT with JOIN
         print("\n7. Complex SELECT with JOIN...")
-        query, params = (
-            QueryBuilder()
-            .select("users.id", "users.name", "posts.title")
-            .from_table("users")
-            .join("INNER", "posts", "users.id", "=", "posts.user_id")
-            .where("users.active", "=", True)
-            .order_by("posts.created_at", "DESC")
-            .limit(20)
-            .build()
-        )
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = (
+                db.query()
+                .select("users.id", "users.name", "posts.title")
+                .from_table("users")
+                .join("INNER", "posts", "users.id", "=", "posts.user_id")
+                .where("users.active", "=", True)
+                .order_by("posts.created_at", "DESC")
+                .limit(20)
+                ._build()
+            )
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
         # Example 8: SELECT with GROUP BY
         print("\n8. SELECT with GROUP BY...")
-        query, params = (
-            QueryBuilder()
-            .select("category", "COUNT(*) as count")
-            .from_table("products")
-            .group_by("category")
-            .having("COUNT(*)", ">", 5)
-            .build()
-        )
-        print(f"   Query: {query}")
-        print(f"   Params: {params}")
-
-        # Example 9: Using QueryBuilder with DBClient
-        print("\n9. Using QueryBuilder with DBClient...")
-        db_client = DBClient.create(
-            "sqlite",
-            "sqlite:///:memory:",
-            config,
-            connection_string="sqlite:///:memory:",
-        )
-
-        await db_client.connect()
-
-        # Create table
-        await db_client.execute_command(
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                email TEXT,
-                active BOOLEAN DEFAULT 1
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            query, params = (
+                db.query()
+                .select("category", "COUNT(*) as count")
+                .from_table("products")
+                .group_by("category")
+                .having("COUNT(*)", ">", 5)
+                ._build()
             )
-            """
-        )
+            print(f"   Query: {query}")
+            print(f"   Params: {params}")
 
-        # Insert using QueryBuilder
-        query, params = QueryBuilder().insert("users", name="Test User", email="test@example.com").build()
-        await db_client.execute_command(query, params)
-        print("   Inserted user using QueryBuilder")
+        # Example 9: Using QueryBuilder with DBClient execution
+        print("\n9. Using QueryBuilder with DBClient execution...")
+        async with SQLiteClient(connection_string="sqlite:///:memory:") as db:
+            # Create table
+            await db.execute_command(
+                """
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    email TEXT,
+                    active BOOLEAN DEFAULT 1
+                )
+                """
+            )
 
-        # Select using QueryBuilder
-        query, params = QueryBuilder().select("*").from_table("users").where("active", "=", True).build()
-        results = await db_client.execute_query(query, params)
-        print(f"   Found {len(results)} active users")
+            # Insert using QueryBuilder
+            query, params = db.query().insert("users", name="Test User", email="test@example.com")._build()
+            await db.execute_command(query, params)
+            print("   Inserted user using QueryBuilder")
 
-        await db_client.disconnect()
+            # Select using QueryBuilder
+            query, params = db.query().select("*").from_table("users").where("active", "=", True)._build()
+            results = await db.execute_query(query, params)
+            print(f"   Found {len(results)} active users")
 
         print("\n=== QueryBuilder Examples Completed ===")
 

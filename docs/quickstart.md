@@ -8,7 +8,9 @@ Get up and running with the Web Automation Framework in just a few minutes.
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
 ```
 
 ### 2. Create Configuration
@@ -31,7 +33,7 @@ config = Config(
 async def test_api():
     config = Config(timeout=30)
     
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         # Test GET endpoint
         result = await api.make_request("/api/status", method="GET")
         print(f"Status: {result.status_code}")
@@ -54,12 +56,13 @@ Test your web application's user interface:
 
 ```python
 async def test_ui():
-    config = Config(timeout=30)
+    config = Config(timeout=30, browser_headless=True)
     
-    async with UiClient("https://example.com", config) as ui:
+    async with AsyncUiClient("https://example.com", config) as ui:
         # Setup browser and navigate
         await ui.setup_browser()
-        await ui.page.goto("https://example.com", wait_until="networkidle")
+        if ui.page:
+            await ui.page.goto("https://example.com", wait_until="networkidle")
 
         # Basic interactions
         await ui.fill_input("#username", "test_user")
@@ -82,7 +85,9 @@ Here's a complete example that combines API and UI testing:
 
 ```python
 import asyncio
-from py_web_automation import ApiClient, UiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
 
 async def complete_example():
     # Setup
@@ -90,15 +95,16 @@ async def complete_example():
 
     # API Testing
     print("\n=== API Testing ===")
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         result = await api.make_request("/api/health", method="GET")
         print(f"Health check: {'✅ OK' if result.success else '❌ FAILED'}")
 
     # UI Testing
     print("\n=== UI Testing ===")
-    async with UiClient("https://example.com", config) as ui:
+    async with AsyncUiClient("https://example.com", config) as ui:
         await ui.setup_browser()
-        await ui.page.goto("https://example.com", wait_until="networkidle")
+        if ui.page:
+            await ui.page.goto("https://example.com", wait_until="networkidle")
 
         # Test form interaction
         await ui.fill_input("#email", "test@example.com")
@@ -119,10 +125,10 @@ Set up your environment variables (optional):
 
 ```bash
 # Optional configuration
-export WEB_AUTOMATION_TIMEOUT="30"
-export WEB_AUTOMATION_RETRY_COUNT="3"
-export WEB_AUTOMATION_LOG_LEVEL="INFO"
-export WEB_AUTOMATION_BROWSER_HEADLESS="true"
+export WA_TIMEOUT="30"
+export WA_RETRY_COUNT="3"
+export WA_LOG_LEVEL="INFO"
+export WA_BROWSER_HEADLESS="true"
 ```
 
 ## Next Steps
@@ -141,13 +147,13 @@ async def robust_testing():
     config = Config.from_env()
 
     try:
-        async with ApiClient("https://api.example.com", config) as api:
+        async with HttpClient("https://api.example.com", config) as api:
             result = await api.make_request("/api/test", method="GET")
 
             if result.success:
                 print("✅ API test passed")
             else:
-                print(f"❌ API test failed: {result.error_message}")
+                print(f"❌ API test failed: {result.error}")
 
     except Exception as e:
         print(f"❌ Test failed with exception: {e}")
@@ -161,7 +167,7 @@ async def retry_test():
 
     for attempt in range(3):
         try:
-            async with ApiClient("https://api.example.com", config) as api:
+            async with HttpClient("https://api.example.com", config) as api:
                 result = await api.make_request("/api/test", method="GET")
                 if result.success:
                     print("✅ Test passed")
@@ -178,11 +184,11 @@ Always use context managers for proper resource cleanup:
 
 ```python
 # ✅ Good
-async with ApiClient(url, config) as api:
+async with HttpClient(url, config) as api:
     result = await api.make_request("/api/test", method="GET")
 
 # ❌ Avoid
-api = ApiClient(url, config)
+api = HttpClient(url, config)
 result = await api.make_request("/api/test", method="GET")
 # Don't forget to call await api.close()
 ```

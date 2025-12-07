@@ -7,14 +7,19 @@ for organizing UI tests with the Page Object Model pattern.
 
 import asyncio
 
-from py_web_automation import Config, UiClient
-from py_web_automation.page_objects import BasePage, Component, PageFactory
+from py_web_automation import Config
+from py_web_automation.clients.ui_clients import AsyncUiClient
+from py_web_automation.clients.ui_clients.async_ui_client.page_objects import (
+    BasePage,
+    Component,
+    PageFactory,
+)
 
 
 class LoginPage(BasePage):
     """Page object for login page."""
 
-    def __init__(self, ui_client: UiClient):
+    def __init__(self, ui_client: AsyncUiClient):
         super().__init__(ui_client, "https://example.com/login")
 
     async def is_loaded(self) -> bool:
@@ -32,7 +37,7 @@ class LoginPage(BasePage):
 class DashboardPage(BasePage):
     """Page object for dashboard page."""
 
-    def __init__(self, ui_client: UiClient):
+    def __init__(self, ui_client: AsyncUiClient):
         super().__init__(ui_client, "https://example.com/dashboard")
 
     async def is_loaded(self) -> bool:
@@ -41,13 +46,13 @@ class DashboardPage(BasePage):
 
     async def get_welcome_message(self) -> str:
         """Get welcome message text."""
-        return await self.get_element_text("#welcome-message")
+        return await self.get_element_text("#welcome-message") or ""
 
 
 class NavigationComponent(Component):
     """Reusable navigation component."""
 
-    def __init__(self, ui_client: UiClient):
+    def __init__(self, ui_client: AsyncUiClient):
         super().__init__(ui_client, "nav.main-nav")
 
     async def click_home(self) -> None:
@@ -71,7 +76,7 @@ async def main():
     try:
         print("=== Page Objects Examples ===\n")
 
-        async with UiClient("https://example.com", config) as ui:
+        async with AsyncUiClient("https://example.com", config) as ui:
             await ui.setup_browser()
 
             # Example 1: Using Page Objects
@@ -98,12 +103,8 @@ async def main():
             print("\n4. Using page factory...")
             factory = PageFactory(ui)
 
-            # Register pages
-            factory.register("login", LoginPage)
-            factory.register("dashboard", DashboardPage)
-
-            # Get page instance
-            dashboard = factory.get_page("dashboard")
+            # Create page instances
+            dashboard = factory.create_page(DashboardPage)
             await dashboard.navigate()
             print("   Navigated to dashboard via factory")
 

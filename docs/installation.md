@@ -54,14 +54,14 @@ The framework requires the following packages:
 - `pyyaml` - YAML configuration support
 - `aiofiles` - Async file operations
 - `websockets` - WebSocket client support
-- `aiosqlite` - SQLite database adapter (for DBClient)
+- `aiosqlite` - SQLite database adapter (for SQLiteClient)
 
 ### Optional Protocol Dependencies
 - `grpclib` - gRPC client support (for GrpcClient)
 - `zeep` - SOAP client support (for SoapClient)
 - `graphql-core` - GraphQL support (for GraphQLClient)
 
-### Optional Database Dependencies (for DBClient)
+### Optional Database Dependencies (for Database Clients)
 - `asyncpg` or `psycopg` - PostgreSQL adapter
 - `aiomysql` or `pymysql` - MySQL adapter
 

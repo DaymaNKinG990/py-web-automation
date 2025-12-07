@@ -1,13 +1,14 @@
 """
-Example: Using only ApiClient for HTTP REST API testing.
+Example: Using only HttpClient for HTTP REST API testing.
 
-This example demonstrates how to use ApiClient class independently
+This example demonstrates how to use HttpClient class independently
 for testing HTTP REST API functionality.
 """
 
 import asyncio
 
-from py_web_automation import ApiClient, Config
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
 
 
 async def test_api_only():
@@ -21,11 +22,11 @@ async def test_api_only():
         log_level="INFO",
     )
 
-    # Initialize API client
-    api = ApiClient("https://api.example.com", config)
+    # Initialize HTTP client
+    api = HttpClient("https://api.example.com", config)
 
     try:
-        print("=== ApiClient Testing ===")
+        print("=== HttpClient Testing ===")
 
         # 1. Test HTTP API endpoints
         print("\n1. Testing HTTP API endpoints...")
@@ -78,7 +79,7 @@ async def test_api_only():
 
 
 async def test_api_with_context_manager():
-    """Test ApiClient using context manager."""
+    """Test HttpClient using context manager."""
 
     config = Config(
         timeout=30,
@@ -89,7 +90,7 @@ async def test_api_with_context_manager():
 
     print("\n=== Context Manager Testing ===")
 
-    async with ApiClient("https://api.example.com", config) as api:
+    async with HttpClient("https://api.example.com", config) as api:
         # Quick API test
         result = await api.make_request("/api/health", method="GET")
         print(
@@ -102,8 +103,8 @@ async def test_api_with_context_manager():
 
 async def main():
     """Main function to run all examples."""
-    print("ApiClient Examples")
-    print("==================")
+    print("HttpClient Examples")
+    print("===================")
 
     # Run API-only testing
     await test_api_only()

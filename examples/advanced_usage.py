@@ -1,13 +1,15 @@
 """
 Advanced usage example of Web Automation Framework.
 
-This example demonstrates advanced usage patterns with ApiClient and UiClient,
+This example demonstrates advanced usage patterns with HttpClient and AsyncUiClient,
 including error handling, retry logic, and comprehensive testing scenarios.
 """
 
 import asyncio
 
-from py_web_automation import ApiClient, Config, UiClient
+from py_web_automation import Config
+from py_web_automation.clients.api_clients.http_client import HttpClient
+from py_web_automation.clients.ui_clients import AsyncUiClient
 from py_web_automation.exceptions import (
     NotFoundError,
     TimeoutError,
@@ -34,13 +36,12 @@ async def main():
     try:
         # Example 1: Advanced API Testing
         print("\n=== Example 1: Advanced API Testing ===")
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             # Test multiple API endpoints
             endpoints = [
                 ("/api/status", "GET"),
                 ("/api/users", "GET"),
                 ("/api/data", "POST", {"key": "value"}),
-                ("/api/upload", "POST", {"file": "test.txt"}),
             ]
 
             for endpoint_info in endpoints:
@@ -57,15 +58,16 @@ async def main():
                 print(f"  Code: {result.status_code}")
                 print(f"  Time: {result.response_time:.3f}s")
 
-                if not result.success and result.error_message:
-                    print(f"  Error: {result.error_message}")
+                if not result.success and result.error:
+                    print(f"  Error: {result.error}")
 
         # Example 2: Advanced UI Testing
         print("\n=== Example 2: Advanced UI Testing ===")
-        async with UiClient(web_url, config) as ui:
+        async with AsyncUiClient(web_url, config) as ui:
             # Setup browser and navigate
             await ui.setup_browser()
-            await ui.page.goto(web_url, wait_until="networkidle")
+            if ui.page:
+                await ui.page.goto(web_url, wait_until="networkidle")
 
             # Comprehensive UI testing
             print("Running comprehensive UI tests...")
@@ -87,10 +89,6 @@ async def main():
             print("Testing keyboard interactions...")
             await ui.type_text("Hello, World!")
             await ui.press_key("Enter")
-
-            # File upload
-            print("Testing file upload...")
-            await ui.upload_file("input[type='file']", "test_file.txt")
 
             # Element information
             print("Getting element information...")
@@ -124,17 +122,18 @@ async def main():
 
         # Test with invalid URL
         print("Testing error handling with invalid URL...")
-        async with ApiClient("https://invalid-url-that-does-not-exist.com", config) as api:
+        async with HttpClient("https://invalid-url-that-does-not-exist.com", config) as api:
             result = await api.make_request("/api/test", method="GET")
             print(f"  Invalid URL test: {'PASSED' if result.success else 'FAILED'}")
-            if result.error_message:
-                print(f"  Error message: {result.error_message}")
+            if result.error:
+                print(f"  Error message: {result.error}")
 
         # Test UI with timeout
         print("Testing UI timeout handling...")
-        async with UiClient(web_url, config) as ui:
+        async with AsyncUiClient(web_url, config) as ui:
             await ui.setup_browser()
-            await ui.page.goto(web_url, wait_until="networkidle")
+            if ui.page:
+                await ui.page.goto(web_url, wait_until="networkidle")
 
             try:
                 # This will timeout since element doesn't exist
@@ -148,7 +147,7 @@ async def main():
 
         # API performance test
         print("Testing API performance...")
-        async with ApiClient(base_url, config) as api:
+        async with HttpClient(base_url, config) as api:
             start_time = asyncio.get_event_loop().time()
 
             # Make multiple concurrent requests
@@ -172,11 +171,12 @@ async def main():
 
         # UI performance test
         print("Testing UI performance...")
-        async with UiClient(web_url, config) as ui:
+        async with AsyncUiClient(web_url, config) as ui:
             await ui.setup_browser()
 
             start_time = asyncio.get_event_loop().time()
-            await ui.page.goto(web_url, wait_until="networkidle")
+            if ui.page:
+                await ui.page.goto(web_url, wait_until="networkidle")
             end_time = asyncio.get_event_loop().time()
 
             load_time = end_time - start_time
