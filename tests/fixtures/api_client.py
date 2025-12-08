@@ -2,24 +2,38 @@
 Fixtures for ApiClient testing.
 """
 
+# Python imports
+from __future__ import annotations
 from datetime import timedelta
-
+from typing import Any, Callable, TYPE_CHECKING
 from httpx import Response
 from pytest import fixture
+from pytest_mock import MockerFixture
 
-from fixtures.base_client import _get_base_config_data
-from py_web_automation.clients.api_client import ApiClient
+# Local imports
+from py_web_automation.clients.api_clients.http_client import HttpClient
 from py_web_automation.config import Config
+
+if TYPE_CHECKING:
+    from py_web_automation.clients.api_clients.graphql_client import GraphQLClient
 
 
 @fixture
 def valid_config() -> Config:
     """Create a valid Config instance."""
-    return Config(**_get_base_config_data())
+    return Config(
+        base_url="https://example.com",
+        timeout=30,
+        retry_count=3,
+        retry_delay=1.0,
+        log_level="DEBUG",
+        browser_headless=True,
+        browser_timeout=30000,
+    )
 
 
 @fixture
-def mock_httpx_response_200(mocker):
+def mock_httpx_response_200(mocker: MockerFixture) -> Response:
     """Create a mock httpx.Response with status 200."""
     response = mocker.MagicMock(spec=Response)
     response.status_code = 200
@@ -36,7 +50,7 @@ def mock_httpx_response_200(mocker):
 
 
 @fixture
-def mock_httpx_response_301(mocker):
+def mock_httpx_response_301(mocker: MockerFixture) -> Response:
     """Create a mock httpx.Response with status 301."""
     response = mocker.MagicMock(spec=Response)
     response.status_code = 301
@@ -53,7 +67,7 @@ def mock_httpx_response_301(mocker):
 
 
 @fixture
-def mock_httpx_response_404(mocker):
+def mock_httpx_response_404(mocker: MockerFixture) -> Response:
     """Create a mock httpx.Response with status 404."""
     response = mocker.MagicMock(spec=Response)
     response.status_code = 404
@@ -70,7 +84,7 @@ def mock_httpx_response_404(mocker):
 
 
 @fixture
-def mock_httpx_response_500(mocker):
+def mock_httpx_response_500(mocker: MockerFixture) -> Response:
     """Create a mock httpx.Response with status 500."""
     response = mocker.MagicMock(spec=Response)
     response.status_code = 500
@@ -87,7 +101,7 @@ def mock_httpx_response_500(mocker):
 
 
 @fixture
-def mock_httpx_response_101(mocker):
+def mock_httpx_response_101(mocker: MockerFixture) -> Response:
     """Create a mock httpx.Response with status 101."""
     response = mocker.MagicMock(spec=Response)
     response.status_code = 101
@@ -104,41 +118,7 @@ def mock_httpx_response_101(mocker):
 
 
 @fixture
-def mock_httpx_response_201(mocker):
-    """Create a mock httpx.Response with status 201 (CREATED)."""
-    response = mocker.MagicMock(spec=Response)
-    response.status_code = 201
-    response.elapsed = timedelta(seconds=0.3)
-    response.is_informational = False
-    response.is_success = True
-    response.is_redirect = False
-    response.is_client_error = False
-    response.is_server_error = False
-    response.content = b'{"id": 1, "status": "created"}'
-    response.headers = {"Content-Type": "application/json", "Content-Length": "30"}
-    response.reason_phrase = "Created"
-    return response
-
-
-@fixture
-def mock_httpx_response_400(mocker):
-    """Create a mock httpx.Response with status 400 (BAD_REQUEST)."""
-    response = mocker.MagicMock(spec=Response)
-    response.status_code = 400
-    response.elapsed = timedelta(seconds=0.2)
-    response.is_informational = False
-    response.is_success = False
-    response.is_redirect = False
-    response.is_client_error = True
-    response.is_server_error = False
-    response.content = b'{"error": "Bad Request"}'
-    response.headers = {"Content-Type": "application/json"}
-    response.reason_phrase = "Bad Request"
-    return response
-
-
-@fixture
-def mock_httpx_client(mocker):
+def mock_httpx_client(mocker: MockerFixture) -> Any:
     """Create a mock httpx.AsyncClient instance."""
     client = mocker.AsyncMock()
     client.aclose = mocker.AsyncMock()
@@ -147,108 +127,57 @@ def mock_httpx_client(mocker):
 
 
 @fixture
-def api_client_with_config(mocker, valid_config, mock_httpx_client):
-    """Create ApiClient with valid config and mocked httpx client."""
+def api_client_with_config(mocker: MockerFixture, valid_config: Config, mock_httpx_client: Any) -> HttpClient:
+    """
+    Create HttpClient with valid config and mocked httpx client.
+    
+    Patches AsyncClient to prevent real HTTP connections and potential memory leaks.
+    The patch ensures that when HttpClient.__init__ creates AsyncClient (line 90),
+    it returns our mock instead of a real HTTP client.
+    Automatically cleans up after test execution.
+    """
     mocker.patch(
-        "py_web_automation.clients.api_client.AsyncClient",
+        "py_web_automation.clients.api_clients.http_client.http_client.AsyncClient",
         return_value=mock_httpx_client,
     )
-    api = ApiClient("https://example.com/app", valid_config)
-    api.client = mock_httpx_client
-    return api
+    api = HttpClient("https://example.com/app", valid_config)
+    yield api
+    try:
+        if hasattr(api, "_middleware"):
+            api._middleware = None
+    except Exception:
+        pass
 
 
-# Test data for validate_init_data
-# Note: These are example values - in real tests, you'd generate valid init_data
-# using actual Telegram bot token and user data
-
-
-def generate_valid_init_data(bot_token: str, user_data: dict) -> str:
+@fixture
+def mock_graphql_execute_operation(
+    mocker: MockerFixture
+) -> Callable[[GraphQLClient, dict | None, Exception | None], None]:
     """
-    Generate valid init_data for testing using official Telegram Mini App algorithm.
-
-    This is a helper function to create test data.
-    In real scenarios, init_data comes from Telegram.
-
-    Algorithm:
-    1. Exclude 'hash' key from parameters
-    2. Sort remaining keys alphabetically
-    3. Build verification string by joining "key=value" pairs with newline characters (\\n)
-    4. Compute secret key: HMAC-SHA256("WebAppData", bot_token)
-    5. Compute hash: HMAC-SHA256(secret_key, verification_string)
-    6. Attach hash back into parameters
-    7. Return final init_data as URL-encoded query string
+    Mock fixture for GraphQL _execute_operation method.
+    
+    Returns a function that mocks the _execute_operation method on a GraphQLClient instance.
+    Usage:
+        mock_execute = mock_graphql_execute_operation
+        mock_execute(client, return_data={"users": []})
+        # or
+        mock_execute(client, side_effect=GraphQLError("Error"))
     """
-    from hashlib import sha256
-    from hmac import new
-    from urllib.parse import urlencode
 
-    # Exclude 'hash' key from parameters
-    params_without_hash = {k: v for k, v in user_data.items() if k != "hash"}
-
-    # Sort keys alphabetically
-    sorted_keys = sorted(params_without_hash.keys())
-
-    # Build verification string by joining "key=value" pairs with newline characters
-    data_check_pairs = [f"{key}={params_without_hash[key]}" for key in sorted_keys]
-    data_to_validate = "\n".join(data_check_pairs)
-
-    # Compute secret key: HMAC-SHA256("WebAppData", bot_token)
-    secret_key = new(key=b"WebAppData", msg=bot_token.encode(), digestmod=sha256).digest()
-
-    # Compute hash: HMAC-SHA256(secret_key, verification_string)
-    expected_hash = new(key=secret_key, msg=data_to_validate.encode(), digestmod=sha256).hexdigest()
-
-    # Attach hash back into parameters
-    params_without_hash["hash"] = expected_hash
-
-    # Return final init_data as URL-encoded query string
-    init_data = urlencode(params_without_hash)
-
-    return init_data
-
-
-@fixture
-def valid_init_data_and_token():
-    """Create valid init_data and bot_token pair."""
-    bot_token = "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-    user_data = {
-        "user": '{"id":123456789,"first_name":"Test","last_name":"User"}',
-        "auth_date": "1698000000",
-        "start_param": "test_param",
-    }
-
-    # Generate valid init_data
-    init_data = generate_valid_init_data(bot_token, user_data)
-    return init_data, bot_token
-
-
-@fixture
-def invalid_init_data_and_token():
-    """Create invalid init_data and bot_token pair."""
-    bot_token = "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-    # Invalid init_data with wrong hash
-    init_data = "user=%7B%22id%22%3A123456789%7D&auth_date=1698000000&hash=invalid_hash"
-    return init_data, bot_token
-
-
-@fixture
-def init_data_without_hash():
-    """Create init_data without hash parameter."""
-    return (
-        "user=%7B%22id%22%3A123456789%7D&auth_date=1698000000",
-        "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
-    )
-
-
-@fixture
-def init_data_test_cases():
-    """Various test cases for init_data validation."""
-    return [
-        # (init_data, bot_token, expected_result, description)
-        ("", "token", False, "Empty init_data"),
-        ("data", "", False, "Empty bot_token"),
-        ("", "", False, "Both empty"),
-        ("user=test&hash=abc", "token", False, "Invalid hash"),
-        ("user=test", "token", False, "No hash parameter"),
-    ]
+    def _mock_execute_operation(
+        client: GraphQLClient,
+        return_data: dict | None = None,
+        side_effect: Exception | None = None
+    ) -> None:
+        """Mock GraphQL _execute_operation method using mocker."""
+        if side_effect:
+            client._execute_operation = mocker.AsyncMock(side_effect=side_effect)  # type: ignore[method-assign]
+        else:
+            # Preserve None values instead of converting to {}
+            client._execute_operation = mocker.AsyncMock(return_value=return_data)  # type: ignore[method-assign]
+        client._ensure_session = mocker.AsyncMock()  # type: ignore[method-assign]
+        if not hasattr(client._transport, "headers"):
+            client._transport.headers = {}  # type: ignore[attr-defined]
+        return client._execute_operation
+    
+    return _mock_execute_operation

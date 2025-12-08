@@ -1,8 +1,9 @@
 # Python imports
 import os
 from os import environ
-
+from pathlib import Path
 from pytest import fixture
+from pytest_mock import MockerFixture
 from yaml import SafeLoader, load  # type: ignore[import-untyped]
 
 
@@ -75,22 +76,6 @@ def valid_config_with_file_data() -> dict[str, int | str | float | bool]:
         "log_level": "DEBUG",
         "browser_headless": True,
         "browser_timeout": 30000,
-    }
-
-
-@fixture
-def invalid_config_data() -> dict[str, int | str | float]:
-    """
-    Invalid configuration data.
-
-    Returns:
-        dict[str, int | str | float]: Invalid configuration data.
-    """
-    return {
-        "timeout": 0,  # Invalid: must be >= 1
-        "retry_count": -1,  # Invalid: must be >= 0
-        "retry_delay": 0.0,  # Invalid: must be >= 0.1
-        "log_level": "INVALID",  # Invalid: must be one of DEBUG, INFO, WARNING, ERROR, CRITICAL
     }
 
 
@@ -171,19 +156,6 @@ def invalid_config_data_maximal_retry_delay() -> dict[str, int | str | float]:
 
 
 @fixture
-def invalid_config_data_timeout_max() -> dict[str, int | str | float]:
-    """
-    Invalid configuration data with maximal timeout 301.
-
-    Returns:
-        dict[str, int | str | float]: Invalid configuration data with maximal timeout.
-    """
-    return {
-        "timeout": 301,  # Invalid: must be <= 300
-    }
-
-
-@fixture
 def invalid_config_data_without_api_id() -> dict[str, str]:
     """
     Configuration data (deprecated - no longer used).
@@ -196,17 +168,6 @@ def invalid_config_data_without_api_id() -> dict[str, str]:
 
 @fixture
 def invalid_config_data_without_api_hash() -> dict[str, int | str]:
-    """
-    Configuration data (deprecated - no longer used).
-
-    Returns:
-        dict[str, int | str]: Empty dict (this fixture is deprecated).
-    """
-    return {}  # This fixture is no longer needed, but kept for backward compatibility
-
-
-@fixture
-def invalid_config_data_without_session() -> dict[str, int | str]:
     """
     Configuration data (deprecated - no longer used).
 
@@ -481,7 +442,7 @@ def config_data_for_large_numbers() -> dict[str, int | str | float]:
 
 
 @fixture
-def mock_environment(mocker) -> dict[str, str]:
+def mock_environment(mocker: MockerFixture) -> dict[str, str]:
     """
     Mock environment variables for testing.
 
@@ -497,55 +458,12 @@ def mock_environment(mocker) -> dict[str, str]:
         "WA_BROWSER_HEADLESS": "true",
         "WA_BROWSER_TIMEOUT": "30000",
     }
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
     mocker.patch.dict(os.environ, env_vars, clear=True)
     yield env_vars
 
 
 @fixture
-def mock_empty_environment(mocker) -> dict[str, str]:
-    """
-    Mock empty environment variables for testing.
-
-    Returns:
-        dict[str, str]: Empty environment variables.
-    """
-    env_vars = {}
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
-    mocker.patch.dict(os.environ, env_vars, clear=True)
-    yield env_vars
-
-
-@fixture
-def mock_environment_missing_api_id(mocker) -> dict[str, str]:
-    """
-    Mock environment variables (deprecated - no longer used).
-
-    Returns:
-        dict[str, str]: Empty dict (this fixture is deprecated).
-    """
-    env_vars = {}  # This fixture is no longer needed
-    mocker.patch.dict(os.environ, env_vars, clear=True)
-    yield env_vars
-
-
-@fixture
-def mock_environment_missing_api_hash(mocker) -> dict[str, str]:
-    """
-    Mock environment variables (deprecated - no longer used).
-
-    Returns:
-        dict[str, str]: Empty dict (this fixture is deprecated).
-    """
-    env_vars = {}  # This fixture is no longer needed
-    mocker.patch.dict(os.environ, env_vars, clear=True)
-    yield env_vars
-
-
-@fixture
-def mock_environment_invalid_api_id(mocker) -> dict[str, str]:
+def mock_environment_invalid_api_id(mocker: MockerFixture) -> dict[str, str]:
     """
     Mock environment variables with invalid WA_TIMEOUT for testing.
 
@@ -560,7 +478,7 @@ def mock_environment_invalid_api_id(mocker) -> dict[str, str]:
 
 
 @fixture
-def mock_environment_default_values(mocker) -> dict[str, str]:
+def mock_environment_default_values(mocker: MockerFixture) -> dict[str, str]:
     """
     Mock environment variables with default values for testing.
 
@@ -574,14 +492,12 @@ def mock_environment_default_values(mocker) -> dict[str, str]:
         "WA_RETRY_DELAY": "1.0",
         "WA_LOG_LEVEL": "INFO",
     }
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
     mocker.patch.dict(os.environ, env_vars, clear=True)
     yield env_vars
 
 
 @fixture
-def mock_environment_override_defaults(mocker) -> dict[str, str]:
+def mock_environment_override_defaults(mocker: MockerFixture) -> dict[str, str]:
     """
     Mock environment variables with overridden default values for testing.
 
@@ -595,14 +511,12 @@ def mock_environment_override_defaults(mocker) -> dict[str, str]:
         "WA_RETRY_DELAY": "2.0",
         "WA_LOG_LEVEL": "WARNING",
     }
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
     mocker.patch.dict(os.environ, env_vars, clear=True)
     yield env_vars
 
 
 @fixture
-def mock_environment_optional_variables(mocker) -> dict[str, str]:
+def mock_environment_optional_variables(mocker: MockerFixture) -> dict[str, str]:
     """
     Mock environment variables with optional variables for testing.
 
@@ -614,75 +528,6 @@ def mock_environment_optional_variables(mocker) -> dict[str, str]:
         "WA_BROWSER_HEADLESS": "false",
         "WA_BROWSER_TIMEOUT": "60000",
     }
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
-    mocker.patch.dict(os.environ, env_vars, clear=True)
-    yield env_vars
-
-
-@fixture
-def mock_environment_type_conversion(mocker) -> dict[str, str]:
-    """
-    Mock environment variables for testing type conversion.
-
-    Returns:
-        dict[str, str]: Environment variables for type conversion testing.
-    """
-    env_vars = {
-        "WA_TIMEOUT": "30",
-        "WA_RETRY_COUNT": "3",
-        "WA_RETRY_DELAY": "1.0",
-    }
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
-    mocker.patch.dict(os.environ, env_vars, clear=True)
-    yield env_vars
-
-
-@fixture
-def mock_environment_invalid_type_conversion(mocker) -> dict[str, str]:
-    """
-    Mock environment variables with invalid type conversion for testing.
-
-    Returns:
-        dict[str, str]: Environment variables with invalid type conversion.
-    """
-    env_vars = {
-        "WA_BASE_URL": "https://example.com",
-        "WA_TIMEOUT": "invalid",
-    }
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
-    mocker.patch.dict(os.environ, env_vars, clear=True)
-    yield env_vars
-
-
-@fixture
-def mock_environment_missing_session_string(mocker) -> dict[str, str]:
-    """
-    Mock environment variables (deprecated - no longer used).
-
-    Returns:
-        dict[str, str]: Empty dict (this fixture is deprecated).
-    """
-    env_vars = {
-        "WA_BASE_URL": "https://example.com",
-    }
-    # Use mocker.patch.dict with os.environ object (not string)
-    # pytest-mock will automatically undo the patch after fixture completes
-    mocker.patch.dict(os.environ, env_vars, clear=True)
-    yield env_vars
-
-
-@fixture
-def mock_environment_invalid_api_hash_length(mocker) -> dict[str, str]:
-    """
-    Mock environment variables (deprecated - no longer used).
-
-    Returns:
-        dict[str, str]: Empty dict (this fixture is deprecated).
-    """
-    env_vars = {}  # This fixture is no longer needed
     mocker.patch.dict(os.environ, env_vars, clear=True)
     yield env_vars
 
@@ -695,8 +540,6 @@ def yaml_config_file_valid() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "valid_yaml.yaml")
 
 
@@ -708,8 +551,6 @@ def yaml_config_file_minimal() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "minimal_config.yaml")
 
 
@@ -721,8 +562,6 @@ def yaml_config_file_with_file_session() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "config_with_file.yaml")
 
 
@@ -734,8 +573,6 @@ def yaml_config_file_invalid() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "invalid_config.yaml")
 
 
@@ -747,8 +584,6 @@ def yaml_config_file_missing_session() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "missing_session_config.yaml")
 
 
@@ -760,8 +595,6 @@ def yaml_config_file_with_mini_app() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "mini_app_config.yaml")
 
 
@@ -773,8 +606,6 @@ def yaml_config_file_empty() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "empty_config.yaml")
 
 
@@ -786,8 +617,6 @@ def yaml_config_file_invalid_format() -> str:
     Returns:
         str: Path to the YAML file.
     """
-    import os
-
     return os.path.join(os.path.dirname(__file__), "..", "data", "invalid_format_config.yaml")
 
 
@@ -796,7 +625,7 @@ def yaml_config_file_invalid_format() -> str:
 # ============================================================================
 
 
-def _load_yaml_data(file_name: str) -> dict:
+def _load_yaml_data(file_name: str) -> dict[str, int | str | float | bool]:
     """
     Helper function to load YAML data from file.
 
@@ -815,10 +644,9 @@ def _load_yaml_data(file_name: str) -> dict:
     Returns:
         dict: Parsed YAML data with optional env var overrides.
     """
-    file_path = os.path.join(os.path.dirname(__file__), "..", "data", file_name)
-    with open(file_path) as f:
+    file_path = Path(__file__).parent.parent / "data" / file_name
+    with file_path.open() as f:
         config_data = load(f, Loader=SafeLoader)
-
     # Override fields with environment variables if present (WA_* prefix)
     if environ.get("WA_BASE_URL"):
         config_data["base_url"] = environ.get("WA_BASE_URL")
@@ -834,12 +662,11 @@ def _load_yaml_data(file_name: str) -> dict:
         config_data["browser_headless"] = environ.get("WA_BROWSER_HEADLESS", "true").lower() in ("true", "1", "yes")
     if environ.get("WA_BROWSER_TIMEOUT"):
         config_data["browser_timeout"] = int(environ.get("WA_BROWSER_TIMEOUT", "30000"))
-
     return config_data
 
 
 @fixture
-def yaml_config_data_valid() -> dict:
+def yaml_config_data_valid() -> dict[str, int | str | float | bool]:
     """
     Return parsed YAML config data for valid config.
 
@@ -850,7 +677,7 @@ def yaml_config_data_valid() -> dict:
 
 
 @fixture
-def yaml_config_data_minimal() -> dict:
+def yaml_config_data_minimal() -> dict[str, int | str | float | bool]:
     """
     Return parsed YAML config data for minimal config.
 
@@ -858,25 +685,3 @@ def yaml_config_data_minimal() -> dict:
         dict: Parsed YAML config data.
     """
     return _load_yaml_data("minimal_config.yaml")
-
-
-@fixture
-def yaml_config_data_with_file_session() -> dict:
-    """
-    Return parsed YAML config data with session_file.
-
-    Returns:
-        dict: Parsed YAML config data.
-    """
-    return _load_yaml_data("config_with_file.yaml")
-
-
-@fixture
-def yaml_config_data_with_mini_app() -> dict:
-    """
-    Return parsed YAML config data with mini app settings.
-
-    Returns:
-        dict: Parsed YAML config data.
-    """
-    return _load_yaml_data("mini_app_config.yaml")
