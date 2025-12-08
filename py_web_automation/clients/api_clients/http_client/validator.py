@@ -18,7 +18,7 @@ from msgspec import Struct
 from msgspec import ValidationError as MsgspecValidationError
 
 # Local imports
-from ..exceptions import ValidationError
+from .exceptions import ValidationError
 from .http_result import HttpResult
 
 

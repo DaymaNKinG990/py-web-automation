@@ -17,9 +17,9 @@ from httpx import AsyncClient, Limits, Response
 # Local imports
 from ....config import Config
 from .http_result import HttpResult
+from .middleware.context import _HttpRequestContext, _HttpResponseContext
 
 if TYPE_CHECKING:
-    from .middleware.context import _HttpRequestContext, _HttpResponseContext
     from .middleware.middleware import MiddlewareChain
     from .request_builder import _RequestBuilder
 
@@ -52,7 +52,7 @@ class HttpClient:
     def __init__(
         self,
         url: str,
-        config: Config,
+        config: Config | None = None,
         middleware: Union["MiddlewareChain", None] = None,
     ) -> None:
         """
@@ -63,7 +63,7 @@ class HttpClient:
 
         Args:
             url: Base URL for API endpoints
-            config: Configuration object with timeout and retry settings
+            config: Configuration object with timeout and retry settings (defaults to Config() if None)
             middleware: Optional middleware chain for request/response processing
             rate_limiter: Optional rate limiter for controlling request rate
 
@@ -81,7 +81,9 @@ class HttpClient:
         """
         if not url.strip():
             raise ValueError("url cannot be empty")
-        if not isinstance(config, Config):
+        if config is None:
+            config = Config()
+        elif not isinstance(config, Config):
             raise TypeError("config must be a Config object")
         self.url: str = url
         self.config: Config = config
@@ -218,23 +220,12 @@ class HttpClient:
         """
         request_headers = request_context.headers.copy()
         request_data = request_context.data or data
-
         if request_data is None:
             return request_headers, None, False
-
-        self._log_request_data(request_data)
         use_json_param = self._should_use_json_param(request_data, request_headers)
+        if use_json_param and "Content-Type" not in request_headers:
+            request_headers["Content-Type"] = "application/json"
         return request_headers, request_data, use_json_param
-
-    def _log_request_data(self, request_data: dict[str, Any] | bytes | str) -> None:
-        """
-        Log request data representation.
-
-        Args:
-            request_data: Request data to log
-        """
-        # Method exists for potential future logging of request data
-        pass
 
     def _should_use_json_param(
         self, request_data: dict[str, Any] | bytes | str, request_headers: dict[str, str]

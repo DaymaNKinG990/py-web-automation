@@ -3,6 +3,7 @@ SQLite database client using aiosqlite.
 """
 
 # Python imports
+from urllib.parse import urlparse
 from typing import Any
 
 from aiosqlite import Connection, Row, connect
@@ -21,16 +22,47 @@ class SQLiteClient(DBClient):
         Initialize SQLite client.
 
         Args:
-            connection_string: SQLite connection string (e.g., 'sqlite:///path/to/db.sqlite')
+            connection_string: SQLite connection string (e.g., 'sqlite:///path/to/db.sqlite' or ':memory:')
         """
         super().__init__(connection_string=connection_string)
         self._connection: Connection
+        self._in_transaction: bool = False
+        self._transaction_level: int = 0
+
+    def _parse_connection_string(self) -> str:
+        """
+        Parse SQLite connection string and return database path.
+
+        Args:
+            connection_string: SQLite connection string
+
+        Returns:
+            Database file path or ':memory:' for in-memory database
+
+        Examples:
+            >>> client._parse_connection_string('sqlite:///:memory:')
+            ':memory:'
+            >>> client._parse_connection_string('sqlite:///path/to/db.sqlite')
+            'path/to/db.sqlite'
+            >>> client._parse_connection_string(':memory:')
+            ':memory:'
+        """
+        if not self.connection_string:
+            return ":memory:"
+        if not self.connection_string.startswith("sqlite://"):
+            return self.connection_string
+        parsed = urlparse(self.connection_string)
+        path = parsed.path or parsed.netloc
+        if path.startswith("/"):
+            path = path[1:]
+        return path or ":memory:"
 
     async def connect(self) -> None:
         """Establish SQLite connection."""
         if self._is_connected:
             return
-        self._connection = await connect(self.connection_string)
+        db_path = self._parse_connection_string()
+        self._connection = await connect(db_path)
         self._connection.row_factory = Row
         self._is_connected = True
 
@@ -56,6 +88,8 @@ class SQLiteClient(DBClient):
         Returns:
             List of dictionaries representing the query results
         """
+        if not self._is_connected:
+            await self.connect()
         cursor = await self._connection.execute(query, params or {})
         rows = await cursor.fetchall()
         if cursor.description is None:
@@ -63,17 +97,23 @@ class SQLiteClient(DBClient):
         columns = [description[0] for description in cursor.description]
         return [dict(zip(columns, row, strict=True)) for row in rows]
 
-    async def execute_command(self, command: str, params: dict[str, Any] | None = None) -> None:
+    async def execute_command(self, command: str, params: dict[str, Any] | None = None) -> int:
         """
         Execute INSERT/UPDATE/DELETE command.
 
         Args:
             command: SQL command to execute
             params: Parameters to pass to the command
+
+        Returns:
+            Number of affected rows
         """
-        await self._connection.execute(command, params or {})
+        if not self._is_connected:
+            await self.connect()
+        cursor = await self._connection.execute(command, params or {})
         if not self._in_transaction:
             await self._connection.commit()
+        return cursor.rowcount
 
     async def begin_transaction(self) -> None:
         """Start transaction."""

@@ -114,9 +114,13 @@ class GraphQLClient:
             url=graphql_url,
             timeout=self.config.timeout,
         )
+        # fetch_schema_from_transport logic:
+        # - If validate_queries=True: disable auto-fetch (validation via middleware)
+        # - If validate_queries=False and schema=None: enable auto-fetch
+        # - If validate_queries=False and schema is provided: disable auto-fetch (schema already available)
         self.client: Client = Client(
             transport=transport,
-            fetch_schema_from_transport=not validate_queries or schema is None,
+            fetch_schema_from_transport=not validate_queries and schema is None,
         )
         self.endpoint: str = endpoint
         self._schema: Any = schema
@@ -153,7 +157,11 @@ class GraphQLClient:
             exc_val: Exception value (if any)
             exc_tb: Exception traceback (if any)
         """
-        await self.close()
+        try:
+            await self.close()
+        except Exception:
+            # Suppress exceptions during cleanup to follow context manager best practices
+            pass
 
     async def close(self) -> None:
         """
@@ -161,10 +169,16 @@ class GraphQLClient:
 
         Closes the underlying HTTP client connection pool. This method is
         automatically called when exiting an async context manager.
+        Handles errors gracefully to ensure cleanup always completes.
         """
         if self._session:
-            await self.client.close_async()
-            self._session = None
+            try:
+                await self.client.close_async()
+            except Exception:
+                # Suppress errors during close to ensure cleanup completes
+                pass
+            finally:
+                self._session = None
 
     async def query(
         self,
@@ -291,13 +305,37 @@ class GraphQLClient:
         if transport_headers is not None:
             transport_headers.update(headers)
 
+    @staticmethod
+    def _redact_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
+        """
+        Redact sensitive headers from response headers.
+
+        Args:
+            headers: Response headers dictionary
+
+        Returns:
+            Headers dictionary with sensitive headers redacted
+        """
+        sensitive_headers = {
+            "authorization",
+            "cookie",
+            "set-cookie",
+            "x-api-key",
+            "x-auth-token",
+        }
+        return {
+            k.lower(): ("[REDACTED]" if k.lower() in sensitive_headers else v)
+            for k, v in headers.items()
+        }
+
     def _extract_response_headers(self) -> dict[str, str]:
         """Extract response headers from transport if available."""
         if not hasattr(self._transport, "headers"):
             return {}
         transport_headers = getattr(self._transport, "headers", None)
         if transport_headers:
-            return dict(transport_headers)
+            headers_dict = dict(transport_headers)
+            return self._redact_sensitive_headers(headers_dict)
         return {}
 
     async def _ensure_session(self) -> None:

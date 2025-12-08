@@ -12,22 +12,12 @@ via DBAdapterRegistry without modifying existing code.
 # Python imports
 from abc import ABC, abstractmethod
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from enum import StrEnum
 from types import TracebackType
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 # Local imports
 from .query_builder import _QueryBuilder
-
-
-class DBCommandType(StrEnum):
-    """Database command type."""
-
-    SELECT = "SELECT"
-    INSERT = "INSERT"
-    UPDATE = "UPDATE"
-    DELETE = "DELETE"
 
 
 class DBClient(ABC):
@@ -197,7 +187,7 @@ class DBClient(ABC):
         pass
 
     @abstractmethod
-    async def execute_command(self, command: str, params: dict[str, Any] | None = None) -> None:
+    async def execute_command(self, command: str, params: dict[str, Any] | None = None) -> int:
         """
         Execute INSERT/UPDATE/DELETE command.
 
@@ -206,7 +196,7 @@ class DBClient(ABC):
             params: Command parameters
 
         Returns:
-            None
+            Number of affected rows
 
         Raises:
             Exception: If command execution fails

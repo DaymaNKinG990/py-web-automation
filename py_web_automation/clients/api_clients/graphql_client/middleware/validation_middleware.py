@@ -4,6 +4,8 @@ Validation middleware for GraphQL client.
 This module provides ValidationMiddleware for GraphQL query validation.
 """
 
+from __future__ import annotations
+
 # Python imports
 from typing import TYPE_CHECKING
 

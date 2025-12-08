@@ -5,18 +5,18 @@ This module provides utilities for comparing screenshots and detecting
 visual changes in web applications.
 """
 
+from __future__ import annotations
+
 # Python imports
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from PIL import Image, ImageChops
 
 # Local imports
-if TYPE_CHECKING:
-    from .async_ui_client.ui_client import UiClient as AsyncUiClient
-    from .sync_ui_client.ui_client import UiClient as SyncUiClient
+from .async_ui_client.ui_client import UiClient as AsyncUiClient
+from .sync_ui_client.ui_client import UiClient as SyncUiClient
 
 
 @dataclass
@@ -57,9 +57,6 @@ class VisualComparator:
 
         Args:
             threshold: Percentage threshold for considering images different (default: 0.01 = 1%)
-
-        Raises:
-            ImportError: If PIL/Pillow is not installed
         """
         self.threshold = threshold
 
@@ -188,14 +185,15 @@ class VisualComparator:
         return hash1 == hash2
 
 
-async def take_baseline_screenshot(ui_client: AsyncUiClient | SyncUiClient, filename: str) -> str:
+async def take_baseline_screenshot(
+    ui_client: AsyncUiClient | SyncUiClient, filename: str
+) -> str:
     """
     Take baseline screenshot for visual regression testing.
 
     Args:
         ui_client: UiClient instance
         filename: Filename to save screenshot
-        selector: Optional CSS selector for element screenshot
 
     Returns:
         Path to saved screenshot

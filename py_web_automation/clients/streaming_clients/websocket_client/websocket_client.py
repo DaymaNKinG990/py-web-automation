@@ -8,6 +8,7 @@ including message sending, receiving, and connection management.
 # Python imports
 from __future__ import annotations
 
+import asyncio
 from asyncio import sleep, wait_for
 from collections.abc import AsyncIterator, Callable
 from json import dumps, loads
@@ -104,7 +105,11 @@ class WebSocketClient:
 
     async def _establish_connection(self) -> None:
         """Establish WebSocket connection."""
-        self._websocket = await connect(self.url, timeout=self.config.timeout, ping_interval=None)
+        connection_timeout = self.config.timeout if self.config.timeout is not None else 30.0
+        self._websocket = await wait_for(
+            connect(self.url, ping_interval=None),
+            timeout=connection_timeout,
+        )
         self._is_connected = True
 
     async def _handle_connection_retry(
@@ -390,8 +395,10 @@ class WebSocketClient:
             )
             message = self._parse_received_message(message_str)
             return await self._create_receive_result(message, timestamp)
-        except TimeoutError as e:
-            return await self._handle_receive_error_and_raise(e, timeout, True)
+        except asyncio.TimeoutError as e:
+            # Convert asyncio.TimeoutError to our TimeoutError
+            timeout_error = TimeoutError(f"Timeout waiting for message: {receive_timeout}s", str(e))
+            return await self._handle_receive_error_and_raise(timeout_error, timeout, True)
         except Exception as e:
             return await self._handle_receive_error_and_raise(e, timeout, False)
 

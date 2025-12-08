@@ -5,6 +5,8 @@ This module provides retry handler for automatic retry of failed WebSocket conne
 with configurable exponential backoff strategy.
 """
 
+from __future__ import annotations
+
 # Python imports
 from asyncio import sleep
 from random import uniform

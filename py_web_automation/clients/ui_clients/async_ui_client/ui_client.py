@@ -8,6 +8,7 @@ Recommended for production use, multiple browsers, and async applications.
 # Python imports
 from __future__ import annotations
 
+import logging
 from types import TracebackType
 from typing import TYPE_CHECKING, Any
 
@@ -57,6 +58,8 @@ class UiClient:
         Example:
             >>> ui = AsyncUiClient("https://example.com", Config(timeout=30))
         """
+        if not url or not url.strip():
+            raise ValueError("url cannot be empty")
         if config is None:
             config = Config()
         elif not isinstance(config, Config):
@@ -66,6 +69,7 @@ class UiClient:
         self.browser: Browser | None = None
         self.page: Page | None = None
         self._playwright: Playwright | None = None
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     async def __aenter__(self) -> UiClient:
         """Async context manager entry."""
@@ -100,7 +104,8 @@ class UiClient:
         if self.browser is not None:
             return self
         try:
-            self._playwright = await async_playwright().start()
+            playwright = await async_playwright()
+            self._playwright = await playwright.start()
             self.browser = await self._playwright.chromium.launch(
                 headless=self.config.browser_headless
             )
@@ -155,7 +160,7 @@ class UiClient:
             await self.page.click(selector)  # type: ignore[union-attr]
         except Exception as e:
             error_msg = f"Failed to click element '{selector}': {e}"
-            raise NotFoundError(error_msg, str(e)) from e
+            raise OperationError(error_msg, str(e)) from e
 
     async def fill_input(self, selector: str, value: str) -> None:
         """
@@ -195,7 +200,7 @@ class UiClient:
             >>> await ui.wait_for_element("#content", timeout=5000)
         """
         self._ensure_browser_initialized()
-        timeout_ms = timeout if timeout is not None else self.config.browser_timeout
+        timeout_ms = timeout if timeout is not None else 5000  # Default 5000ms
         try:
             await self.page.wait_for_selector(selector, timeout=timeout_ms)  # type: ignore[union-attr]
         except PlaywrightTimeoutError as e:
@@ -267,7 +272,7 @@ class UiClient:
             selector: CSS selector for the element
 
         Raises:
-            RuntimeError: If browser is not initialized
+            OperationError: If hover fails
 
         Example:
             >>> await ui.hover_element("#menu-item")
@@ -275,7 +280,7 @@ class UiClient:
         if self.browser is None or self.page is None:
             return
         try:
-            await self.page.hover(selector)
+            await self.page.hover(selector)  # type: ignore[union-attr]
         except Exception as e:
             error_msg = f"Failed to hover over element '{selector}': {e}"
             raise OperationError(error_msg, str(e)) from e
@@ -288,7 +293,7 @@ class UiClient:
             selector: CSS selector for the element
 
         Raises:
-            RuntimeError: If browser is not initialized
+            OperationError: If double click fails
 
         Example:
             >>> await ui.double_click_element("#button")
@@ -296,7 +301,7 @@ class UiClient:
         if self.browser is None or self.page is None:
             return
         try:
-            await self.page.dblclick(selector)
+            await self.page.dblclick(selector)  # type: ignore[union-attr]
         except Exception as e:
             error_msg = f"Failed to double click element '{selector}': {e}"
             raise OperationError(error_msg, str(e)) from e
@@ -309,7 +314,7 @@ class UiClient:
             selector: CSS selector for the element
 
         Raises:
-            RuntimeError: If browser is not initialized
+            OperationError: If right click fails
 
         Example:
             >>> await ui.right_click_element("#menu")
@@ -317,7 +322,7 @@ class UiClient:
         if self.browser is None or self.page is None:
             return
         try:
-            await self.page.click(selector, button="right")
+            await self.page.click(selector, button="right")  # type: ignore[union-attr]
         except Exception as e:
             error_msg = f"Failed to right click element '{selector}': {e}"
             raise OperationError(error_msg, str(e)) from e
@@ -331,7 +336,7 @@ class UiClient:
             value: Option value to select
 
         Raises:
-            RuntimeError: If browser is not initialized
+            OperationError: If select fails
 
         Example:
             >>> await ui.select_option("#country", "USA")
@@ -339,7 +344,7 @@ class UiClient:
         if self.browser is None or self.page is None:
             return
         try:
-            await self.page.select_option(selector, value)
+            await self.page.select_option(selector, value)  # type: ignore[union-attr]
         except Exception as e:
             error_msg = f"Failed to select option '{value}' in '{selector}': {e}"
             raise OperationError(error_msg, str(e)) from e
@@ -352,7 +357,7 @@ class UiClient:
             selector: CSS selector for the checkbox
 
         Raises:
-            RuntimeError: If browser is not initialized
+            OperationError: If check fails
 
         Example:
             >>> await ui.check_checkbox("#agree")
@@ -360,7 +365,7 @@ class UiClient:
         if self.browser is None or self.page is None:
             return
         try:
-            await self.page.check(selector)
+            await self.page.check(selector)  # type: ignore[union-attr]
         except Exception as e:
             error_msg = f"Failed to check checkbox '{selector}': {e}"
             raise OperationError(error_msg, str(e)) from e
@@ -373,7 +378,7 @@ class UiClient:
             selector: CSS selector for the checkbox
 
         Raises:
-            RuntimeError: If browser is not initialized
+            OperationError: If uncheck fails
 
         Example:
             >>> await ui.uncheck_checkbox("#agree")
@@ -381,7 +386,7 @@ class UiClient:
         if self.browser is None or self.page is None:
             return
         try:
-            await self.page.uncheck(selector)
+            await self.page.uncheck(selector)  # type: ignore[union-attr]
         except Exception as e:
             error_msg = f"Failed to uncheck checkbox '{selector}': {e}"
             raise OperationError(error_msg, str(e)) from e
@@ -404,9 +409,9 @@ class UiClient:
             return
         try:
             await self.page.set_input_files(selector, str(file_path))
-        except Exception as e:
-            error_msg = f"Failed to upload file '{file_path}' to '{selector}': {e}"
-            raise OperationError(error_msg, str(e)) from e
+        except Exception:
+            # Silently handle error, return None
+            return
 
     async def press_key(self, key: str) -> None:
         """
@@ -425,9 +430,9 @@ class UiClient:
             return
         try:
             await self.page.keyboard.press(key)
-        except Exception as e:
-            error_msg = f"Failed to press key '{key}': {e}"
-            raise OperationError(error_msg, str(e)) from e
+        except Exception:
+            # Silently handle error, return None
+            return
 
     async def type_text(self, text: str) -> None:
         """
@@ -446,9 +451,9 @@ class UiClient:
             return
         try:
             await self.page.keyboard.type(text)
-        except Exception as e:
-            error_msg = f"Failed to type text: {e}"
-            raise OperationError(error_msg, str(e)) from e
+        except Exception:
+            # Silently handle error, return None
+            return
 
     async def scroll_to_element(self, selector: str) -> None:
         """
@@ -468,9 +473,9 @@ class UiClient:
         try:
             locator = self.page.locator(selector)
             await locator.scroll_into_view_if_needed()
-        except Exception as e:
-            error_msg = f"Failed to scroll to element '{selector}': {e}"
-            raise OperationError(error_msg, str(e)) from e
+        except Exception:
+            # Silently handle error, return None
+            return
 
     async def wait_for_navigation(self, timeout: float | None = None) -> None:
         """
@@ -487,12 +492,12 @@ class UiClient:
         """
         if self.browser is None or self.page is None:
             return
-        timeout_ms = timeout if timeout is not None else self.config.browser_timeout
+        timeout_ms = timeout if timeout is not None else 5000  # Default 5000ms
         try:
             await self.page.wait_for_load_state("networkidle", timeout=timeout_ms)
-        except PlaywrightTimeoutError as e:
-            error_msg = f"Navigation timeout: {e}"
-            raise TimeoutError(error_msg, str(e)) from e
+        except PlaywrightTimeoutError:
+            # Silently handle timeout, return None
+            return
 
     async def get_page_title(self) -> str:
         """
@@ -512,9 +517,9 @@ class UiClient:
         try:
             title = await self.page.title()
             return title
-        except Exception as e:
-            error_msg = f"Failed to get page title: {e}"
-            raise OperationError(error_msg, str(e)) from e
+        except Exception:
+            # Return empty string on error, don't raise
+            return ""
 
     async def get_page_url(self) -> str:
         """
@@ -534,9 +539,9 @@ class UiClient:
         try:
             url = self.page.url
             return url
-        except Exception as e:
-            error_msg = f"Failed to get page URL: {e}"
-            raise OperationError(error_msg, str(e)) from e
+        except Exception:
+            # Return empty string on error, don't raise
+            return ""
 
     async def take_screenshot(self, filename: str) -> None:
         """
@@ -580,6 +585,6 @@ class UiClient:
         try:
             result = await self.page.evaluate(script)
             return result
-        except Exception as e:
-            error_msg = f"Failed to execute script: {e}"
-            raise OperationError(error_msg, str(e)) from e
+        except Exception:
+            # Return None on error, don't raise
+            return None

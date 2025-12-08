@@ -9,13 +9,11 @@ for constructing complex HTTP requests with a fluent API.
 from __future__ import annotations
 
 from http import HTTPMethod
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 # Local imports
 from .http_result import HttpResult
-
-if TYPE_CHECKING:
-    from .http_client import HttpClient
+from .http_client import HttpClient
 
 
 class _RequestBuilder:

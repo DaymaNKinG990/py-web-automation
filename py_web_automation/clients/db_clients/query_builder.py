@@ -8,7 +8,7 @@ in a type-safe and readable way.
 # Python imports
 from typing import TYPE_CHECKING, Any
 
-from .db_client import DBCommandType
+from .types import DBCommandType
 
 if TYPE_CHECKING:
     from .db_client import DBClient
