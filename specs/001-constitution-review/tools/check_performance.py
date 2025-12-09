@@ -81,8 +81,14 @@ class PerformanceChecker(BaseChecker):
         """
         for import_node in parser.get_imports():
             if isinstance(import_node, ast.ImportFrom):
-                if import_node.module == "msgspec":
+                if import_node.module == "msgspec" or (
+                    import_node.module and import_node.module.startswith("msgspec.")
+                ):
                     return True
+            elif isinstance(import_node, ast.Import):
+                for alias in import_node.names:
+                    if alias.name == "msgspec" or alias.name.startswith("msgspec."):
+                        return True
         return False
 
     def _has_data_models(self, parser: ASTParser) -> bool:
