@@ -16,10 +16,17 @@ from .models import ComplianceViolation
 class ErrorHandlingChecker(BaseChecker):
     """Checker for Error Handling standard compliance."""
 
+import ast
+from pathlib import Path
+from typing import ClassVar
+
+from .ast_parser import ASTParser
+from .base_checker import BaseChecker
+from .models import ComplianceViolation
+
     BASE_EXCEPTION = "WebAutomationError"
     # Whitelist of allowed exception base classes
-    ALLOWED_BASE_EXCEPTIONS = {BASE_EXCEPTION}
-
+    ALLOWED_BASE_EXCEPTIONS: ClassVar[set[str]] = {BASE_EXCEPTION}
     def get_name(self) -> str:
         """Get the name of this checker."""
         return "Error Handling"
