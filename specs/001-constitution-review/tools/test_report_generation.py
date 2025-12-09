@@ -42,11 +42,11 @@ def test_report_structure() -> bool:
     )
 
     # Validate report structure
-    assert report.report_id != ""  # noqa: S101
-    assert report.total_files_analyzed == 1  # noqa: S101
-    assert report.total_violations == 1  # noqa: S101
-    assert 0 <= report.compliance_percentage <= 100  # noqa: S101
-    assert "Type Safety" in report.violations_by_principle  # noqa: S101
+    assert report.report_id != ""
+    assert report.total_files_analyzed == 1
+    assert report.total_violations == 1
+    assert 0 <= report.compliance_percentage <= 100
+    assert "Type Safety" in report.violations_by_principle
 
     return True
 
@@ -79,14 +79,14 @@ def test_json_export() -> bool:
     json_data = export_json(report)
 
     # Validate JSON structure
-    assert "report_id" in json_data  # noqa: S101
-    assert "generated_at" in json_data  # noqa: S101
-    assert "summary" in json_data  # noqa: S101
-    assert "principles" in json_data  # noqa: S101
-    assert "standards" in json_data  # noqa: S101
+    assert "report_id" in json_data
+    assert "generated_at" in json_data
+    assert "summary" in json_data
+    assert "principles" in json_data
+    assert "standards" in json_data
 
-    assert json_data["summary"]["total_files_analyzed"] == 1  # noqa: S101
-    assert json_data["summary"]["total_violations"] == 1  # noqa: S101
+    assert json_data["summary"]["total_files_analyzed"] == 1
+    assert json_data["summary"]["total_violations"] == 1
 
     return True
 
@@ -119,10 +119,10 @@ def test_markdown_export() -> bool:
     markdown = export_markdown(report)
 
     # Validate Markdown structure
-    assert "# Constitution Compliance Report" in markdown  # noqa: S101
-    assert "Executive Summary" in markdown  # noqa: S101
-    assert "Compliance by Principle" in markdown  # noqa: S101
-    assert "Compliance by Standard" in markdown  # noqa: S101
+    assert "# Constitution Compliance Report" in markdown
+    assert "Executive Summary" in markdown
+    assert "Compliance by Principle" in markdown
+    assert "Compliance by Standard" in markdown
 
     return True
 
@@ -158,12 +158,10 @@ def test_remediation_plan() -> bool:
     steps = generate_remediation_plan(violations)
 
     # Validate remediation steps
-    assert len(steps) > 0  # noqa: S101
-    assert all(  # noqa: S101
-        step.priority in ("CRITICAL", "HIGH", "MEDIUM", "LOW") for step in steps
-    )
-    assert all(step.affected_files for step in steps)  # noqa: S101
-    assert all(step.violation_ids for step in steps)  # noqa: S101
+    assert len(steps) > 0
+    assert all(step.priority in ("CRITICAL", "HIGH", "MEDIUM", "LOW") for step in steps)
+    assert all(step.affected_files for step in steps)
+    assert all(step.violation_ids for step in steps)
 
     return True
 

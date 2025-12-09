@@ -5,6 +5,8 @@ This module provides functionality to collect, organize, and analyze violations
 from multiple checkers.
 """
 
+from __future__ import annotations
+
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
@@ -19,7 +21,7 @@ class ViolationCollector:
         """Initialize the violation collector."""
         self.violations: list[ComplianceViolation] = []
 
-    def add_violations(self, violations: list["ComplianceViolation"]) -> None:
+    def add_violations(self, violations: list[ComplianceViolation]) -> None:
         """
         Add violations to the collection.
 
@@ -28,7 +30,7 @@ class ViolationCollector:
         """
         self.violations.extend(violations)
 
-    def get_violations_by_principle(self) -> dict[str, list["ComplianceViolation"]]:
+    def get_violations_by_principle(self) -> dict[str, list[ComplianceViolation]]:
         """
         Group violations by principle.
 
@@ -41,7 +43,7 @@ class ViolationCollector:
                 grouped[violation.principle].append(violation)
         return dict(grouped)
 
-    def get_violations_by_standard(self) -> dict[str, list["ComplianceViolation"]]:
+    def get_violations_by_standard(self) -> dict[str, list[ComplianceViolation]]:
         """
         Group violations by standard.
 
@@ -54,7 +56,7 @@ class ViolationCollector:
                 grouped[violation.standard].append(violation)
         return dict(grouped)
 
-    def get_violations_by_file(self) -> dict[str, list["ComplianceViolation"]]:
+    def get_violations_by_file(self) -> dict[str, list[ComplianceViolation]]:
         """
         Group violations by file path.
 
@@ -66,7 +68,7 @@ class ViolationCollector:
             grouped[violation.file_path].append(violation)
         return dict(grouped)
 
-    def get_violations_by_severity(self) -> dict[str, list["ComplianceViolation"]]:
+    def get_violations_by_severity(self) -> dict[str, list[ComplianceViolation]]:
         """
         Group violations by severity level.
 

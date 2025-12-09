@@ -62,10 +62,15 @@ def generate_report(
     by_severity = counts["by_severity"]
 
     # Type assertions for mypy (type narrowing)
-    assert isinstance(by_principle, dict)  # noqa: S101
-    assert isinstance(by_standard, dict)  # noqa: S101
-    assert isinstance(by_file, dict)  # noqa: S101
-    assert isinstance(by_severity, dict)  # noqa: S101
+    # These are runtime type checks for type narrowing, not validation asserts
+    if not isinstance(by_principle, dict):
+        raise TypeError("by_principle must be a dict")
+    if not isinstance(by_standard, dict):
+        raise TypeError("by_standard must be a dict")
+    if not isinstance(by_file, dict):
+        raise TypeError("by_file must be a dict")
+    if not isinstance(by_severity, dict):
+        raise TypeError("by_severity must be a dict")
 
     # Generate summary
     summary = _generate_summary_text(

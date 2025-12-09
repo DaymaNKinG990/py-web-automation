@@ -180,7 +180,8 @@ class ReviewOrchestrator:
 
         # Extract typed counts (type narrowing)
         by_severity = counts["by_severity"]
-        assert isinstance(by_severity, dict)  # noqa: S101
+        if not isinstance(by_severity, dict):
+            raise TypeError("by_severity must be a dict")
 
         # Generate summary
         self._generate_summary(

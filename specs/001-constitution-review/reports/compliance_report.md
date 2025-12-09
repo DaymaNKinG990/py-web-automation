@@ -1,7 +1,7 @@
 # Constitution Compliance Report
 
-**Report ID**: report_1765293516
-**Generated**: 2025-12-09 18:18:36
+**Report ID**: report_1765298113
+**Generated**: 2025-12-09 19:35:13
 
 ## Executive Summary
 
@@ -135,25 +135,25 @@ Violations by Severity:
 - **Violations**: 166
 
 #### Violations:
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 - ... and 156 more violations
 
@@ -59995,830 +59995,830 @@ Total violations: 12113
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Add unit tests for GraphQL client and middleware c...'
+- Description: Commit message does not follow conventional commit format: 'Remove specifications package - Deleted the __init...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')

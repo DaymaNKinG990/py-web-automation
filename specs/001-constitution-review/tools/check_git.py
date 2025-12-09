@@ -27,6 +27,18 @@ class GitWorkflowChecker(BaseChecker):
         "style",
     }
 
+    def __init__(self, project_root: Path | None = None) -> None:
+        """
+        Initialize the Git Workflow checker.
+
+        Args:
+            project_root: Root directory of the project
+        """
+        super().__init__(project_root)
+        # Cache git check results to avoid redundant operations
+        self._cached_violations: list[ComplianceViolation] | None = None
+        self._cache_key: str | None = None
+
     def get_name(self) -> str:
         """Get the name of this checker."""
         return "Git Workflow"
@@ -36,14 +48,21 @@ class GitWorkflowChecker(BaseChecker):
         Check git workflow compliance.
 
         Note: This checker analyzes git history, not individual files.
-        It should be called once per review, not per file.
+        Uses caching to avoid redundant git operations when called multiple times.
 
         Args:
-            file_path: Path parameter (not used for git checks)
+            file_path: Path parameter (not used for git checks, but required by interface)
 
         Returns:
-            List of compliance violations found
+            List of compliance violations found (cached after first call)
         """
+        # Use cache key based on project root to ensure cache is project-specific
+        cache_key = str(self.project_root)
+
+        # Return cached results if available
+        if self._cached_violations is not None and self._cache_key == cache_key:
+            return self._cached_violations
+
         violations: list[ComplianceViolation] = []
 
         # Check branch naming
@@ -51,6 +70,10 @@ class GitWorkflowChecker(BaseChecker):
 
         # Check commit messages
         violations.extend(self._check_commit_messages())
+
+        # Cache results
+        self._cached_violations = violations
+        self._cache_key = cache_key
 
         return violations
 
