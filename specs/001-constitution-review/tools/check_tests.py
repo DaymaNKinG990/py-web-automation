@@ -67,6 +67,130 @@ class TestFirstChecker(BaseChecker):
             except Exception:
                 continue
 
+    def _extract_test_case_id(self, func: ast.FunctionDef | ast.AsyncFunctionDef) -> str | None:
+        """
+        Extract test case ID from function decorators.
+
+        Args:
+            func: Function AST node
+
+        Returns:
+            Test case ID if found, None otherwise
+        """
+        for decorator in func.decorator_list:
+            if isinstance(decorator, ast.Call):
+                for arg in decorator.args:
+                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                        match = re.search(r"TC-[A-Z]+-[A-Z]+-\d+", arg.value)
+                        if match:
+                            return match.group(0)
+        return None
+
+    def _check_test_case_documentation(
+        self,
+        func: ast.FunctionDef | ast.AsyncFunctionDef,
+        relative_path: Path,
+        decorators: list[str],
+    ) -> list[ComplianceViolation]:
+        """
+        Check if test case is documented.
+
+        Args:
+            func: Function AST node
+            relative_path: Relative file path
+            decorators: List of decorator strings
+
+        Returns:
+            List of violations
+        """
+        violations: list[ComplianceViolation] = []
+
+        testcase_decorator = None
+        for decorator in decorators:
+            if "testcase" in decorator.lower():
+                testcase_decorator = decorator
+                break
+
+        if testcase_decorator:
+            test_case_id = self._extract_test_case_id(func)
+            if test_case_id and test_case_id not in self.test_case_ids:
+                violations.append(
+                    ComplianceViolation(
+                        principle="Test-First",
+                        file_path=str(relative_path),
+                        line_number=func.lineno,
+                        violation_type="test_case_not_documented",
+                        violation_description=(
+                            f"Test function '{func.name}' references "
+                            f"test case '{test_case_id}' that doesn't "
+                            "exist in test_cases/ directory"
+                        ),
+                        severity="HIGH",
+                        remediation_suggestion=(
+                            f"Create test case documentation for "
+                            f"'{test_case_id}' in test_cases/ directory "
+                            "before test implementation"
+                        ),
+                    )
+                )
+        else:
+            violations.append(
+                ComplianceViolation(
+                    standard="Testing Standards",
+                    file_path=str(relative_path),
+                    line_number=func.lineno,
+                    violation_type="missing_testcase_decorator",
+                    violation_description=(
+                        f"Test function '{func.name}' is missing @allure.testcase decorator"
+                    ),
+                    severity="MEDIUM",
+                    remediation_suggestion=(
+                        f"Add @allure.testcase('TC-XXX-XXX-XXX') decorator "
+                        f"to test function '{func.name}'"
+                    ),
+                )
+            )
+
+        return violations
+
+    def _check_allure_steps_usage(
+        self,
+        func: ast.FunctionDef | ast.AsyncFunctionDef,
+        relative_path: Path,
+    ) -> list[ComplianceViolation]:
+        """
+        Check if test function uses allure.step().
+
+        Args:
+            func: Function AST node
+            relative_path: Relative file path
+
+        Returns:
+            List of violations
+        """
+        violations: list[ComplianceViolation] = []
+
+        if not self._has_allure_steps(func):
+            violations.append(
+                ComplianceViolation(
+                    standard="Testing Standards",
+                    file_path=str(relative_path),
+                    line_number=func.lineno,
+                    violation_type="missing_allure_steps",
+                    violation_description=(
+                        f"Test function '{func.name}' does not use "
+                        "allure.step() context manager for test actions"
+                    ),
+                    severity="MEDIUM",
+                    remediation_suggestion=(
+                        f"Wrap test actions in allure.step() context "
+                        f"manager in function '{func.name}'"
+                    ),
+                )
+            )
+
+        return violations
+
     def check(self, file_path: Path) -> list[ComplianceViolation]:
         """
         Check a test file for Test-First and Testing Standards violations.
@@ -79,7 +203,6 @@ class TestFirstChecker(BaseChecker):
         """
         violations: list[ComplianceViolation] = []
 
-        # Only check test files
         if "test" not in file_path.name.lower() and "tests" not in str(file_path):
             return violations
 
@@ -89,99 +212,16 @@ class TestFirstChecker(BaseChecker):
 
         relative_path = file_path.relative_to(self.project_root)
 
-        # Check all test functions
         for func in parser.get_functions():
             if not func.name.startswith("test_"):
                 continue
 
-            # Check for test case ID in decorators
             decorators = parser.get_decorators(func)
-            testcase_decorator = None
-            for decorator in decorators:
-                if "testcase" in decorator.lower():
-                    testcase_decorator = decorator
-                    break
 
-            # Check if test case exists in documentation
-            if testcase_decorator:
-                # Extract test case ID from decorator arguments
-                test_case_id_match = None
-                for decorator in func.decorator_list:
-                    if isinstance(decorator, ast.Call):
-                        for arg in decorator.args:
-                            if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                                match = re.search(r"TC-[A-Z]+-[A-Z]+-\d+", arg.value)
-                                if match:
-                                    test_case_id_match = match
-                                    break
-                    if test_case_id_match:
-                        break
-
-                if test_case_id_match:
-                    test_case_id = test_case_id_match.group(0)
-                    if test_case_id not in self.test_case_ids:
-                        violations.append(
-                            ComplianceViolation(
-                                principle="Test-First",
-                                file_path=str(relative_path),
-                                line_number=func.lineno,
-                                violation_type="test_case_not_documented",
-                                violation_description=(
-                                    f"Test function '{func.name}' references "
-                                    f"test case '{test_case_id}' that doesn't "
-                                    "exist in test_cases/ directory"
-                                ),
-                                severity="HIGH",
-                                remediation_suggestion=(
-                                    f"Create test case documentation for "
-                                    f"'{test_case_id}' in test_cases/ directory "
-                                    "before test implementation"
-                                ),
-                            )
-                        )
-            else:
-                violations.append(
-                    ComplianceViolation(
-                        standard="Testing Standards",
-                        file_path=str(relative_path),
-                        line_number=func.lineno,
-                        violation_type="missing_testcase_decorator",
-                        violation_description=(
-                            f"Test function '{func.name}' is missing @allure.testcase decorator"
-                        ),
-                        severity="MEDIUM",
-                        remediation_suggestion=(
-                            f"Add @allure.testcase('TC-XXX-XXX-XXX') decorator "
-                            f"to test function '{func.name}'"
-                        ),
-                    )
-                )
-
-            # Check for required decorators
+            violations.extend(self._check_test_case_documentation(func, relative_path, decorators))
             self._check_required_decorators(decorators, func, relative_path, violations)
+            violations.extend(self._check_allure_steps_usage(func, relative_path))
 
-            # Check for allure.step() usage
-            if not self._has_allure_steps(func):
-                violations.append(
-                    ComplianceViolation(
-                        standard="Testing Standards",
-                        file_path=str(relative_path),
-                        line_number=func.lineno,
-                        violation_type="missing_allure_steps",
-                        violation_description=(
-                            f"Test function '{func.name}' does not use "
-                            "allure.step() context manager for test actions"
-                        ),
-                        severity="MEDIUM",
-                        remediation_suggestion=(
-                            f"Wrap test actions in allure.step() context "
-                            f"manager in function '{func.name}'"
-                        ),
-                    )
-                )
-
-        # Check for parametrization opportunities (simplified - would need
-        # more sophisticated analysis)
         self._check_parametrization_opportunities(parser, relative_path, violations)
 
         return violations

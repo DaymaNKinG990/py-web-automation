@@ -51,6 +51,37 @@ class ErrorHandlingChecker(BaseChecker):
 
         return violations
 
+    def _is_exception_class(self, cls: ast.ClassDef) -> bool:
+        """
+        Check if class is an exception class.
+
+        Args:
+            cls: Class AST node
+
+        Returns:
+            True if class is an exception
+        """
+        return cls.name.endswith("Error") or cls.name.endswith("Exception")
+
+    def _has_allowed_base(self, cls: ast.ClassDef) -> bool:
+        """
+        Check if class has allowed base exception.
+
+        Args:
+            cls: Class AST node
+
+        Returns:
+            True if class has allowed base
+        """
+        for base in cls.bases:
+            if isinstance(base, ast.Name):
+                if base.id in self.ALLOWED_BASE_EXCEPTIONS:
+                    return True
+            elif isinstance(base, ast.Attribute):
+                if base.attr in self.ALLOWED_BASE_EXCEPTIONS:
+                    return True
+        return False
+
     def _check_exception_hierarchy(
         self, parser: ASTParser, relative_path: Path
     ) -> list[ComplianceViolation]:
@@ -72,27 +103,11 @@ class ErrorHandlingChecker(BaseChecker):
         """
         violations: list[ComplianceViolation] = []
 
-        # Check exception classes
         for cls in parser.get_classes():
-            # Check if class is an exception (ends with Error or Exception)
-            if not (cls.name.endswith("Error") or cls.name.endswith("Exception")):
+            if not self._is_exception_class(cls):
                 continue
 
-            # Check base classes - only accept explicit whitelist
-            has_base = False
-            for base in cls.bases:
-                if isinstance(base, ast.Name):
-                    # Check if base class name is in whitelist
-                    if base.id in self.ALLOWED_BASE_EXCEPTIONS:
-                        has_base = True
-                        break
-                elif isinstance(base, ast.Attribute):
-                    # Check if base class attribute is in whitelist
-                    if base.attr in self.ALLOWED_BASE_EXCEPTIONS:
-                        has_base = True
-                        break
-
-            if not has_base and cls.name != self.BASE_EXCEPTION:
+            if not self._has_allowed_base(cls) and cls.name != self.BASE_EXCEPTION:
                 violations.append(
                     ComplianceViolation(
                         standard="Error Handling",
@@ -112,6 +127,45 @@ class ErrorHandlingChecker(BaseChecker):
                 )
 
         return violations
+
+    def _get_except_handlers(
+        self, func: ast.FunctionDef | ast.AsyncFunctionDef
+    ) -> list[ast.ExceptHandler]:
+        """
+        Extract all except handlers from function.
+
+        Args:
+            func: Function AST node
+
+        Returns:
+            List of except handlers
+        """
+        except_handlers: list[ast.ExceptHandler] = []
+        for node in ast.walk(func):
+            if isinstance(node, ast.ExceptHandler):
+                except_handlers.append(node)
+        return except_handlers
+
+    def _is_new_exception_in_except(
+        self, raise_node: ast.Raise, except_handlers: list[ast.ExceptHandler]
+    ) -> bool:
+        """
+        Check if raise node is a new exception inside except handler.
+
+        Args:
+            raise_node: Raise AST node
+            except_handlers: List of except handlers
+
+        Returns:
+            True if new exception in except handler
+        """
+        if not isinstance(raise_node.exc, ast.Call):
+            return False
+
+        for except_handler in except_handlers:
+            if self._is_node_in_handler(raise_node, except_handler):
+                return True
+        return False
 
     def _check_exception_chaining(
         self, parser: ASTParser, relative_path: Path
@@ -133,45 +187,32 @@ class ErrorHandlingChecker(BaseChecker):
         violations: list[ComplianceViolation] = []
 
         for func in parser.get_functions():
-            # Find all except handlers in this function
-            except_handlers: list[ast.ExceptHandler] = []
-            for node in ast.walk(func):
-                if isinstance(node, ast.ExceptHandler):
-                    except_handlers.append(node)
+            except_handlers = self._get_except_handlers(func)
 
-            # Check raise statements
             for node in ast.walk(func):
                 if isinstance(node, ast.Raise):
-                    if node.exc is not None and node.cause is None:
-                        # Only flag newly constructed exceptions without chaining
-                        # Variable re-raises (raise e) are typically valid without 'from'
-                        if isinstance(node.exc, ast.Call):
-                            # Check if this raise is inside an except handler
-                            is_in_except = False
-                            for except_handler in except_handlers:
-                                # Check if node is within except_handler body
-                                if self._is_node_in_handler(node, except_handler):
-                                    is_in_except = True
-                                    break
-
-                            if is_in_except:
-                                violations.append(
-                                    ComplianceViolation(
-                                        standard="Error Handling",
-                                        file_path=str(relative_path),
-                                        line_number=node.lineno,
-                                        violation_type="missing_exception_chaining",
-                                        violation_description=(
-                                            f"New exception raised at line {node.lineno} "
-                                            "inside except handler should use 'from e' "
-                                            "for proper exception chaining"
-                                        ),
-                                        severity="MEDIUM",
-                                        remediation_suggestion=(
-                                            "Use 'raise NewException from e' for exception chaining"
-                                        ),
-                                    )
-                                )
+                    if (
+                        node.exc is not None
+                        and node.cause is None
+                        and self._is_new_exception_in_except(node, except_handlers)
+                    ):
+                        violations.append(
+                            ComplianceViolation(
+                                standard="Error Handling",
+                                file_path=str(relative_path),
+                                line_number=node.lineno,
+                                violation_type="missing_exception_chaining",
+                                violation_description=(
+                                    f"New exception raised at line {node.lineno} "
+                                    "inside except handler should use 'from e' "
+                                    "for proper exception chaining"
+                                ),
+                                severity="MEDIUM",
+                                remediation_suggestion=(
+                                    "Use 'raise NewException from e' for exception chaining"
+                                ),
+                            )
+                        )
 
         return violations
 

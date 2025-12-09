@@ -17,6 +17,59 @@ if TYPE_CHECKING:
     from .models import ComplianceViolation, PrincipleCheck, StandardCheck
 
 
+def _build_compliance_dicts(
+    principle_checks: list["PrincipleCheck"],
+    standard_checks: list["StandardCheck"],
+) -> tuple[dict[str, float], dict[str, float]]:
+    """
+    Build principle and standard compliance dictionaries.
+
+    Args:
+        principle_checks: List of PrincipleCheck instances
+        standard_checks: List of StandardCheck instances
+
+    Returns:
+        Tuple of (principle_compliance, standard_compliance) dictionaries
+    """
+    principle_compliance = {
+        check.principle_name: check.compliance_percentage for check in principle_checks
+    }
+    standard_compliance = {
+        check.standard_name: check.compliance_percentage for check in standard_checks
+    }
+    return principle_compliance, standard_compliance
+
+
+def _validate_counts(counts: dict) -> tuple[dict, dict, dict, dict]:
+    """
+    Validate and extract violation counts.
+
+    Args:
+        counts: Dictionary of violation counts
+
+    Returns:
+        Tuple of (by_principle, by_standard, by_file, by_severity) dictionaries
+
+    Raises:
+        TypeError: If counts structure is invalid
+    """
+    by_principle = counts["by_principle"]
+    by_standard = counts["by_standard"]
+    by_file = counts["by_file"]
+    by_severity = counts["by_severity"]
+
+    if not isinstance(by_principle, dict):
+        raise TypeError("by_principle must be a dict")
+    if not isinstance(by_standard, dict):
+        raise TypeError("by_standard must be a dict")
+    if not isinstance(by_file, dict):
+        raise TypeError("by_file must be a dict")
+    if not isinstance(by_severity, dict):
+        raise TypeError("by_severity must be a dict")
+
+    return by_principle, by_standard, by_file, by_severity
+
+
 def generate_report(
     violations: list["ComplianceViolation"],
     principle_checks: list["PrincipleCheck"],
@@ -45,34 +98,12 @@ def generate_report(
     files_with_violations = len(collector.get_files_with_violations())
     overall_compliance = calculate_compliance_percentage(total_files, files_with_violations)
 
-    # Build principle compliance dict
-    principle_compliance = {
-        check.principle_name: check.compliance_percentage for check in principle_checks
-    }
+    principle_compliance, standard_compliance = _build_compliance_dicts(
+        principle_checks, standard_checks
+    )
 
-    # Build standard compliance dict
-    standard_compliance = {
-        check.standard_name: check.compliance_percentage for check in standard_checks
-    }
+    by_principle, by_standard, by_file, by_severity = _validate_counts(counts)
 
-    # Extract typed counts (type narrowing)
-    by_principle = counts["by_principle"]
-    by_standard = counts["by_standard"]
-    by_file = counts["by_file"]
-    by_severity = counts["by_severity"]
-
-    # Type assertions for mypy (type narrowing)
-    # These are runtime type checks for type narrowing, not validation asserts
-    if not isinstance(by_principle, dict):
-        raise TypeError("by_principle must be a dict")
-    if not isinstance(by_standard, dict):
-        raise TypeError("by_standard must be a dict")
-    if not isinstance(by_file, dict):
-        raise TypeError("by_file must be a dict")
-    if not isinstance(by_severity, dict):
-        raise TypeError("by_severity must be a dict")
-
-    # Generate summary
     summary = _generate_summary_text(
         total_files,
         len(violations),
@@ -98,6 +129,90 @@ def generate_report(
     return report
 
 
+def _violation_to_dict(violation: "ComplianceViolation") -> dict:
+    """
+    Convert violation to dictionary.
+
+    Args:
+        violation: ComplianceViolation instance
+
+    Returns:
+        Dictionary representation
+    """
+    return {
+        "principle": violation.principle,
+        "standard": violation.standard,
+        "file_path": violation.file_path,
+        "line_number": violation.line_number,
+        "column_number": violation.column_number,
+        "violation_type": violation.violation_type,
+        "violation_description": violation.violation_description,
+        "severity": violation.severity,
+        "code_snippet": violation.code_snippet,
+        "remediation_suggestion": violation.remediation_suggestion,
+    }
+
+
+def _violation_to_summary_dict(violation: "ComplianceViolation") -> dict:
+    """
+    Convert violation to summary dictionary (minimal fields).
+
+    Args:
+        violation: ComplianceViolation instance
+
+    Returns:
+        Summary dictionary
+    """
+    return {
+        "file_path": violation.file_path,
+        "line_number": violation.line_number,
+        "violation_type": violation.violation_type,
+        "severity": violation.severity,
+    }
+
+
+def _build_principle_data(
+    principle_name: str, compliance_pct: float, violations: list["ComplianceViolation"]
+) -> dict:
+    """
+    Build principle data structure.
+
+    Args:
+        principle_name: Name of principle
+        compliance_pct: Compliance percentage
+        violations: List of violations for this principle
+
+    Returns:
+        Principle data dictionary
+    """
+    return {
+        "compliance_percentage": compliance_pct,
+        "violations_count": len(violations),
+        "violations": [_violation_to_summary_dict(v) for v in violations],
+    }
+
+
+def _build_standard_data(
+    standard_name: str, compliance_pct: float, violations: list["ComplianceViolation"]
+) -> dict:
+    """
+    Build standard data structure.
+
+    Args:
+        standard_name: Name of standard
+        compliance_pct: Compliance percentage
+        violations: List of violations for this standard
+
+    Returns:
+        Standard data dictionary
+    """
+    return {
+        "compliance_percentage": compliance_pct,
+        "violations_count": len(violations),
+        "violations": [_violation_to_summary_dict(v) for v in violations],
+    }
+
+
 def export_json(report: ComplianceReport) -> dict:
     """
     Export compliance report as JSON structure.
@@ -108,59 +223,19 @@ def export_json(report: ComplianceReport) -> dict:
     Returns:
         Dictionary representation suitable for JSON serialization
     """
-    # Convert violations to dictionaries
-    violations_data = []
-    for violation in report.violations:
-        violations_data.append(
-            {
-                "principle": violation.principle,
-                "standard": violation.standard,
-                "file_path": violation.file_path,
-                "line_number": violation.line_number,
-                "column_number": violation.column_number,
-                "violation_type": violation.violation_type,
-                "violation_description": violation.violation_description,
-                "severity": violation.severity,
-                "code_snippet": violation.code_snippet,
-                "remediation_suggestion": violation.remediation_suggestion,
-            }
-        )
-
-    # Build principles data
     principles_data = {}
     for principle_name, compliance_pct in report.principle_compliance.items():
         principle_violations = [v for v in report.violations if v.principle == principle_name]
-        principles_data[principle_name] = {
-            "compliance_percentage": compliance_pct,
-            "violations_count": len(principle_violations),
-            "violations": [
-                {
-                    "file_path": v.file_path,
-                    "line_number": v.line_number,
-                    "violation_type": v.violation_type,
-                    "severity": v.severity,
-                }
-                for v in principle_violations
-            ],
-        }
+        principles_data[principle_name] = _build_principle_data(
+            principle_name, compliance_pct, principle_violations
+        )
 
-    # Build standards data
     standards_data = {}
     for standard_name, compliance_pct in report.standard_compliance.items():
         standard_violations = [v for v in report.violations if v.standard == standard_name]
-        standards_data[standard_name] = {
-            "compliance_percentage": compliance_pct,
-            "violations_count": len(standard_violations),
-            "violations": [
-                {
-                    "file_path": v.file_path,
-                    "line_number": v.line_number,
-                    "violation_type": v.violation_type,
-                    "severity": v.severity,
-                }
-                for v in standard_violations
-            ],
-        }
+        standards_data[standard_name] = _build_standard_data(
+            standard_name, compliance_pct, standard_violations
+        )
 
     return {
         "report_id": report.report_id,
@@ -174,6 +249,106 @@ def export_json(report: ComplianceReport) -> dict:
         "principles": principles_data,
         "standards": standards_data,
     }
+
+
+def _format_violation_list(violations: list["ComplianceViolation"], limit: int = 10) -> list[str]:
+    """
+    Format a list of violations for markdown output.
+
+    Args:
+        violations: List of ComplianceViolation instances
+        limit: Maximum number of violations to show
+
+    Returns:
+        List of markdown lines
+    """
+    lines: list[str] = []
+    if not violations:
+        return lines
+
+    lines.append("#### Violations:")
+    for violation in violations[:limit]:
+        violation_desc = violation.violation_description
+        lines.append(f"- `{violation.file_path}:{violation.line_number}` - {violation_desc}")
+        if violation.remediation_suggestion:
+            lines.append(f"  - **Fix**: {violation.remediation_suggestion}")
+
+    if len(violations) > limit:
+        lines.append(f"- ... and {len(violations) - limit} more violations")
+    lines.append("")
+
+    return lines
+
+
+def _format_compliance_section(
+    title: str,
+    compliance_dict: dict[str, float],
+    violations_dict: dict[str, int],
+    all_violations: list["ComplianceViolation"],
+    filter_key: str,
+) -> list[str]:
+    """
+    Format a compliance section (principle or standard).
+
+    Args:
+        title: Section title
+        compliance_dict: Dictionary of compliance percentages
+        violations_dict: Dictionary of violation counts
+        all_violations: List of all violations
+        filter_key: Key to filter violations ('principle' or 'standard')
+
+    Returns:
+        List of markdown lines
+    """
+    lines: list[str] = [f"## {title}", ""]
+
+    for name in sorted(compliance_dict.keys()):
+        compliance_pct = compliance_dict[name]
+        violation_count = violations_dict.get(name, 0)
+        lines.append(f"### {name}")
+        lines.append(f"- **Compliance**: {compliance_pct:.1f}%")
+        lines.append(f"- **Violations**: {violation_count}")
+        lines.append("")
+
+        # Filter violations by principle or standard
+        filtered_violations = [v for v in all_violations if getattr(v, filter_key) == name]
+        lines.extend(_format_violation_list(filtered_violations))
+
+    return lines
+
+
+def _format_severity_section(violations: list["ComplianceViolation"], severity: str) -> list[str]:
+    """
+    Format violations by severity section.
+
+    Args:
+        violations: List of ComplianceViolation instances
+        severity: Severity level name
+
+    Returns:
+        List of markdown lines
+    """
+    lines: list[str] = []
+    if not violations:
+        return lines
+
+    lines.append(f"### {severity} Severity ({len(violations)} violations)")
+    lines.append("")
+
+    for violation in violations:
+        lines.append(f"**{violation.file_path}:{violation.line_number}**")
+        lines.append(f"- Type: {violation.violation_type}")
+        lines.append(f"- Description: {violation.violation_description}")
+        if violation.code_snippet:
+            lines.append("- Code:")
+            lines.append("```python")
+            lines.append(violation.code_snippet)
+            lines.append("```")
+        if violation.remediation_suggestion:
+            lines.append(f"- Remediation: {violation.remediation_suggestion}")
+        lines.append("")
+
+    return lines
 
 
 def export_markdown(report: ComplianceReport) -> str:
@@ -196,89 +371,107 @@ def export_markdown(report: ComplianceReport) -> str:
         "",
         report.summary,
         "",
-        "## Compliance by Principle",
-        "",
     ]
 
     # Add principle compliance
-    for principle_name in sorted(report.principle_compliance.keys()):
-        compliance_pct = report.principle_compliance[principle_name]
-        violation_count = report.violations_by_principle.get(principle_name, 0)
-        lines.append(f"### {principle_name}")
-        lines.append(f"- **Compliance**: {compliance_pct:.1f}%")
-        lines.append(f"- **Violations**: {violation_count}")
-        lines.append("")
-
-        # Add violation details
-        principle_violations = [v for v in report.violations if v.principle == principle_name]
-        if principle_violations:
-            lines.append("#### Violations:")
-            for violation in principle_violations[:10]:  # Limit to first 10
-                violation_desc = violation.violation_description
-                lines.append(
-                    f"- `{violation.file_path}:{violation.line_number}` - {violation_desc}"
-                )
-                if violation.remediation_suggestion:
-                    lines.append(f"  - **Fix**: {violation.remediation_suggestion}")
-            if len(principle_violations) > 10:
-                lines.append(f"- ... and {len(principle_violations) - 10} more violations")
-            lines.append("")
-
-    lines.append("## Compliance by Standard")
-    lines.append("")
+    lines.extend(
+        _format_compliance_section(
+            "Compliance by Principle",
+            report.principle_compliance,
+            report.violations_by_principle,
+            report.violations,
+            "principle",
+        )
+    )
 
     # Add standard compliance
-    for standard_name in sorted(report.standard_compliance.keys()):
-        compliance_pct = report.standard_compliance[standard_name]
-        violation_count = report.violations_by_standard.get(standard_name, 0)
-        lines.append(f"### {standard_name}")
-        lines.append(f"- **Compliance**: {compliance_pct:.1f}%")
-        lines.append(f"- **Violations**: {violation_count}")
-        lines.append("")
+    lines.extend(
+        _format_compliance_section(
+            "Compliance by Standard",
+            report.standard_compliance,
+            report.violations_by_standard,
+            report.violations,
+            "standard",
+        )
+    )
 
-        # Add violation details
-        standard_violations = [v for v in report.violations if v.standard == standard_name]
-        if standard_violations:
-            lines.append("#### Violations:")
-            for violation in standard_violations[:10]:  # Limit to first 10
-                violation_desc = violation.violation_description
-                lines.append(
-                    f"- `{violation.file_path}:{violation.line_number}` - {violation_desc}"
-                )
-                if violation.remediation_suggestion:
-                    lines.append(f"  - **Fix**: {violation.remediation_suggestion}")
-            if len(standard_violations) > 10:
-                lines.append(f"- ... and {len(standard_violations) - 10} more violations")
-            lines.append("")
-
+    # Add detailed violations by severity
     lines.append("## Detailed Violations")
     lines.append("")
     lines.append(f"Total violations: {report.total_violations}")
     lines.append("")
 
-    # Group by severity
     for severity in ("CRITICAL", "HIGH", "MEDIUM", "LOW"):
         severity_violations = [v for v in report.violations if v.severity == severity]
-        if severity_violations:
-            lines.append(f"### {severity} Severity ({len(severity_violations)} violations)")
-            lines.append("")
-            for violation in severity_violations:
-                lines.append(f"**{violation.file_path}:{violation.line_number}**")
-                lines.append(f"- Type: {violation.violation_type}")
-                lines.append(f"- Description: {violation.violation_description}")
-                if violation.code_snippet:
-                    lines.append("- Code:")
-                    lines.append("```python")
-                    lines.append(violation.code_snippet)
-                    lines.append("```")
-                if violation.remediation_suggestion:
-                    lines.append(f"- Remediation: {violation.remediation_suggestion}")
-                lines.append("")
+        lines.extend(_format_severity_section(severity_violations, severity))
 
     return "\n".join(lines)
 
 
-def generate_remediation_plan(violations: list) -> list[RemediationStep]:
+def _determine_priority(severities: list[str]) -> str:
+    """
+    Determine priority based on highest severity.
+
+    Args:
+        severities: List of severity strings
+
+    Returns:
+        Priority string
+    """
+    if "CRITICAL" in severities:
+        return "CRITICAL"
+    if "HIGH" in severities:
+        return "HIGH"
+    if "MEDIUM" in severities:
+        return "MEDIUM"
+    return "LOW"
+
+
+def _create_remediation_step(
+    step_id: str,
+    principle: str,
+    standard: str | None,
+    priority: str,
+    file_path: str,
+    violation_type: str,
+    type_violations: list["ComplianceViolation"],
+) -> RemediationStep:
+    """
+    Create a remediation step from violations.
+
+    Args:
+        step_id: Step identifier
+        principle: Principle name
+        standard: Standard name
+        priority: Priority level
+        file_path: File path
+        violation_type: Type of violation
+        type_violations: List of violations of this type
+
+    Returns:
+        RemediationStep instance
+    """
+    desc = f"Fix {len(type_violations)} violation(s) of type '{violation_type}' in {file_path}"
+    description_parts = [desc]
+    if type_violations[0].remediation_suggestion:
+        description_parts.append(f"\nSuggested fix: {type_violations[0].remediation_suggestion}")
+
+    effort = _estimate_effort(len(type_violations), violation_type)
+
+    return RemediationStep(
+        step_id=step_id,
+        principle=principle,
+        standard=standard,
+        priority=priority,
+        title=f"Fix {violation_type} in {Path(file_path).name}",
+        description="\n".join(description_parts),
+        affected_files=[file_path],
+        estimated_effort=effort,
+        violation_ids=[f"{v.file_path}:{v.line_number}" for v in type_violations],
+    )
+
+
+def generate_remediation_plan(violations: list["ComplianceViolation"]) -> list[RemediationStep]:
     """
     Generate prioritized remediation steps from violations.
 
@@ -302,62 +495,33 @@ def generate_remediation_plan(violations: list) -> list[RemediationStep]:
     remediation_steps: list[RemediationStep] = []
     step_counter = 1
 
-    # Create remediation steps grouped by principle/standard and file
     for (principle, standard), files_dict in grouped.items():
-        # Skip violations without a principle (data consistency issue)
         if principle is None:
             continue
-        for file_path, file_violations in files_dict.items():
-            # Determine priority based on highest severity violation in this group
-            severities = [v.severity for v in file_violations]
-            priority = (
-                "CRITICAL"
-                if "CRITICAL" in severities
-                else (
-                    "HIGH"
-                    if "HIGH" in severities
-                    else ("MEDIUM" if "MEDIUM" in severities else "LOW")
-                )
-            )
 
-            # Group violations by type
+        for file_path, file_violations in files_dict.items():
+            severities = [v.severity for v in file_violations]
+            priority = _determine_priority(severities)
+
             violations_by_type: dict[str, list] = defaultdict(list)
             for violation in file_violations:
                 violations_by_type[violation.violation_type].append(violation)
 
-            # Create step for each violation type
             for violation_type, type_violations in violations_by_type.items():
                 step_id = f"STEP-{step_counter:03d}"
                 step_counter += 1
 
-                # Generate description
-                desc = (
-                    f"Fix {len(type_violations)} violation(s) of type "
-                    f"'{violation_type}' in {file_path}"
-                )
-                description_parts = [desc]
-                if type_violations[0].remediation_suggestion:
-                    description_parts.append(
-                        f"\nSuggested fix: {type_violations[0].remediation_suggestion}"
-                    )
-
-                # Estimate effort based on violation count and type
-                effort = _estimate_effort(len(type_violations), violation_type)
-
-                step = RemediationStep(
-                    step_id=step_id,
-                    principle=principle,
-                    standard=standard,
-                    priority=priority,
-                    title=f"Fix {violation_type} in {Path(file_path).name}",
-                    description="\n".join(description_parts),
-                    affected_files=[file_path],
-                    estimated_effort=effort,
-                    violation_ids=[f"{v.file_path}:{v.line_number}" for v in type_violations],
+                step = _create_remediation_step(
+                    step_id,
+                    principle,
+                    standard,
+                    priority,
+                    file_path,
+                    violation_type,
+                    type_violations,
                 )
                 remediation_steps.append(step)
 
-    # Sort by priority
     priority_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
     remediation_steps.sort(key=lambda s: (priority_order.get(s.priority, 99), s.step_id))
 

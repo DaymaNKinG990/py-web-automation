@@ -19,6 +19,119 @@ class PerformanceChecker(BaseChecker):
         """Get the name of this checker."""
         return "Performance Optimization"
 
+    def _check_pydantic_import(
+        self, parser: ASTParser, relative_path: Path
+    ) -> ComplianceViolation | None:
+        """
+        Check for Pydantic imports.
+
+        Args:
+            parser: AST parser instance
+            relative_path: Relative file path
+
+        Returns:
+            ComplianceViolation if found, None otherwise
+        """
+        for import_node in parser.get_imports():
+            if isinstance(import_node, ast.ImportFrom):
+                if import_node.module == "pydantic":
+                    return ComplianceViolation(
+                        principle="Performance Optimization",
+                        file_path=str(relative_path),
+                        line_number=import_node.lineno,
+                        violation_type="pydantic_usage",
+                        violation_description=(
+                            "File imports pydantic, but constitution requires msgspec "
+                            "for performance-critical components"
+                        ),
+                        severity="HIGH",
+                        remediation_suggestion=(
+                            "Replace pydantic with msgspec for data serialization/deserialization"
+                        ),
+                    )
+            elif isinstance(import_node, ast.Import):
+                for alias in import_node.names:
+                    if alias.name == "pydantic":
+                        return ComplianceViolation(
+                            principle="Performance Optimization",
+                            file_path=str(relative_path),
+                            line_number=import_node.lineno,
+                            violation_type="pydantic_usage",
+                            violation_description=(
+                                "File imports pydantic, but constitution requires msgspec "
+                                "for performance-critical components"
+                            ),
+                            severity="HIGH",
+                            remediation_suggestion=(
+                                "Replace pydantic with msgspec for data "
+                                "serialization/deserialization"
+                            ),
+                        )
+        return None
+
+    def _has_msgspec_import(self, parser: ASTParser) -> bool:
+        """
+        Check if file imports msgspec.
+
+        Args:
+            parser: AST parser instance
+
+        Returns:
+            True if msgspec is imported
+        """
+        for import_node in parser.get_imports():
+            if isinstance(import_node, ast.ImportFrom):
+                if import_node.module == "msgspec":
+                    return True
+        return False
+
+    def _has_data_models(self, parser: ASTParser) -> bool:
+        """
+        Check if file contains data model classes.
+
+        Args:
+            parser: AST parser instance
+
+        Returns:
+            True if data models are found
+        """
+        return any(
+            cls.name.endswith("Model") or "Struct" in cls.name for cls in parser.get_classes()
+        )
+
+    def _check_msgspec_usage(
+        self, parser: ASTParser, relative_path: Path
+    ) -> ComplianceViolation | None:
+        """
+        Check if data models use msgspec.
+
+        Args:
+            parser: AST parser instance
+            relative_path: Relative file path
+
+        Returns:
+            ComplianceViolation if missing, None otherwise
+        """
+        has_msgspec = self._has_msgspec_import(parser)
+        has_data_models = self._has_data_models(parser)
+
+        if has_data_models and not has_msgspec:
+            return ComplianceViolation(
+                principle="Performance Optimization",
+                file_path=str(relative_path),
+                line_number=0,
+                violation_type="missing_msgspec",
+                violation_description=(
+                    "File contains data models but doesn't use msgspec for serialization"
+                ),
+                severity="MEDIUM",
+                remediation_suggestion=(
+                    "Use msgspec.Struct for data models instead of other serialization libraries"
+                ),
+            )
+
+        return None
+
     def check(self, file_path: Path) -> list[ComplianceViolation]:
         """
         Check a file for Performance Optimization violations.
@@ -37,69 +150,12 @@ class PerformanceChecker(BaseChecker):
 
         relative_path = file_path.relative_to(self.project_root)
 
-        # Check for Pydantic imports
-        has_pydantic = False
-        pydantic_import_line = 0
+        pydantic_violation = self._check_pydantic_import(parser, relative_path)
+        if pydantic_violation:
+            violations.append(pydantic_violation)
 
-        for import_node in parser.get_imports():
-            if isinstance(import_node, ast.ImportFrom):
-                if import_node.module == "pydantic":
-                    has_pydantic = True
-                    pydantic_import_line = import_node.lineno
-                    break
-            elif isinstance(import_node, ast.Import):
-                for alias in import_node.names:
-                    if alias.name == "pydantic":
-                        has_pydantic = True
-                        pydantic_import_line = import_node.lineno
-                        break
-
-        if has_pydantic:
-            violations.append(
-                ComplianceViolation(
-                    principle="Performance Optimization",
-                    file_path=str(relative_path),
-                    line_number=pydantic_import_line,
-                    violation_type="pydantic_usage",
-                    violation_description=(
-                        "File imports pydantic, but constitution requires msgspec "
-                        "for performance-critical components"
-                    ),
-                    severity="HIGH",
-                    remediation_suggestion=(
-                        "Replace pydantic with msgspec for data serialization/deserialization"
-                    ),
-                )
-            )
-
-        # Check if msgspec is used for data models
-        has_msgspec = False
-        for import_node in parser.get_imports():
-            if isinstance(import_node, ast.ImportFrom):
-                if import_node.module == "msgspec":
-                    has_msgspec = True
-                    break
-
-        # If file has data models but no msgspec, suggest using it
-        has_data_models = any(
-            cls.name.endswith("Model") or "Struct" in cls.name for cls in parser.get_classes()
-        )
-        if has_data_models and not has_msgspec:
-            violations.append(
-                ComplianceViolation(
-                    principle="Performance Optimization",
-                    file_path=str(relative_path),
-                    line_number=0,
-                    violation_type="missing_msgspec",
-                    violation_description=(
-                        "File contains data models but doesn't use msgspec for serialization"
-                    ),
-                    severity="MEDIUM",
-                    remediation_suggestion=(
-                        "Use msgspec.Struct for data models instead of other "
-                        "serialization libraries"
-                    ),
-                )
-            )
+        msgspec_violation = self._check_msgspec_usage(parser, relative_path)
+        if msgspec_violation:
+            violations.append(msgspec_violation)
 
         return violations

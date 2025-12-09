@@ -84,18 +84,18 @@ class DocumentationChecker(BaseChecker):
 
         return violations
 
-    def _check_docstring_format(
+    def _check_function_docstring_sections(
         self,
         docstring: str,
-        node: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef,
+        node: ast.FunctionDef | ast.AsyncFunctionDef,
         relative_path: Path,
     ) -> list[ComplianceViolation]:
         """
-        Check if docstring follows Google-style format.
+        Check if function docstring has required sections.
 
         Args:
             docstring: Docstring content
-            node: AST node (function or class)
+            node: Function AST node
             relative_path: Relative file path
 
         Returns:
@@ -103,56 +103,70 @@ class DocumentationChecker(BaseChecker):
         """
         violations: list[ComplianceViolation] = []
 
-        # Check for Google-style sections
         has_args = "Args:" in docstring or "Arguments:" in docstring
         has_returns = "Returns:" in docstring or "Return:" in docstring
 
-        # For functions, check if they have parameters/return values
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            # Exclude conventional instance/class parameters
-            excluded_params = {"self", "cls"}
-            # Function has meaningful params if at least one arg is not excluded
-            has_params = any(arg.arg not in excluded_params for arg in node.args.args)
-            has_return = node.returns is not None
+        excluded_params = {"self", "cls"}
+        has_params = any(arg.arg not in excluded_params for arg in node.args.args)
+        has_return = node.returns is not None
 
-            if has_params and not has_args:
-                violations.append(
-                    ComplianceViolation(
-                        standard="Documentation Standards",
-                        file_path=str(relative_path),
-                        line_number=node.lineno,
-                        violation_type="missing_args_section",
-                        violation_description=(
-                            f"Function '{node.name}' has parameters but docstring "
-                            "is missing Args section"
-                        ),
-                        severity="LOW",
-                        remediation_suggestion=(
-                            f"Add Args section to docstring for function '{node.name}'"
-                        ),
-                    )
+        if has_params and not has_args:
+            violations.append(
+                ComplianceViolation(
+                    standard="Documentation Standards",
+                    file_path=str(relative_path),
+                    line_number=node.lineno,
+                    violation_type="missing_args_section",
+                    violation_description=(
+                        f"Function '{node.name}' has parameters but docstring "
+                        "is missing Args section"
+                    ),
+                    severity="LOW",
+                    remediation_suggestion=(
+                        f"Add Args section to docstring for function '{node.name}'"
+                    ),
                 )
+            )
 
-            if has_return and not has_returns:
-                violations.append(
-                    ComplianceViolation(
-                        standard="Documentation Standards",
-                        file_path=str(relative_path),
-                        line_number=node.lineno,
-                        violation_type="missing_returns_section",
-                        violation_description=(
-                            f"Function '{node.name}' has return type but docstring "
-                            "is missing Returns section"
-                        ),
-                        severity="LOW",
-                        remediation_suggestion=(
-                            f"Add Returns section to docstring for function '{node.name}'"
-                        ),
-                    )
+        if has_return and not has_returns:
+            violations.append(
+                ComplianceViolation(
+                    standard="Documentation Standards",
+                    file_path=str(relative_path),
+                    line_number=node.lineno,
+                    violation_type="missing_returns_section",
+                    violation_description=(
+                        f"Function '{node.name}' has return type but docstring "
+                        "is missing Returns section"
+                    ),
+                    severity="LOW",
+                    remediation_suggestion=(
+                        f"Add Returns section to docstring for function '{node.name}'"
+                    ),
                 )
+            )
 
-        # Check for non-English content (simplified heuristic)
-        # This is a basic check - full language detection would require NLP libraries
+        return violations
+
+    def _check_non_english_content(
+        self,
+        docstring: str,
+        node: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef,
+        relative_path: Path,
+    ) -> list[ComplianceViolation]:
+        """
+        Check for non-English content in docstring.
+
+        Args:
+            docstring: Docstring content
+            node: AST node
+            relative_path: Relative file path
+
+        Returns:
+            List of violations
+        """
+        violations: list[ComplianceViolation] = []
+
         non_english_patterns = [
             r"[А-Яа-я]",  # Cyrillic
             r"[一-龯]",  # Chinese
@@ -177,5 +191,33 @@ class DocumentationChecker(BaseChecker):
                     )
                 )
                 break
+
+        return violations
+
+    def _check_docstring_format(
+        self,
+        docstring: str,
+        node: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef,
+        relative_path: Path,
+    ) -> list[ComplianceViolation]:
+        """
+        Check if docstring follows Google-style format.
+
+        Args:
+            docstring: Docstring content
+            node: AST node (function or class)
+            relative_path: Relative file path
+
+        Returns:
+            List of violations
+        """
+        violations: list[ComplianceViolation] = []
+
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            violations.extend(
+                self._check_function_docstring_sections(docstring, node, relative_path)
+            )
+
+        violations.extend(self._check_non_english_content(docstring, node, relative_path))
 
         return violations
