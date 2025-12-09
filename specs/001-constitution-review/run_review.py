@@ -18,7 +18,7 @@ sys.path.insert(0, str(script_dir.parent.parent))
 
 # Import main function directly from tools package
 # ReviewConfig uses absolute paths, so working directory change is not needed
-from tools import main
+from tools import main  # noqa: E402
 
 if __name__ == "__main__":
     sys.exit(main())

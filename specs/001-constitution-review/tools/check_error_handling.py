@@ -7,6 +7,7 @@ proper exception chaining.
 
 import ast
 from pathlib import Path
+from typing import ClassVar
 
 from .ast_parser import ASTParser
 from .base_checker import BaseChecker
@@ -16,17 +17,10 @@ from .models import ComplianceViolation
 class ErrorHandlingChecker(BaseChecker):
     """Checker for Error Handling standard compliance."""
 
-import ast
-from pathlib import Path
-from typing import ClassVar
-
-from .ast_parser import ASTParser
-from .base_checker import BaseChecker
-from .models import ComplianceViolation
-
     BASE_EXCEPTION = "WebAutomationError"
     # Whitelist of allowed exception base classes
     ALLOWED_BASE_EXCEPTIONS: ClassVar[set[str]] = {BASE_EXCEPTION}
+
     def get_name(self) -> str:
         """Get the name of this checker."""
         return "Error Handling"
@@ -131,19 +125,36 @@ from .models import ComplianceViolation
 
         Returns:
             List of violations
+
+        Note:
+            Only flags newly constructed exceptions (ast.Call) inside except blocks
+            that lack 'from' clause. Variable re-raises (raise e) are valid without 'from'.
         """
         violations: list[ComplianceViolation] = []
 
         for func in parser.get_functions():
+            # Find all except handlers in this function
+            except_handlers: list[ast.ExceptHandler] = []
+            for node in ast.walk(func):
+                if isinstance(node, ast.ExceptHandler):
+                    except_handlers.append(node)
+
+            # Check raise statements
             for node in ast.walk(func):
                 if isinstance(node, ast.Raise):
-                    if node.exc is not None:
-                        # Check if raise uses 'from' for chaining
-                        # This is a simplified check - full analysis would require
-                        # more AST traversal
-                        if node.cause is None:
-                            # Check if this is re-raising an exception (could benefit from 'from')
-                            if isinstance(node.exc, ast.Name):
+                    if node.exc is not None and node.cause is None:
+                        # Only flag newly constructed exceptions without chaining
+                        # Variable re-raises (raise e) are typically valid without 'from'
+                        if isinstance(node.exc, ast.Call):
+                            # Check if this raise is inside an except handler
+                            is_in_except = False
+                            for except_handler in except_handlers:
+                                # Check if node is within except_handler body
+                                if self._is_node_in_handler(node, except_handler):
+                                    is_in_except = True
+                                    break
+
+                            if is_in_except:
                                 violations.append(
                                     ComplianceViolation(
                                         standard="Error Handling",
@@ -151,9 +162,9 @@ from .models import ComplianceViolation
                                         line_number=node.lineno,
                                         violation_type="missing_exception_chaining",
                                         violation_description=(
-                                            f"Exception raised at line {node.lineno} "
-                                            "should use 'from e' for proper exception "
-                                            "chaining"
+                                            f"New exception raised at line {node.lineno} "
+                                            "inside except handler should use 'from e' "
+                                            "for proper exception chaining"
                                         ),
                                         severity="MEDIUM",
                                         remediation_suggestion=(
@@ -163,3 +174,20 @@ from .models import ComplianceViolation
                                 )
 
         return violations
+
+    def _is_node_in_handler(self, node: ast.Raise, handler: ast.ExceptHandler) -> bool:
+        """
+        Check if a raise node is within an except handler body.
+
+        Args:
+            node: Raise node to check
+            handler: ExceptHandler node
+
+        Returns:
+            True if node is within handler body
+        """
+        # Walk the handler body to check if node is a descendant
+        for body_node in ast.walk(handler):
+            if body_node is node:
+                return True
+        return False
