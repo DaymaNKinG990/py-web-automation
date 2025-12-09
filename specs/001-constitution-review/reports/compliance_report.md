@@ -1,7 +1,7 @@
 # Constitution Compliance Report
 
-**Report ID**: report_1765318202
-**Generated**: 2025-12-10 01:10:02
+**Report ID**: report_1765319786
+**Generated**: 2025-12-10 01:36:26
 
 ## Executive Summary
 
@@ -133,25 +133,25 @@ Violations by Severity:
 - **Violations**: 166
 
 #### Violations:
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
-- `.git:0` - Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- `.git:0` - Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
   - **Fix**: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 - ... and 156 more violations
 
@@ -47908,830 +47908,830 @@ Total violations: 9696
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')
 
 **.git:0**
 - Type: invalid_commit_message
-- Description: Commit message does not follow conventional commit format: 'Refactor compliance checkers for improved document...'
+- Description: Commit message does not follow conventional commit format: 'Add compliance report and update remediation plan ...'
 - Remediation: Use conventional commit format: 'type: description' (e.g., 'feat: add feature', 'fix: fix bug')

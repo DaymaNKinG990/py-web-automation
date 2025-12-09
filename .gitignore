@@ -106,7 +106,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# uv.lock
+# uv package manager lock file
 uv.lock
 
 # cursor rules

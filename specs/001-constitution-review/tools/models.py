@@ -158,7 +158,17 @@ class ComplianceReport:
         """Validate report data."""
         if not 0 <= self.compliance_percentage <= 100:
             raise ValueError("compliance_percentage must be between 0 and 100")
-        # Validate that total_violations matches sum of counts
+
+        # Validate that total_violations matches the number of unique violations
+        if self.total_violations != len(self.violations):
+            raise ValueError(
+                f"total_violations mismatch: provided {self.total_violations} "
+                f"does not match number of violations in list {len(self.violations)}. "
+                f"This indicates a data consistency issue."
+            )
+
+        # Validate that total_violations matches sum of severity counts
+        # (each violation has exactly one severity, so these should match)
         total_by_severity = sum(self.violations_by_severity.values())
         if self.total_violations != total_by_severity:
             raise ValueError(
@@ -166,6 +176,10 @@ class ComplianceReport:
                 f"does not match computed sum {total_by_severity} from "
                 f"violations_by_severity. This indicates a data consistency issue."
             )
+
+        # Note: violations_by_principle and violations_by_standard sums may exceed
+        # total_violations because a single violation can belong to both a principle
+        # and a standard. This is expected behavior and not a validation error.
 
 
 @dataclass(frozen=True)

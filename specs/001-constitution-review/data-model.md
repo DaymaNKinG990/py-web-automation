@@ -50,7 +50,9 @@ Aggregated results of the review process.
 
 **Validation Rules**:
 - `compliance_percentage` must be between 0 and 100
-- `total_violations` must equal sum of all violation counts
+- `total_violations` must equal the number of unique violations in the `violations` list
+- Sum of `violations_by_severity` values must equal `total_violations` (each violation has exactly one severity)
+- Sum of `violations_by_principle` and `violations_by_standard` may exceed `total_violations` because a single violation can belong to both a principle and a standard
 - All dictionaries must have consistent keys
 
 **State Transitions**: None (generated once, immutable)

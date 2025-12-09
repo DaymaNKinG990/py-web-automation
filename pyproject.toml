@@ -1,20 +1,19 @@
 [project]
 name = "py-web-automation"
-version = "1.0.0"
+version = "2.0.0"
 description = "Comprehensive Python framework for automated testing of web applications"
 authors = [{ name = "Ravil Shakerov", email = "xellaopromaster@yandex.ru" }]
 requires-python = ">=3.12"
 license = { text = "MIT" }
 readme = "README.md"
 dependencies = [
-    # Core runtime dependencies
-    "httpx>=0.27.0", # HTTP client for API testing (REST, GraphQL, SOAP)
-    "playwright>=1.48.0", # Browser automation for UI testing
-    "msgspec>=0.19.0", # High-performance data validation and serialization
-    "loguru>=0.7.2", # Logging framework
-    "pyyaml>=6.0.1", # YAML configuration support
-    "websockets>=13.1", # WebSocket client support
-    "aiosqlite>=0.20.0", # SQLite database adapter (async)
+    "httpx>=0.27.0",
+    "playwright>=1.48.0",
+    "msgspec>=0.20.0",
+    "loguru>=0.7.2",
+    "pyyaml>=6.0.1",
+    "websockets>=13.1",
+    "aiosqlite>=0.20.0",
     "pillow>=12.0.0",
     "aiokafka>=0.12.0",
     "aio-pika>=9.5.8",
@@ -22,6 +21,9 @@ dependencies = [
     "zeep>=4.2.1",
     "graphql-core>=3.2.3",
     "gql>=3.5.0",
+    "aiohttp>=3.10.0",
+    "aiomysql>=0.3.2",
+    "asyncpg>=0.31.0",
 ]
 keywords = [
     "web automation",
@@ -52,6 +54,88 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
+]
+[dependency-groups]
+# Testing dependencies
+test = [
+    "pytest>=8.5.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.2.1",
+    "pytest-mock>=3.14.1",
+    "pytest-xdist>=3.8.0",
+    "pytest-playwright>=0.4.4",
+    "pytest-resource-usage>=1.0.0",
+    "psutil>=5.9.0",
+    "allure-pytest>=2.13.2",
+]
+# Formatting, linting, type checking
+dev_sup = [
+    "ruff>=0.8.0",
+    "mypy>=1.19.0",
+    "pre-commit>=4.2.0",
+    "types-pyyaml>=6.0.12.20250516",
+    "solid-checker>=1.0.4",
+    "radon>=6.0.1",
+    "vulture>=2.14",
+]
+# Development dependencies (linting, type checking, code quality)
+dev = [
+    "httpx>=0.27.0",
+    "playwright>=1.48.0",
+    "msgspec>=0.20.0",
+    "loguru>=0.7.2",
+    "pyyaml>=6.0.1",
+    "websockets>=13.1",
+    "aiosqlite>=0.20.0",
+    "pillow>=12.0.0",
+    "aiokafka>=0.12.0",
+    "aio-pika>=9.5.8",
+    "grpclib>=0.4.7",
+    "zeep>=4.2.1",
+    "graphql-core>=3.2.3",
+    "gql>=3.5.0",
+    "aiohttp>=3.10.0",
+    "aiomysql>=0.3.2",
+    "asyncpg>=0.31.0",
+]
+# All development tools (test + dev)
+all = [
+    # Testing dependencies
+    "pytest>=8.5.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.2.1",
+    "pytest-mock>=3.14.1",
+    "pytest-xdist>=3.8.0",
+    "pytest-playwright>=0.4.4",
+    "pytest-resource-usage>=1.0.0",
+    "psutil>=5.9.0",
+    "allure-pytest>=2.13.2",
+    # Development dependencies
+    "httpx>=0.27.0",
+    "playwright>=1.48.0",
+    "msgspec>=0.20.0",
+    "loguru>=0.7.2",
+    "pyyaml>=6.0.1",
+    "websockets>=13.1",
+    "aiosqlite>=0.20.0",
+    "pillow>=12.0.0",
+    "aiokafka>=0.12.0",
+    "aio-pika>=9.5.8",
+    "grpclib>=0.4.7",
+    "zeep>=4.2.1",
+    "graphql-core>=3.2.3",
+    "gql>=3.5.0",
+    "aiohttp>=3.10.0",
+    "aiomysql>=0.3.2",
+    "asyncpg>=0.31.0",
+    # Dev support Libraries
+    "ruff>=0.8.0",
+    "mypy>=1.19.0",
+    "pre-commit>=4.2.0",
+    "types-pyyaml>=6.0.12.20250516",
+    "solid-checker>=1.0.4",
+    "radon>=6.0.1",
+    "vulture>=2.14",
 ]
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
@@ -97,6 +181,10 @@ markers = [
     "rabbitmq: RabbitMQ message broker testing tests",
     "smoke: Smoke tests",
     "regression: Regression tests",
+    "report_duration: Measure test execution time (pytest-resource-usage)",
+    "report_tracemalloc: Track memory allocations using tracemalloc (pytest-resource-usage)",
+    "report_uss: Track unique set size using psutil (pytest-resource-usage)",
+    "limit_memory: Fail test if memory usage exceeds specified limit (e.g., '100MB', '50KB')",
 ]
 # Test execution
 minversion = "8.0"
@@ -127,60 +215,6 @@ exclude_lines = [
 ]
 [tool.coverage.html]
 directory = "report/coverage"
-[dependency-groups]
-# Testing dependencies
-test = [
-    "pytest>=8.5.0",
-    "pytest-asyncio>=0.24.0",
-    "pytest-cov>=6.2.1",
-    "pytest-mock>=3.14.1",
-    "pytest-xdist>=3.8.0",
-    "pytest-playwright>=0.4.4",
-    "allure-pytest>=2.13.2",
-    "gql>=3.5.0",
-    "graphql-core>=3.2.3",
-]
-# Development dependencies (linting, type checking, code quality)
-dev = [
-    "ruff>=0.8.0",
-    "pre-commit>=4.2.0",
-    "prospector>=1.17.3",
-    "pydeps>=3.0.1",
-    "pyflakes>=3.4.0",
-    "radon>=6.0.1",
-    "vulture>=2.14",
-    "types-pyyaml>=6.0.12.20250516",
-    "solid-checker>=1.0.4",
-    "mypy>=1.19.0",
-]
-# All development tools (test + dev)
-all = [
-    # Testing dependencies
-    "pytest>=8.5.0",
-    "pytest-asyncio>=0.24.0",
-    "pytest-cov>=6.2.1",
-    "pytest-mock>=3.14.1",
-    "pytest-xdist>=3.8.0",
-    "pytest-random-order>=1.2.0",
-    "pytest-playwright>=0.4.4",
-    "allure-pytest>=2.13.2",
-    # Development dependencies
-    "ruff>=0.8.0",
-    "mypy>=1.19.0",
-    "pre-commit>=4.2.0",
-    "prospector>=1.17.3",
-    "pydeps>=3.0.1",
-    "pyflakes>=3.4.0",
-    "radon>=6.0.1",
-    "vulture>=2.14",
-    "types-pyyaml>=6.0.12.20250516",
-    "solid-checker>=1.0.4",
-    "asyncpg>=0.29.0",
-    "aiomysql>=0.2.0",
-    "grpclib>=0.4.7",
-    "zeep>=4.2.1",
-    "graphql-core>=3.2.3",
-]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
