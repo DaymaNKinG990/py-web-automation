@@ -6,6 +6,7 @@ and use TYPE_CHECKING for circular dependencies.
 """
 
 import ast
+import sys
 from pathlib import Path
 
 from .ast_parser import ASTParser
@@ -75,18 +76,24 @@ class ImportOrganizationChecker(BaseChecker):
 
         Returns:
             True if line is meaningful
+
+        Note:
+            This method cannot reliably detect multi-line docstrings.
+            The caller should skip the module docstring using AST.
         """
         stripped = line.strip()
         if not stripped:
             return False
         if stripped.startswith("#"):
             return False
-        if stripped.startswith('"""') or stripped.startswith("'''"):
-            return False
         return True
 
     def _check_imports_at_top(
-        self, imports: list[ast.Import | ast.ImportFrom], file_path: Path, relative_path: Path
+        self,
+        imports: list[ast.Import | ast.ImportFrom],
+        file_path: Path,
+        relative_path: Path,
+        parser: ASTParser,
     ) -> list[ComplianceViolation]:
         """
         Check that imports are at the top of the file.
@@ -95,6 +102,7 @@ class ImportOrganizationChecker(BaseChecker):
             imports: List of import nodes
             file_path: Full file path
             relative_path: Relative file path
+            parser: AST parser instance
 
         Returns:
             List of violations
@@ -110,8 +118,21 @@ class ImportOrganizationChecker(BaseChecker):
         except (OSError, UnicodeDecodeError):
             return violations
 
+        # Get module docstring end line if present
+        module_docstring_end = 0
+        if (
+            parser.tree
+            and parser.tree.body
+            and isinstance(parser.tree.body[0], ast.Expr)
+            and isinstance(parser.tree.body[0].value, ast.Constant)
+            and isinstance(parser.tree.body[0].value.value, str)
+        ):
+            module_docstring_end = parser.tree.body[0].end_lineno or 0
+
         first_import_line = min(imp.lineno for imp in imports)
-        for i, line in enumerate(lines[: first_import_line - 1], start=1):
+        # Start checking after module docstring
+        start_line = max(module_docstring_end, 0)
+        for i, line in enumerate(lines[start_line : first_import_line - 1], start=start_line + 1):
             if self._is_meaningful_line(line):
                 violations.append(
                     ComplianceViolation(
@@ -150,7 +171,7 @@ class ImportOrganizationChecker(BaseChecker):
         if not imports:
             return violations
 
-        violations.extend(self._check_imports_at_top(imports, file_path, relative_path))
+        violations.extend(self._check_imports_at_top(imports, file_path, relative_path, parser))
         violations.extend(self._check_import_grouping(imports, relative_path))
 
         return violations
@@ -206,42 +227,71 @@ class ImportOrganizationChecker(BaseChecker):
         """
         violations: list[ComplianceViolation] = []
 
-        stdlib_modules = {
-            "os",
-            "sys",
-            "pathlib",
-            "typing",
-            "collections",
-            "dataclasses",
-            "abc",
-            "enum",
-        }
+        # Use sys.stdlib_module_names for comprehensive stdlib detection (Python 3.10+)
+        if hasattr(sys, "stdlib_module_names"):
+            stdlib_modules = sys.stdlib_module_names
+        else:
+            # Fallback for Python < 3.10 with more comprehensive list
+            stdlib_modules = {
+                "os",
+                "sys",
+                "pathlib",
+                "typing",
+                "collections",
+                "dataclasses",
+                "abc",
+                "enum",
+                "re",
+                "json",
+                "datetime",
+                "functools",
+                "itertools",
+                "asyncio",
+                "logging",
+                "unittest",
+                "argparse",
+                "subprocess",
+                "inspect",
+                "contextlib",
+                "importlib",
+                "threading",
+                "multiprocessing",
+                "concurrent",
+            }
+
         seen_third_party = False
 
         for imp in imports:
-            if not isinstance(imp, ast.ImportFrom):
-                continue
+            module = None
+            if isinstance(imp, ast.ImportFrom):
+                module = imp.module
+            elif isinstance(imp, ast.Import):
+                # For regular imports, use the first imported name as the module
+                if imp.names:
+                    module = imp.names[0].name
 
-            module = imp.module
-            is_local = self._is_local_module(module)
-            is_stdlib = self._is_stdlib_module(module, stdlib_modules) if module else False
+            if module is not None:
+                is_local = self._is_local_module(module)
+                is_stdlib = self._is_stdlib_module(module, stdlib_modules) if module else False
 
-            if not is_stdlib and not is_local:
-                seen_third_party = True
-            elif is_local and seen_third_party:
-                violations.append(
-                    ComplianceViolation(
-                        standard="Import Organization",
-                        file_path=str(relative_path),
-                        line_number=imp.lineno,
-                        violation_type="incorrect_import_order",
-                        violation_description=(
-                            f"Local import '{module}' appears after third-party imports"
-                        ),
-                        severity="LOW",
-                        remediation_suggestion=("Reorder imports: stdlib → third-party → local"),
+                if not is_stdlib and not is_local:
+                    seen_third_party = True
+                elif is_local and seen_third_party:
+                    violations.append(
+                        ComplianceViolation(
+                            standard="Import Organization",
+                            file_path=str(relative_path),
+                            line_number=imp.lineno,
+                            violation_type="incorrect_import_order",
+                            violation_description=(
+                                f"Local import '{module}' appears after third-party imports"
+                            ),
+                            severity="LOW",
+                            remediation_suggestion=(
+                                "Reorder imports: stdlib → third-party → local"
+                            ),
+                        )
                     )
-                )
 
         return violations
 

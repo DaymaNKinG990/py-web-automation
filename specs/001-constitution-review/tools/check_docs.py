@@ -17,8 +17,6 @@ from .models import ComplianceViolation
 class DocumentationChecker(BaseChecker):
     """Checker for Documentation Standards compliance."""
 
-    GOOGLE_STYLE_SECTIONS = {"Args", "Returns", "Raises", "Example", "Examples"}
-
     def get_name(self) -> str:
         """Get the name of this checker."""
         return "Documentation Standards"
@@ -105,10 +103,25 @@ class DocumentationChecker(BaseChecker):
 
         has_args = "Args:" in docstring or "Arguments:" in docstring
         has_returns = "Returns:" in docstring or "Return:" in docstring
+        has_raises = "Raises:" in docstring
 
         excluded_params = {"self", "cls"}
         has_params = any(arg.arg not in excluded_params for arg in node.args.args)
-        has_return = node.returns is not None
+
+        # Check for return type annotation
+        has_return_type_annotation = node.returns is not None
+
+        # Check if function has return statements with values
+        # (return without value is considered as returning None implicitly)
+        has_return_stmt = any(
+            isinstance(child, ast.Return) and child.value is not None for child in ast.walk(node)
+        )
+
+        # Function returns a value if it has return type annotation or return statements
+        has_return = has_return_type_annotation or has_return_stmt
+
+        # Check if function has raise statements
+        has_raise_stmt = any(isinstance(child, ast.Raise) for child in ast.walk(node))
 
         if has_params and not has_args:
             violations.append(
@@ -129,19 +142,51 @@ class DocumentationChecker(BaseChecker):
             )
 
         if has_return and not has_returns:
+            # Determine violation description based on detection method
+            if has_return_type_annotation and has_return_stmt:
+                desc = (
+                    f"Function '{node.name}' has return type annotation and return "
+                    "statements but docstring is missing Returns section"
+                )
+            elif has_return_type_annotation:
+                desc = (
+                    f"Function '{node.name}' has return type annotation but docstring "
+                    "is missing Returns section"
+                )
+            else:
+                desc = (
+                    f"Function '{node.name}' returns values but docstring "
+                    "is missing Returns section"
+                )
+
             violations.append(
                 ComplianceViolation(
                     standard="Documentation Standards",
                     file_path=str(relative_path),
                     line_number=node.lineno,
                     violation_type="missing_returns_section",
-                    violation_description=(
-                        f"Function '{node.name}' has return type but docstring "
-                        "is missing Returns section"
-                    ),
+                    violation_description=desc,
                     severity="LOW",
                     remediation_suggestion=(
                         f"Add Returns section to docstring for function '{node.name}'"
+                    ),
+                )
+            )
+
+        if has_raise_stmt and not has_raises:
+            violations.append(
+                ComplianceViolation(
+                    standard="Documentation Standards",
+                    file_path=str(relative_path),
+                    line_number=node.lineno,
+                    violation_type="missing_raises_section",
+                    violation_description=(
+                        f"Function '{node.name}' raises exceptions but docstring "
+                        "is missing Raises section"
+                    ),
+                    severity="LOW",
+                    remediation_suggestion=(
+                        f"Add Raises section to docstring for function '{node.name}'"
                     ),
                 )
             )
@@ -169,8 +214,11 @@ class DocumentationChecker(BaseChecker):
 
         non_english_patterns = [
             r"[А-Яа-я]",  # Cyrillic
-            r"[一-龯]",  # Chinese
+            r"[\u4E00-\u9FFF]",  # CJK Unified Ideographs (broader)
             r"[あ-ん]",  # Japanese Hiragana
+            r"[ア-ン]",  # Japanese Katakana
+            r"[\uAC00-\uD7AF]",  # Korean Hangul
+            r"[\u0600-\u06FF]",  # Arabic
         ]
 
         for pattern in non_english_patterns:

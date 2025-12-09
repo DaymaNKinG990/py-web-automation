@@ -171,14 +171,11 @@ def _violation_to_summary_dict(violation: "ComplianceViolation") -> dict:
     }
 
 
-def _build_principle_data(
-    principle_name: str, compliance_pct: float, violations: list["ComplianceViolation"]
-) -> dict:
+def _build_principle_data(compliance_pct: float, violations: list["ComplianceViolation"]) -> dict:
     """
     Build principle data structure.
 
     Args:
-        principle_name: Name of principle
         compliance_pct: Compliance percentage
         violations: List of violations for this principle
 
@@ -192,14 +189,11 @@ def _build_principle_data(
     }
 
 
-def _build_standard_data(
-    standard_name: str, compliance_pct: float, violations: list["ComplianceViolation"]
-) -> dict:
+def _build_standard_data(compliance_pct: float, violations: list["ComplianceViolation"]) -> dict:
     """
     Build standard data structure.
 
     Args:
-        standard_name: Name of standard
         compliance_pct: Compliance percentage
         violations: List of violations for this standard
 
@@ -227,15 +221,13 @@ def export_json(report: ComplianceReport) -> dict:
     for principle_name, compliance_pct in report.principle_compliance.items():
         principle_violations = [v for v in report.violations if v.principle == principle_name]
         principles_data[principle_name] = _build_principle_data(
-            principle_name, compliance_pct, principle_violations
+            compliance_pct, principle_violations
         )
 
     standards_data = {}
     for standard_name, compliance_pct in report.standard_compliance.items():
         standard_violations = [v for v in report.violations if v.standard == standard_name]
-        standards_data[standard_name] = _build_standard_data(
-            standard_name, compliance_pct, standard_violations
-        )
+        standards_data[standard_name] = _build_standard_data(compliance_pct, standard_violations)
 
     return {
         "report_id": report.report_id,

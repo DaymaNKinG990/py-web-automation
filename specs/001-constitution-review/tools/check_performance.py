@@ -34,7 +34,8 @@ class PerformanceChecker(BaseChecker):
         """
         for import_node in parser.get_imports():
             if isinstance(import_node, ast.ImportFrom):
-                if import_node.module == "pydantic":
+                module = import_node.module or ""
+                if module == "pydantic" or module.startswith("pydantic."):
                     return ComplianceViolation(
                         principle="Performance Optimization",
                         file_path=str(relative_path),
@@ -51,7 +52,7 @@ class PerformanceChecker(BaseChecker):
                     )
             elif isinstance(import_node, ast.Import):
                 for alias in import_node.names:
-                    if alias.name == "pydantic":
+                    if alias.name == "pydantic" or alias.name.startswith("pydantic."):
                         return ComplianceViolation(
                             principle="Performance Optimization",
                             file_path=str(relative_path),
@@ -119,13 +120,19 @@ class PerformanceChecker(BaseChecker):
             ComplianceViolation if missing, None otherwise
         """
         has_msgspec = self._has_msgspec_import(parser)
-        has_data_models = self._has_data_models(parser)
+        data_model_classes = [
+            cls
+            for cls in parser.get_classes()
+            if cls.name.endswith("Model") or "Struct" in cls.name
+        ]
+        has_data_models = bool(data_model_classes)
 
         if has_data_models and not has_msgspec:
+            first_class = data_model_classes[0]
             return ComplianceViolation(
                 principle="Performance Optimization",
                 file_path=str(relative_path),
-                line_number=0,
+                line_number=first_class.lineno,
                 violation_type="missing_msgspec",
                 violation_description=(
                     "File contains data models but doesn't use msgspec for serialization"
@@ -154,7 +161,11 @@ class PerformanceChecker(BaseChecker):
         if not parser.is_valid():
             return violations
 
-        relative_path = file_path.relative_to(self.project_root)
+        try:
+            relative_path = file_path.relative_to(self.project_root)
+        except ValueError:
+            # Fallback to absolute path if outside project root
+            relative_path = file_path
 
         pydantic_violation = self._check_pydantic_import(parser, relative_path)
         if pydantic_violation:

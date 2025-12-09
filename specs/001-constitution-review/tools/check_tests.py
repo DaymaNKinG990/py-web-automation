@@ -9,6 +9,7 @@ This checker verifies:
 """
 
 import ast
+import logging
 import re
 from pathlib import Path
 from typing import ClassVar
@@ -17,6 +18,8 @@ from .ast_parser import ASTParser
 from .base_checker import BaseChecker
 from .file_discovery import FileDiscoveryService
 from .models import ComplianceViolation
+
+logger = logging.getLogger(__name__)
 
 
 class TestFirstChecker(BaseChecker):
@@ -64,7 +67,8 @@ class TestFirstChecker(BaseChecker):
                 for match in matches:
                     test_case_id = f"TC-{match[0]}-{match[1]}-{match[2]}"
                     self.test_case_ids.add(test_case_id)
-            except Exception:
+            except (OSError, UnicodeDecodeError) as exc:
+                logger.warning("Failed to read test case file %s: %s", test_case_file, exc)
                 continue
 
     def _extract_test_case_id(self, func: ast.FunctionDef | ast.AsyncFunctionDef) -> str | None:
