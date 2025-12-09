@@ -169,29 +169,11 @@ class ReviewOrchestrator:
 
         # Build compliance report
         all_violations = self.violation_collector.violations
-        counts = self.violation_collector.get_violation_counts()
-
         total_files = len(all_files)
-        files_with_violations_set = self.violation_collector.get_files_with_violations()
-        files_with_violations_count = len(files_with_violations_set)
-        overall_compliance = calculate_compliance_percentage(
-            total_files, files_with_violations_count
-        )
-
-        # Extract typed counts (type narrowing)
-        by_severity = counts["by_severity"]
-        if not isinstance(by_severity, dict):
-            raise TypeError("by_severity must be a dict")
-
-        # Generate summary
-        self._generate_summary(
-            total_files,
-            len(all_violations),
-            overall_compliance,
-            by_severity,
-        )
 
         # Use generate_report module for consistency
+        # Note: generate_report() internally generates the summary,
+        # so we don't need to call self._generate_summary() separately
         from .generate_report import generate_report
 
         report = generate_report(
@@ -202,44 +184,3 @@ class ReviewOrchestrator:
         )
 
         return report
-
-    def _generate_summary(
-        self,
-        total_files: int,
-        total_violations: int,
-        compliance_percentage: float,
-        violations_by_severity: dict[str, int],
-    ) -> str:
-        """
-        Generate executive summary of the review.
-
-        Args:
-            total_files: Total number of files analyzed
-            total_violations: Total number of violations found
-            compliance_percentage: Overall compliance percentage
-            violations_by_severity: Violations grouped by severity
-
-        Returns:
-            Summary text
-        """
-        summary_lines = [
-            "Constitution Compliance Review Summary",
-            "",
-            f"Files Analyzed: {total_files}",
-            f"Total Violations: {total_violations}",
-            f"Overall Compliance: {compliance_percentage:.1f}%",
-            "",
-            "Violations by Severity:",
-        ]
-
-        for severity in ("CRITICAL", "HIGH", "MEDIUM", "LOW"):
-            count = violations_by_severity.get(severity, 0)
-            summary_lines.append(f"  {severity}: {count}")
-
-        if total_violations == 0:
-            summary_lines.append("")
-            summary_lines.append(
-                "✓ No violations found. Project is fully compliant with the constitution."
-            )
-
-        return "\n".join(summary_lines)

@@ -5,7 +5,7 @@ This module provides configuration settings and paths for the review process.
 """
 
 from pathlib import Path
-from typing import Final
+from typing import ClassVar, Final
 
 
 class ReviewConfig:
@@ -30,7 +30,7 @@ class ReviewConfig:
     YML_FILES: Final[str] = "*.yml"
 
     # Exclude directories
-    EXCLUDE_DIRS: Final[set[str]] = {
+    EXCLUDE_DIRS: ClassVar[set[str]] = {
         "__pycache__",
         ".git",
         ".venv",

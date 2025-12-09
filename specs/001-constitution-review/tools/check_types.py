@@ -61,7 +61,11 @@ class TypeSafetyChecker(BaseChecker):
 
             # Check parameter type annotations
             for arg in func.args.args:
-                if arg.annotation is None and is_public_api(arg.arg):
+                if (
+                    arg.annotation is None
+                    and is_public_api(arg.arg)
+                    and arg.arg not in ("self", "cls")
+                ):
                     violations.append(
                         ComplianceViolation(
                             principle="Type Safety",
@@ -82,11 +86,16 @@ class TypeSafetyChecker(BaseChecker):
 
         # Check public classes for type annotations
         for cls in parser.get_public_classes():
-            # Check class methods
-            for node in ast.walk(cls):
+            # Check direct class methods only (not nested)
+            for node in cls.body:
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    # Skip private methods
-                    if node.name.startswith("_"):
+                    # Skip private methods (but not dunder methods)
+                    if node.name.startswith("_") and not (
+                        node.name.startswith("__") and node.name.endswith("__")
+                    ):
+                        continue
+                    # Skip dunder methods (special methods like __init__, __str__, etc.)
+                    if node.name.startswith("__") and node.name.endswith("__"):
                         continue
 
                     # Check return type
@@ -111,7 +120,11 @@ class TypeSafetyChecker(BaseChecker):
 
                     # Check parameter types
                     for arg in node.args.args:
-                        if arg.annotation is None and is_public_api(arg.arg):
+                        if (
+                            arg.annotation is None
+                            and is_public_api(arg.arg)
+                            and arg.arg not in ("self", "cls")
+                        ):
                             violations.append(
                                 ComplianceViolation(
                                     principle="Type Safety",

@@ -100,9 +100,23 @@ class TestFirstChecker(BaseChecker):
 
             # Check if test case exists in documentation
             if testcase_decorator:
-                # Extract test case ID from decorator (simplified - would need
-                # AST parsing for full extraction)
-                test_case_id_match = re.search(r"TC-[A-Z]+-[A-Z]+-\d+", str(func.decorator_list))
+                # Extract test case ID from decorator arguments
+                test_case_id_match = None
+                for decorator in func.decorator_list:
+                    if isinstance(decorator, ast.Call):
+                        for arg in decorator.args:
+                            if isinstance(arg, ast.Constant) and isinstance(
+                                arg.value, str
+                            ):
+                                match = re.search(
+                                    r"TC-[A-Z]+-[A-Z]+-\d+", arg.value
+                                )
+                                if match:
+                                    test_case_id_match = match
+                                    break
+                    if test_case_id_match:
+                        break
+
                 if test_case_id_match:
                     test_case_id = test_case_id_match.group(0)
                     if test_case_id not in self.test_case_ids:

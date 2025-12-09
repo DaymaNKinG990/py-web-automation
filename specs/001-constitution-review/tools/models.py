@@ -161,8 +161,11 @@ class ComplianceReport:
         # Validate that total_violations matches sum of counts
         total_by_severity = sum(self.violations_by_severity.values())
         if self.total_violations != total_by_severity:
-            # Recalculate if mismatch
-            self.total_violations = total_by_severity
+            raise ValueError(
+                f"total_violations mismatch: provided {self.total_violations} "
+                f"does not match computed sum {total_by_severity} from "
+                f"violations_by_severity. This indicates a data consistency issue."
+            )
 
 
 @dataclass(frozen=True)

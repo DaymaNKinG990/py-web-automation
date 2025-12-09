@@ -8,13 +8,9 @@ This module provides functionality to generate compliance reports in various for
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from .config import ReviewConfig
 from .models import ComplianceReport, RemediationStep
-
-if TYPE_CHECKING:
-    pass
 
 
 def generate_report(

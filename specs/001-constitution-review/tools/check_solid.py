@@ -41,7 +41,7 @@ class SOLIDChecker(BaseChecker):
         violations.extend(self._check_single_responsibility(parser, relative_path))
 
         # Check for design patterns
-        violations.extend(self._check_design_patterns(parser, relative_path))
+        violations.extend(self._check_design_patterns(parser))
 
         return violations
 
@@ -93,35 +93,23 @@ class SOLIDChecker(BaseChecker):
         return violations
 
     def _check_design_patterns(
-        self, parser: ASTParser, relative_path: Path
+        self, parser: ASTParser
     ) -> list[ComplianceViolation]:
         """
         Check for appropriate design pattern usage.
 
         Args:
             parser: AST parser instance
-            relative_path: Relative file path
 
         Returns:
             List of violations
+
+        Note:
+            This is a placeholder for future implementation.
+            Full design pattern detection requires more sophisticated analysis
+            (e.g., Builder pattern with method chaining, Strategy, Adapter,
+            Middleware, Factory, Observer patterns).
         """
-        violations: list[ComplianceViolation] = []
-
-        # Check for Builder pattern (fluent method chaining)
-        # Note: Full pattern detection requires more sophisticated analysis
-        # This is a placeholder for future implementation
-        for _cls in parser.get_classes():
-            # Check for Builder pattern indicators
-            # Full implementation would analyze method chaining patterns
-            pass
-
-            # Check for Strategy pattern (interchangeable algorithms)
-            # Check for Adapter pattern (adapting external libraries)
-            # Check for Middleware pattern (request/response processing)
-            # Check for Factory pattern (instance creation)
-            # Check for Observer pattern (event-driven)
-
-        # Note: Full design pattern detection requires more sophisticated analysis
-        # This is a simplified version
-
-        return violations
+        # Placeholder for design pattern detection
+        # TODO: Implement pattern detection logic
+        return []
