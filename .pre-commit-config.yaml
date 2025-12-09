@@ -17,3 +17,27 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+      # Code quality checks
+      - id: solid-checker
+        name: solid-checker
+        entry: uv run solid-checker
+        language: system
+        types: [python]
+        pass_filenames: true
+        exclude: ^tests/
+      - id: radon
+        name: radon (complexity check)
+        entry: uv run radon cc
+        language: system
+        types: [python]
+        args: ["--min", "B"]
+        pass_filenames: true
+        exclude: ^tests/
+      - id: vulture
+        name: vulture (dead code detection)
+        entry: uv run vulture
+        language: system
+        types: [python]
+        args: ["--min-confidence", "80", "py_web_automation"]
+        pass_filenames: false
+        exclude: ^tests/

@@ -1,10 +1,11 @@
 # py-web-automation
 
-A comprehensive Python framework for automated testing of web applications, providing clients for API testing (REST, GraphQL, gRPC, SOAP), WebSocket communication, UI testing, and database operations.
+A comprehensive Python framework for automated testing of web applications, providing clients for API testing (REST, GraphQL, gRPC, SOAP), WebSocket communication, message brokers (Kafka, RabbitMQ), UI testing, and database operations.
 
 ## Features
 
 - **Multiple API Protocols**: REST, GraphQL, gRPC, SOAP, and WebSocket support
+- **Message Brokers**: Kafka and RabbitMQ support for testing event-driven architectures
 - **Browser Automation**: Playwright-based UI testing
 - **Database Testing**: Support for PostgreSQL, MySQL, and SQLite with adapter pattern
 - **Type Safety**: Complete type annotations with 100% coverage
@@ -79,6 +80,44 @@ async def main():
 asyncio.run(main())
 ```
 
+### Kafka Message Broker Testing
+
+```python
+import asyncio
+from py_web_automation import KafkaClient, Config
+
+async def main():
+    config = Config(timeout=30)
+    async with KafkaClient("localhost:9092", config) as kafka:
+        # Publish message
+        await kafka.publish("test-topic", {"user_id": 123, "action": "login"})
+        
+        # Consume messages
+        async for message in kafka.consume("test-topic", group_id="test-group"):
+            print(f"Received: {message}")
+
+asyncio.run(main())
+```
+
+### RabbitMQ Message Broker Testing
+
+```python
+import asyncio
+from py_web_automation import RabbitMQClient, Config
+
+async def main():
+    config = Config(timeout=30)
+    async with RabbitMQClient("amqp://guest:guest@localhost/", config) as rmq:
+        # Publish message
+        await rmq.publish("test-queue", {"user_id": 123, "action": "login"})
+        
+        # Consume messages
+        async for message in rmq.consume("test-queue"):
+            print(f"Received: {message}")
+
+asyncio.run(main())
+```
+
 ## Available Clients
 
 - **ApiClient**: HTTP REST API testing
@@ -86,6 +125,8 @@ asyncio.run(main())
 - **GrpcClient**: gRPC API testing
 - **SoapClient**: SOAP API testing
 - **WebSocketClient**: WebSocket communication
+- **KafkaClient**: Kafka message broker testing
+- **RabbitMQClient**: RabbitMQ message broker testing
 - **UiClient**: Browser automation with Playwright
 - **DBClient**: Database operations with multiple backend support
 
