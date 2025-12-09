@@ -98,14 +98,14 @@ This document defines the contract for the compliance report generation API. The
 
 ## API Methods
 
-### `generate_report(violations: list[ComplianceViolation], principle_checks: dict, standard_checks: dict, total_files: int) -> ComplianceReport`
+### `generate_report(violations: list[ComplianceViolation], principle_checks: list[PrincipleCheck], standard_checks: list[StandardCheck], total_files: int) -> ComplianceReport`
 
 Generates comprehensive compliance report from analysis results.
 
 **Parameters**:
 - `violations`: List of all ComplianceViolation instances
-- `principle_checks`: Dictionary mapping principle names to PrincipleCheck instances containing principle compliance metrics
-- `standard_checks`: Dictionary mapping standard names to StandardCheck instances containing standard compliance metrics
+- `principle_checks`: List of PrincipleCheck instances containing principle compliance metrics
+- `standard_checks`: List of StandardCheck instances containing standard compliance metrics
 - `total_files`: Total number of files analyzed (integer)
 
 **Returns**: ComplianceReport object with all violations and metrics

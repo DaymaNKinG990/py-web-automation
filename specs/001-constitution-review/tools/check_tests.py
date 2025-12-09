@@ -11,6 +11,7 @@ This checker verifies:
 import ast
 import re
 from pathlib import Path
+from typing import ClassVar
 
 from .ast_parser import ASTParser
 from .base_checker import BaseChecker
@@ -21,7 +22,7 @@ from .models import ComplianceViolation
 class TestFirstChecker(BaseChecker):
     """Checker for Test-First principle and Testing Standards compliance."""
 
-    REQUIRED_DECORATORS = {
+    REQUIRED_DECORATORS: ClassVar[set[str]] = {
         "allure.feature",
         "allure.story",
         "allure.title",
@@ -30,7 +31,10 @@ class TestFirstChecker(BaseChecker):
         "allure.description",
     }
 
-    REQUIRED_PYTEST_MARKERS = {"pytest.mark.unit", "pytest.mark.integration"}
+    REQUIRED_PYTEST_MARKERS: ClassVar[set[str]] = {
+        "pytest.mark.unit",
+        "pytest.mark.integration",
+    }
 
     def __init__(self, project_root: Path | None = None) -> None:
         """

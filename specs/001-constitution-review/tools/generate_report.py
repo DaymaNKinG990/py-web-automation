@@ -8,15 +8,19 @@ This module provides functionality to generate compliance reports in various for
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .config import ReviewConfig
 from .models import ComplianceReport, RemediationStep
 
+if TYPE_CHECKING:
+    from .models import ComplianceViolation, PrincipleCheck, StandardCheck
+
 
 def generate_report(
-    violations: list,
-    principle_checks: list,
-    standard_checks: list,
+    violations: list["ComplianceViolation"],
+    principle_checks: list["PrincipleCheck"],
+    standard_checks: list["StandardCheck"],
     total_files: int,
 ) -> ComplianceReport:
     """

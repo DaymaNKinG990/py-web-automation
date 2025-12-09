@@ -148,13 +148,17 @@ class ImportOrganizationChecker(BaseChecker):
         for imp in imports:
             if isinstance(imp, ast.ImportFrom):
                 module = imp.module
+                # Local imports: relative imports (None or starting with ".")
+                # or project root imports (py_web_automation)
+                is_local = (
+                    module is None
+                    or (module and module.startswith("."))
+                    or (module and module.startswith("py_web_automation"))
+                )
                 if module:
                     is_stdlib = (
                         any(module.startswith(stdlib) for stdlib in stdlib_modules)
                         or module.split(".")[0] in stdlib_modules
-                    )
-                    is_local = (
-                        module.startswith("py_web_automation") or not module or "." not in module
                     )
 
                     if not is_stdlib and not is_local:
