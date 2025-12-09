@@ -108,3 +108,9 @@ dmypy.json
 
 # uv.lock
 uv.lock
+
+# cursor rules
+.cursor/
+
+# specify memory
+.specify/
