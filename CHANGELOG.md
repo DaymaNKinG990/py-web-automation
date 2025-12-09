@@ -116,7 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Retry on specific exceptions
   - Client-specific retry handlers
   
-- **Rate Limiting**: Sliding window rate limiting algorithm
+- **Rate Limiting**: Sliding window rate-limiting algorithm
   - Configurable rate limits per client
   - Request throttling
   - Burst handling
