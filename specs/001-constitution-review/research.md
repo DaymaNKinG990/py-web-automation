@@ -270,7 +270,7 @@
 
 **Implementation approach**:
 - Generate `compliance_report.md` with executive summary
-- Create `violations_by_principle.json` for structured data
+- Create `compliance_report.json` for structured data
 - Include `remediation_plan.md` with actionable steps
 - Categorize violations by severity (Critical, High, Medium, Low)
 - Provide file paths and line numbers for each violation

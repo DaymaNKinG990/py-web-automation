@@ -20,7 +20,6 @@ import argparse
 import sys
 from pathlib import Path
 
-from .config import ReviewConfig
 from .generate_report import save_report
 from .review_orchestrator import ReviewOrchestrator
 
@@ -94,20 +93,25 @@ Examples:
         report = orchestrator.run_review()
 
         # Determine output directory
-        output_dir = Path(args.output_dir) if args.output_dir else ReviewConfig.REPORTS_DIR
+        output_dir = args.output_dir if args.output_dir else None
 
         # Save reports
         print("Generating reports...")
-        saved_files = save_report(report, output_dir)
+        saved_dir = save_report(report, output_dir)
 
         print()
         print("=" * 50)
         print("Review Complete!")
         print("=" * 50)
         print()
-        print("Reports generated:")
-        for format_name, file_path in saved_files.items():
-            print(f"  {format_name:15}: {file_path}")
+        print("Reports generated in:")
+        print(f"  {saved_dir}")
+        print()
+        print("Files created:")
+        saved_path = Path(saved_dir)
+        print(f"  compliance_report.md     : {saved_path / 'compliance_report.md'}")
+        print(f"  compliance_report.json: {saved_path / 'compliance_report.json'}")
+        print(f"  remediation_plan.md    : {saved_path / 'remediation_plan.md'}")
 
         print()
         print("Summary:")

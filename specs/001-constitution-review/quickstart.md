@@ -62,13 +62,13 @@ uv run python specs/001-constitution-review/run_review.py --verbose
 After running the review, reports will be generated in `specs/001-constitution-review/reports/`:
 
 - **compliance_report.md**: Human-readable compliance report with executive summary
-- **violations_by_principle.json**: Structured JSON data for programmatic analysis
+- **compliance_report.json**: Structured JSON data for programmatic analysis
 - **remediation_plan.md**: Prioritized list of fixes with effort estimates
 
 ### 4. Review Generated Reports
 
 1. **compliance_report.md**: Start here for executive summary and overview
-2. **violations_by_principle.json**: Use for programmatic analysis or tooling
+2. **compliance_report.json**: Use for programmatic analysis or tooling
 3. **remediation_plan.md**: Follow for prioritized fix recommendations
 
 ## Expected Output

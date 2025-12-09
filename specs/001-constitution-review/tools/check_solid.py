@@ -92,9 +92,7 @@ class SOLIDChecker(BaseChecker):
 
         return violations
 
-    def _check_design_patterns(
-        self, parser: ASTParser
-    ) -> list[ComplianceViolation]:
+    def _check_design_patterns(self, parser: ASTParser) -> list[ComplianceViolation]:
         """
         Check for appropriate design pattern usage.
 

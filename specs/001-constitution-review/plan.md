@@ -101,7 +101,7 @@ specs/001-constitution-review/
 │   └── generate_report.py  # Report generator
 └── reports/              # Generated compliance reports
     ├── compliance_report.md
-    ├── violations_by_principle.json
+    ├── compliance_report.json
     └── remediation_plan.md
 ```
 

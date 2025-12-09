@@ -6,6 +6,7 @@ This checker verifies that all clients implement context managers.
 
 import ast
 from pathlib import Path
+from typing import ClassVar
 
 from .ast_parser import ASTParser
 from .base_checker import BaseChecker
@@ -15,7 +16,7 @@ from .models import ComplianceViolation
 class ResourceManagementChecker(BaseChecker):
     """Checker for Resource Management standard compliance."""
 
-    CLIENT_CLASS_NAMES = {
+    CLIENT_CLASS_NAMES: ClassVar[set[str]] = {
         "Client",
         "HttpClient",
         "GraphQLClient",
@@ -88,19 +89,25 @@ class ResourceManagementChecker(BaseChecker):
             cls: Class node to check
 
         Returns:
-            True if class has context manager methods
+            True if class has complete context manager method pairs:
+            - Sync pair: __enter__ and __exit__
+            - Async pair: __aenter__ and __aexit__
         """
-        has_sync = False
-        has_async = False
+        has_sync_enter = False
+        has_sync_exit = False
+        has_async_enter = False
+        has_async_exit = False
 
         for node in ast.walk(cls):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if node.name == "__enter__":
-                    has_sync = True
+                    has_sync_enter = True
+                elif node.name == "__exit__":
+                    has_sync_exit = True
                 elif node.name == "__aenter__":
-                    has_async = True
-                elif node.name in ("__exit__", "__aexit__"):
-                    if has_sync or has_async:
-                        return True
+                    has_async_enter = True
+                elif node.name == "__aexit__":
+                    has_async_exit = True
 
-        return False
+        # Return True only if a complete matching pair is found
+        return (has_sync_enter and has_sync_exit) or (has_async_enter and has_async_exit)

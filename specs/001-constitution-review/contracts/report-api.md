@@ -42,7 +42,7 @@ This document defines the contract for the compliance report generation API. The
 - Prioritized list of fixes
 ```
 
-#### 2. JSON Data Export (`violations_by_principle.json`)
+#### 2. JSON Data Export (`compliance_report.json`)
 
 **Schema**:
 ```json
@@ -98,13 +98,19 @@ This document defines the contract for the compliance report generation API. The
 
 ## API Methods
 
-### `generate_report() -> ComplianceReport`
+### `generate_report(violations: list[ComplianceViolation], principle_checks: dict, standard_checks: dict, total_files: int) -> ComplianceReport`
 
 Generates comprehensive compliance report from analysis results.
 
+**Parameters**:
+- `violations`: List of all ComplianceViolation instances
+- `principle_checks`: Dictionary mapping principle names to PrincipleCheck instances containing principle compliance metrics
+- `standard_checks`: Dictionary mapping standard names to StandardCheck instances containing standard compliance metrics
+- `total_files`: Total number of files analyzed (integer)
+
 **Returns**: ComplianceReport object with all violations and metrics
 
-**Side Effects**: Creates report files in `reports/` directory
+**Note**: This method does not create files on disk. Use `save_report()` to persist reports.
 
 ### `export_json(report: ComplianceReport) -> dict`
 
@@ -132,6 +138,23 @@ Generates prioritized remediation steps from violations.
 - `violations`: List of compliance violations
 
 **Returns**: List of remediation steps ordered by priority
+
+### `save_report(report: ComplianceReport, output_dir: Optional[str] = None) -> str`
+
+Saves report in all formats (Markdown, JSON, Remediation Plan) to disk.
+
+**Parameters**:
+- `report`: ComplianceReport object to save
+- `output_dir`: Optional directory path to save reports. If None, uses default `reports/` directory from ReviewConfig
+
+**Returns**: Path to the saved reports directory as string
+
+**Side Effects**: 
+- Creates report files in `reports/` directory (or specified `output_dir`):
+  - `compliance_report.md` - Full markdown report
+  - `compliance_report.json` - JSON data export
+  - `remediation_plan.md` - Prioritized remediation steps
+- Creates output directory if it does not exist
 
 ## Error Handling
 

@@ -300,6 +300,9 @@ def generate_remediation_plan(violations: list) -> list[RemediationStep]:
 
     # Create remediation steps grouped by principle/standard and file
     for (principle, standard), files_dict in grouped.items():
+        # Skip violations without a principle (data consistency issue)
+        if principle is None:
+            continue
         for file_path, file_violations in files_dict.items():
             # Determine priority based on highest severity violation in this group
             severities = [v.severity for v in file_violations]
@@ -339,7 +342,7 @@ def generate_remediation_plan(violations: list) -> list[RemediationStep]:
 
                 step = RemediationStep(
                     step_id=step_id,
-                    principle=principle or "",
+                    principle=principle,
                     standard=standard,
                     priority=priority,
                     title=f"Fix {violation_type} in {Path(file_path).name}",
@@ -429,43 +432,54 @@ def _generate_summary_text(
     return "\n".join(summary_lines)
 
 
-def save_report(report: ComplianceReport, output_dir: Path | None = None) -> dict[str, Path]:
+def save_report(report: ComplianceReport, output_dir: str | Path | None = None) -> str:
     """
     Save report in all formats to disk.
 
     Args:
         report: ComplianceReport to save
-        output_dir: Directory to save reports. If None, uses ReviewConfig.REPORTS_DIR.
+        output_dir: Directory path (string or Path) to save reports.
+            If None, uses ReviewConfig.REPORTS_DIR.
 
     Returns:
-        Dictionary mapping format names to file paths
+        Path to the saved reports directory as string
+
+    Side Effects:
+        Creates report files in output directory:
+        - compliance_report.md - Full markdown report
+        - compliance_report.json - JSON data export
+        - remediation_plan.md - Prioritized remediation steps
+        Creates output directory if it does not exist.
     """
+    from pathlib import Path
+
     if output_dir is None:
         output_dir = ReviewConfig.REPORTS_DIR
-    ReviewConfig.ensure_directories()
+    elif isinstance(output_dir, str):
+        output_dir = Path(output_dir)
+    else:
+        output_dir = Path(output_dir)
 
-    saved_files: dict[str, Path] = {}
+    ReviewConfig.ensure_directories()
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Save Markdown report
     md_content = export_markdown(report)
     md_path = output_dir / "compliance_report.md"
     md_path.write_text(md_content, encoding="utf-8")
-    saved_files["markdown"] = md_path
 
     # Save JSON report
     json_data = export_json(report)
-    json_path = output_dir / "violations_by_principle.json"
+    json_path = output_dir / "compliance_report.json"
     json_path.write_text(json.dumps(json_data, indent=2, ensure_ascii=False), encoding="utf-8")
-    saved_files["json"] = json_path
 
     # Save remediation plan
     remediation_steps = generate_remediation_plan(report.violations)
     remediation_content = _export_remediation_plan_markdown(remediation_steps)
     remediation_path = output_dir / "remediation_plan.md"
     remediation_path.write_text(remediation_content, encoding="utf-8")
-    saved_files["remediation"] = remediation_path
 
-    return saved_files
+    return str(output_dir)
 
 
 def _export_remediation_plan_markdown(steps: list[RemediationStep]) -> str:

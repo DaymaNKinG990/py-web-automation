@@ -109,9 +109,10 @@ class DocumentationChecker(BaseChecker):
 
         # For functions, check if they have parameters/return values
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            has_params = len(node.args.args) > 0 and not all(
-                arg.arg == "self" for arg in node.args.args
-            )
+            # Exclude conventional instance/class parameters
+            excluded_params = {"self", "cls"}
+            # Function has meaningful params if at least one arg is not excluded
+            has_params = any(arg.arg not in excluded_params for arg in node.args.args)
             has_return = node.returns is not None
 
             if has_params and not has_args:

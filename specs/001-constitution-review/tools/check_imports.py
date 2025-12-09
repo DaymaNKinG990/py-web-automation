@@ -42,7 +42,7 @@ class ImportOrganizationChecker(BaseChecker):
         violations.extend(self._check_import_order(parser, relative_path, file_path))
 
         # Check for TYPE_CHECKING usage for circular dependencies
-        violations.extend(self._check_type_checking_usage(parser, relative_path))
+        violations.extend(self._check_type_checking_usage(parser))
 
         return violations
 
@@ -78,7 +78,10 @@ class ImportOrganizationChecker(BaseChecker):
         try:
             with open(file_path, encoding="utf-8") as f:
                 lines = f.readlines()
-        except Exception:
+        except (OSError, UnicodeDecodeError):
+            # Only handle file I/O and encoding errors; let other exceptions propagate
+            # OSError covers FileNotFoundError, PermissionError, etc.
+            # UnicodeDecodeError handles encoding issues explicitly
             return violations
 
         # Find first non-import, non-comment, non-docstring line
@@ -175,36 +178,20 @@ class ImportOrganizationChecker(BaseChecker):
 
         return violations
 
-    def _check_type_checking_usage(
-        self, parser: ASTParser, relative_path: Path
-    ) -> list[ComplianceViolation]:
+    def _check_type_checking_usage(self, parser: ASTParser) -> list[ComplianceViolation]:
         """
         Check for TYPE_CHECKING usage for circular dependencies.
 
         Args:
             parser: AST parser instance
-            relative_path: Relative file path
 
         Returns:
             List of violations
+
+        Note:
+            This is a placeholder for future implementation.
+            Full circular dependency detection requires dependency graph analysis.
         """
         violations: list[ComplianceViolation] = []
-
-        # Check if file has TYPE_CHECKING import
-        has_type_checking = parser.has_type_checking_import()
-
-        # Check for potential circular dependencies (simplified heuristic)
-        # Full analysis would require dependency graph
-        local_imports = []
-        for imp in parser.get_imports():
-            if isinstance(imp, ast.ImportFrom):
-                if imp.module and imp.module.startswith("py_web_automation"):
-                    local_imports.append(imp)
-
-        # If there are local imports but no TYPE_CHECKING, suggest using it
-        if local_imports and not has_type_checking:
-            # This is a warning, not a violation - TYPE_CHECKING is only needed for circular deps
-            # But we can suggest it as best practice
-            pass
-
+        # Placeholder for future implementation
         return violations

@@ -17,6 +17,8 @@ class ErrorHandlingChecker(BaseChecker):
     """Checker for Error Handling standard compliance."""
 
     BASE_EXCEPTION = "WebAutomationError"
+    # Whitelist of allowed exception base classes
+    ALLOWED_BASE_EXCEPTIONS = {BASE_EXCEPTION}
 
     def get_name(self) -> str:
         """Get the name of this checker."""
@@ -60,6 +62,12 @@ class ErrorHandlingChecker(BaseChecker):
 
         Returns:
             List of violations
+
+        Note:
+            This check only validates direct inheritance from explicitly allowed
+            base classes. Indirect/transitive inheritance (e.g., A inherits from B,
+            B inherits from WebAutomationError) cannot be reliably detected without
+            cross-file type resolution and is left as a future enhancement.
         """
         violations: list[ComplianceViolation] = []
 
@@ -69,15 +77,17 @@ class ErrorHandlingChecker(BaseChecker):
             if not (cls.name.endswith("Error") or cls.name.endswith("Exception")):
                 continue
 
-            # Check base classes
+            # Check base classes - only accept explicit whitelist
             has_base = False
             for base in cls.bases:
                 if isinstance(base, ast.Name):
-                    if base.id == self.BASE_EXCEPTION or base.id.endswith("Error"):
+                    # Check if base class name is in whitelist
+                    if base.id in self.ALLOWED_BASE_EXCEPTIONS:
                         has_base = True
                         break
                 elif isinstance(base, ast.Attribute):
-                    if base.attr == self.BASE_EXCEPTION or base.attr.endswith("Error"):
+                    # Check if base class attribute is in whitelist
+                    if base.attr in self.ALLOWED_BASE_EXCEPTIONS:
                         has_base = True
                         break
 

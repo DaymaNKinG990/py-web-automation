@@ -9,25 +9,16 @@ Usage:
     uv run python specs/001-constitution-review/run_review.py --verbose
 """
 
-import os
 import sys
 from pathlib import Path
 
-# Change to the directory containing this script so relative imports work
+# Add project root to sys.path for imports
 script_dir = Path(__file__).parent
-sys.path.insert(0, str(script_dir.parent.parent))  # Add project root
+sys.path.insert(0, str(script_dir.parent.parent))
 
-# Change working directory to script directory
-original_cwd = os.getcwd()
-os.chdir(script_dir)
-
-try:
-    # Now import as module
-    from tools import main
-finally:
-    # Restore original working directory
-    os.chdir(original_cwd)
-
+# Import main function directly from tools package
+# ReviewConfig uses absolute paths, so working directory change is not needed
+from tools import main  # noqa: E402
 
 if __name__ == "__main__":
     sys.exit(main())

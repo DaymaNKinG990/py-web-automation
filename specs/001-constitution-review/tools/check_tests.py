@@ -105,12 +105,8 @@ class TestFirstChecker(BaseChecker):
                 for decorator in func.decorator_list:
                     if isinstance(decorator, ast.Call):
                         for arg in decorator.args:
-                            if isinstance(arg, ast.Constant) and isinstance(
-                                arg.value, str
-                            ):
-                                match = re.search(
-                                    r"TC-[A-Z]+-[A-Z]+-\d+", arg.value
-                                )
+                            if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                                match = re.search(r"TC-[A-Z]+-[A-Z]+-\d+", arg.value)
                                 if match:
                                     test_case_id_match = match
                                     break

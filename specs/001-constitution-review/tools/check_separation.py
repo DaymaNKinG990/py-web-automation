@@ -5,6 +5,7 @@ This checker verifies proper separation of client types and module organization.
 """
 
 from pathlib import Path
+from typing import ClassVar
 
 from .base_checker import BaseChecker
 from .models import ComplianceViolation
@@ -13,7 +14,7 @@ from .models import ComplianceViolation
 class SeparationChecker(BaseChecker):
     """Checker for Separation of Concerns standard compliance."""
 
-    CLIENT_TYPES = {
+    CLIENT_TYPES: ClassVar[set[str]] = {
         "http",
         "graphql",
         "grpc",
@@ -50,9 +51,8 @@ class SeparationChecker(BaseChecker):
             # Verify file is in appropriate subdirectory
             if "api_clients" in path_str:
                 # Should be in specific client subdirectory
-                if not any(
-                    client_type in path_str for client_type in ["http", "graphql", "grpc", "soap"]
-                ):
+                # Use CLIENT_TYPES constant to check all declared client types
+                if not any(client_type in path_str for client_type in self.CLIENT_TYPES):
                     violations.append(
                         ComplianceViolation(
                             standard="Separation of Concerns",
